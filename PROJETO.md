@@ -26,6 +26,7 @@
 
 ## Fases do Projeto
 - [x] Fase 0 — Setup (Next.js, Supabase, variáveis de ambiente)
+- [x] Fase 0.1 — Conexão Supabase (client, server, middleware, tipos)
 - [ ] Fase 1 — Auth (cadastro, login, perfil)
 - [ ] Fase 2 — Closet (cadastrar peças, upload de foto)
 - [ ] Fase 3 — Lookbook (outfits, filtros, tags)
@@ -43,3 +44,9 @@ Baseado em um PWA pessoal chamado MARCOS LOOKBOOK.
 - Supabase região São Paulo
 - Row Level Security ativado em todas as tabelas
 - Storage público para URLs de imagem direta
+
+## Arquivos criados
+- `src/lib/supabase/client.ts` → conexão client-side
+- `src/lib/supabase/server.ts` → conexão server-side
+- `src/middleware.ts` → proteção de rotas autenticadas
+- `src/types/database.ts` → tipos TypeScript do banco
