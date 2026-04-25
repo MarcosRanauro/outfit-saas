@@ -33,13 +33,15 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Se não está logado e tenta acessar área protegida, redireciona para login
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/cadastro') &&
-    request.nextUrl.pathname !== '/'
-  ) {
+  const isAuthRoute =
+    request.nextUrl.pathname.startsWith('/login') ||
+    request.nextUrl.pathname.startsWith('/cadastro') ||
+    request.nextUrl.pathname.startsWith('/auth')
+
+  const isPublicRoute =
+    request.nextUrl.pathname === '/'
+
+  if (!user && !isAuthRoute && !isPublicRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
