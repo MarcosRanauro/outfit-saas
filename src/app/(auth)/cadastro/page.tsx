@@ -5,28 +5,32 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import '../../auth.css'
 
-export default function LoginPage() {
+export default function CadastroPage() {
   const router = useRouter()
   const supabase = createClient()
 
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [loadingGoogle, setLoadingGoogle] = useState(false)
   const [error, setError] = useState('')
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleCadastro(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: { name },
+      },
     })
 
     if (error) {
-      setError('E-mail ou senha incorretos.')
+      setError('Erro ao criar conta. Tente novamente.')
       setLoading(false)
       return
     }
@@ -87,7 +91,18 @@ export default function LoginPage() {
           <div className="divider-line" />
         </div>
 
-        <form onSubmit={handleLogin}>
+        <form onSubmit={handleCadastro}>
+          <div className="field">
+            <label>Nome</label>
+            <input
+              type="text"
+              placeholder="Seu nome"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+
           <div className="field">
             <label>E-mail</label>
             <input
@@ -103,9 +118,10 @@ export default function LoginPage() {
             <label>Senha</label>
             <input
               type="password"
-              placeholder="••••••••"
+              placeholder="mínimo 6 caracteres"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              minLength={6}
               required
             />
           </div>
@@ -115,16 +131,13 @@ export default function LoginPage() {
           )}
 
           <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? 'Entrando...' : 'Entrar'}
+            {loading ? 'Criando conta...' : 'Criar conta'}
           </button>
         </form>
 
         <div className="footer-link" style={{ marginTop: '20px' }}>
-          Não tem conta?{' '}
-          <a href="/cadastro">Criar conta</a>
-        </div>
-        <div className="footer-link" style={{ marginTop: '8px' }}>
-          <a href="/esqueci-senha">Esqueci minha senha</a>
+          Já tem conta?{' '}
+          <a href="/login">Entrar</a>
         </div>
       </div>
     </main>

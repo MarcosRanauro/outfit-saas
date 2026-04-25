@@ -225,3 +225,34 @@
   background: rgba(224,92,92,0.08);
   border-radius: 6px;
 }
+
+/* ─── BOTÃO GOOGLE ──────────────────────────── */
+
+.btn-google {
+  width: 100%;
+  padding: 13px;
+  background: transparent;
+  border: 0.5px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  color: rgba(255,255,255,0.75);
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background 0.2s, border-color 0.2s;
+  margin-bottom: 4px;
+}
+
+.btn-google:hover {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.2);
+}
+
+.btn-google svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
