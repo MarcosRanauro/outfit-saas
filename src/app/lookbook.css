@@ -1,0 +1,440 @@
+/* ─── LOOKBOOK ───────────────────────────────── */
+
+.lookbook-header {
+  padding: 20px 20px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lookbook-title {
+  font-family: 'Georgia', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: #f0f0f0;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.lookbook-title span {
+  color: rgba(180,140,60,0.9);
+}
+
+.lookbook-count {
+  font-size: 11px;
+  color: rgba(255,255,255,0.2);
+  letter-spacing: 1px;
+}
+
+/* ─── FILTROS ────────────────────────────────── */
+
+.lookbook-period-row {
+  padding: 0 20px 10px;
+  display: flex;
+  gap: 8px;
+}
+
+.lookbook-period-btn {
+  flex: 1;
+  padding: 8px;
+  border-radius: 10px;
+  border: 0.5px solid rgba(255,255,255,0.08);
+  background: transparent;
+  color: rgba(255,255,255,0.3);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s;
+  font-family: var(--font-inter), sans-serif;
+}
+
+.lookbook-period-btn.active {
+  background: rgba(180,140,60,0.12);
+  border-color: rgba(180,140,60,0.35);
+  color: rgba(180,140,60,0.9);
+}
+
+.lookbook-occ-row {
+  padding: 0 20px 12px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+}
+
+.lookbook-occ-row::-webkit-scrollbar {
+  display: none;
+}
+
+.lookbook-occ-chip {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  border: 0.5px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.35);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-inter), sans-serif;
+}
+
+.lookbook-occ-chip.active {
+  background: rgba(180,140,60,0.12);
+  border-color: rgba(180,140,60,0.35);
+  color: rgba(180,140,60,0.9);
+}
+
+/* ─── LISTA DE OUTFITS ───────────────────────── */
+
+.lookbook-list {
+  padding: 0 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lookbook-card {
+  background: #111;
+  border-radius: 14px;
+  border: 0.5px solid rgba(255,255,255,0.06);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.lookbook-card:active {
+  border-color: rgba(180,140,60,0.3);
+}
+
+.lookbook-card-photos {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 2px;
+  height: 100px;
+}
+
+.lookbook-card-photo {
+  background: #1a1a1a;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lookbook-card-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.lookbook-photo-empty {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background: rgba(180,140,60,0.08);
+  border: 1px dashed rgba(180,140,60,0.15);
+}
+
+.lookbook-card-body {
+  padding: 10px 14px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lookbook-card-info {
+  flex: 1;
+}
+
+.lookbook-card-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f0f0f0;
+}
+
+.lookbook-card-sub {
+  font-size: 10px;
+  color: rgba(180,140,60,0.6);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 2px;
+  margin-bottom: 6px;
+}
+
+.lookbook-card-bottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lookbook-card-occ {
+  font-size: 10px;
+  color: rgba(255,255,255,0.2);
+}
+
+/* ─── TAGS ───────────────────────────────────── */
+
+.tag {
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.tag-neutro {
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.35);
+  border: 0.5px solid rgba(255,255,255,0.08);
+}
+
+.tag-statement {
+  background: rgba(180,140,60,0.1);
+  color: rgba(180,140,60,0.7);
+  border: 0.5px solid rgba(180,140,60,0.2);
+}
+
+.tag-retro {
+  background: rgba(139,90,43,0.1);
+  color: rgba(180,130,80,0.8);
+  border: 0.5px solid rgba(139,90,43,0.2);
+}
+
+.tag-cor {
+  background: rgba(92,141,224,0.1);
+  color: rgba(92,141,224,0.8);
+  border: 0.5px solid rgba(92,141,224,0.2);
+}
+
+.tag-casual {
+  background: rgba(92,224,141,0.08);
+  color: rgba(92,200,141,0.7);
+  border: 0.5px solid rgba(92,200,141,0.15);
+}
+
+.tag-conjunto {
+  background: rgba(180,60,180,0.08);
+  color: rgba(200,100,200,0.7);
+  border: 0.5px solid rgba(180,60,180,0.15);
+}
+
+/* ─── EMPTY STATE ────────────────────────────── */
+
+.lookbook-empty {
+  padding: 60px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.lookbook-empty-icon {
+  font-size: 32px;
+  opacity: 0.3;
+}
+
+.lookbook-empty-text {
+  font-size: 13px;
+  color: rgba(255,255,255,0.25);
+  line-height: 1.6;
+}
+
+.lookbook-empty-link {
+  font-size: 12px;
+  color: rgba(180,140,60,0.6);
+  letter-spacing: 1px;
+  text-decoration: none;
+  border: 0.5px solid rgba(180,140,60,0.3);
+  padding: 8px 16px;
+  border-radius: 20px;
+  margin-top: 4px;
+}
+
+/* ─── MODAL DETALHE ──────────────────────────── */
+
+.lookbook-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  flex-direction: column;
+  z-index: 300;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.lookbook-modal.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.lookbook-modal-inner {
+  flex: 1;
+  background: #111;
+  margin-top: 60px;
+  border-radius: 20px 20px 0 0;
+  border-top: 0.5px solid rgba(180,140,60,0.2);
+  overflow-y: auto;
+  padding: 20px 20px 40px;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+}
+
+.lookbook-modal.open .lookbook-modal-inner {
+  transform: translateY(0);
+}
+
+.lookbook-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lookbook-detail-photos {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.lookbook-detail-photo {
+  aspect-ratio: 1;
+  background: #1a1a1a;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lookbook-detail-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.lookbook-detail-title {
+  font-family: 'Georgia', serif;
+  font-size: 20px;
+  color: #f0f0f0;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.lookbook-detail-sub {
+  font-size: 10px;
+  color: rgba(180,140,60,0.7);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 4px 0 12px;
+}
+
+.lookbook-detail-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.lookbook-detail-section {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.2);
+  margin-bottom: 8px;
+}
+
+.lookbook-detail-piece {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 0.5px solid rgba(255,255,255,0.04);
+}
+
+.lookbook-detail-piece-photo {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  background: #1a1a1a;
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lookbook-detail-piece-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.lookbook-detail-piece-name {
+  font-size: 13px;
+  color: #f0f0f0;
+  font-weight: 500;
+}
+
+.lookbook-detail-piece-cat {
+  font-size: 10px;
+  color: rgba(180,140,60,0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+.lookbook-why {
+  background: #0d0d0d;
+  border-radius: 10px;
+  padding: 14px;
+  margin: 16px 0;
+  border-left: 2px solid rgba(180,140,60,0.3);
+}
+
+.lookbook-why-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(180,140,60,0.5);
+  margin-bottom: 6px;
+}
+
+.lookbook-why-text {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.7;
+}
+
+.delete-outfit-btn {
+  width: 100%;
+  padding: 14px;
+  background: rgba(224,92,92,0.08);
+  border: 1px solid rgba(224,92,92,0.3);
+  border-radius: 10px;
+  color: rgba(224,92,92,0.8);
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: var(--font-inter), sans-serif;
+}
