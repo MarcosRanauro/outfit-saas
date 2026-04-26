@@ -75,23 +75,33 @@ export default function AvatarCrop({ onSave, onClose, userId }: Props) {
   }
 
   async function handleSave() {
+    console.log('handleSave chamado', { imageSrc: !!imageSrc, croppedAreaPixels })
     if (!imageSrc || !croppedAreaPixels) return
     setSaving(true)
 
     try {
       const blob = await getCroppedImg(imageSrc, croppedAreaPixels)
+      console.log('Blob gerado:', blob.size)
+
       const path = `${userId}/avatar.jpg`
 
-      await supabase.storage
+      const { error: uploadError } = await supabase
+        .storage
         .from('avatars')
         .upload(path, blob, { upsert: true, contentType: 'image/jpeg' })
 
-      const { data: urlData } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(path)
+      console.log('Upload error:', uploadError)
 
-      const url = `${urlData.publicUrl}?t=${Date.now()}`
-      onSave(url)
+      if (!uploadError) {
+        const { data: urlData } = supabase
+          .storage
+          .from('avatars')
+          .getPublicUrl(path)
+
+        const url = urlData.publicUrl + '?t=' + Date.now()
+        console.log('URL final:', url)
+        onSave(url)
+      }
     } catch (err) {
       console.error('Erro ao salvar avatar:', err)
     }
@@ -108,8 +118,6 @@ export default function AvatarCrop({ onSave, onClose, userId }: Props) {
       display: 'flex',
       flexDirection: 'column',
     }}>
-
-      {/* Header */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -159,7 +167,6 @@ export default function AvatarCrop({ onSave, onClose, userId }: Props) {
         </button>
       </div>
 
-      {/* Crop area */}
       {imageSrc ? (
         <>
           <div style={{ flex: 1, position: 'relative' }}>
@@ -178,8 +185,6 @@ export default function AvatarCrop({ onSave, onClose, userId }: Props) {
               }}
             />
           </div>
-
-          {/* Zoom slider */}
           <div style={{
             padding: '20px 40px',
             flexShrink: 0,
@@ -205,7 +210,6 @@ export default function AvatarCrop({ onSave, onClose, userId }: Props) {
           </div>
         </>
       ) : (
-        // Tela de selecionar foto
         <div style={{
           flex: 1,
           display: 'flex',

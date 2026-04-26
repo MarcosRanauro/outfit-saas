@@ -112,17 +112,15 @@ export default function PerfilPage() {
   }
 
   async function handleAvatarSave(url: string) {
-  if (!profile) return
+    if (!profile) return;
 
-  const { data } = await supabase
-    .from('profiles')
-    .update({ avatar_url: url })
-    .eq('id', profile.id)
-    .select()
-    .single()
+    await supabase
+      .from("profiles")
+      .update({ avatar_url: url })
+      .eq("id", profile.id);
 
-  if (data) setProfile(data)
-  setCropOpen(false)
+    setCropOpen(false);
+    window.location.reload();
   }
 
   const stylesCount = profile?.style
@@ -146,18 +144,23 @@ export default function PerfilPage() {
       </div>
 
       <div className="perfil-content">
+        
         {/* Avatar */}
-        <div className="avatar-wrap">
-          <div className="avatar">
-            {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt="avatar" />
-            ) : (
-              <span className="avatar-icon">👤</span>
-            )}
+        <div className="avatar-section">
+          <div className="avatar-wrap">
+            <div className="avatar">
+              {profile?.avatar_url ? (
+                <img src={`${profile.avatar_url}?v=${Date.now()}`} alt="avatar" />
+              ) : (
+                <span className="avatar-icon">👤</span>
+              )}
+            </div>
+            <div className="avatar-edit" onClick={() => setCropOpen(true)}>
+              ✏️
+            </div>
           </div>
-          <div className="avatar-edit" onClick={() => setCropOpen(true)}>
-            ✏️
-          </div>
+          <div className="avatar-name">{profile?.name || "Usuário"}</div>
+          <div className="avatar-email">{email}</div>
         </div>
 
         {/* Stats */}
