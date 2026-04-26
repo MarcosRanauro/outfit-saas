@@ -28,8 +28,12 @@ export type Outfit = {
   id: string
   user_id: string
   name: string
+  subtitle: string | null
   style_tags: string[]
   occasion_tags: string[]
+  period: string
+  occasion: string | null
+  why: string | null
   pieces: string[]
   notes: string | null
   created_at: string
