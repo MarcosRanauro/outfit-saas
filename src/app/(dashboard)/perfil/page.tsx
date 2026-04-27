@@ -91,7 +91,7 @@ export default function PerfilPage() {
     let updateData: any = {}
 
     if (editModal === 'name') updateData.name = editValue
-    if (editModal === 'height') updateData.height = parseFloat(editValue) || null
+    if (editModal === 'height') updateData.height = parseInt(editValue) || null
     if (editModal === 'weight') updateData.weight = parseFloat(editValue) || null
     if (editModal === 'style') {
       const all = [...editStyles]
@@ -199,7 +199,7 @@ export default function PerfilPage() {
               <span
                 className={`field-row-value ${!profile?.height ? "empty" : ""}`}
               >
-                {profile?.height ? `${profile.height}m` : "Adicionar"}
+                {profile?.height ? `${profile.height}cm` : "Adicionar"}
               </span>
               <span className="field-row-arrow">›</span>
             </div>
@@ -291,7 +291,7 @@ export default function PerfilPage() {
               <div className="edit-title">Altura</div>
               <input
                 className="edit-input"
-                placeholder="Ex: 1.80"
+                placeholder="Ex: 180"
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
                 type="number"
