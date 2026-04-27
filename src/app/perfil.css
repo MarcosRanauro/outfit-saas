@@ -1,0 +1,562 @@
+/* ─── PERFIL ─────────────────────────────────── */
+
+.perfil-header {
+  padding: 20px 20px 16px;
+}
+
+.perfil-title {
+  font-family: 'Georgia', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: #f0f0f0;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.perfil-title span {
+  color: rgba(180,140,60,0.9);
+}
+
+.perfil-content {
+  padding: 0 20px 100px;
+}
+
+/* ─── AVATAR ─────────────────────────────────── */
+
+.avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+.avatar-wrap {
+  position: relative;
+  margin-bottom: 12px;
+  width: 80px;
+  height: 80px;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #1a1a1a;
+  border: 2px solid rgba(180,140,60,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-icon {
+  font-size: 32px;
+  opacity: 0.3;
+}
+
+.avatar-edit {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(180,140,60,0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.avatar-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #f0f0f0;
+  letter-spacing: 0.5px;
+}
+
+.avatar-email {
+  font-size: 11px;
+  color: rgba(255,255,255,0.25);
+  margin-top: 3px;
+}
+
+/* ─── STATS ─────────────────────────────────── */
+
+.perfil-stats {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.perfil-stat {
+  flex: 1;
+  background: #111;
+  border-radius: 10px;
+  border: 0.5px solid rgba(255,255,255,0.06);
+  padding: 10px 8px;
+  text-align: center;
+}
+
+.perfil-stat-num {
+  font-size: 20px;
+  font-weight: 700;
+  color: rgba(180,140,60,0.9);
+}
+
+.perfil-stat-label {
+  font-size: 9px;
+  color: rgba(255,255,255,0.25);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* ─── SECTION ────────────────────────────────── */
+
+.perfil-section-title {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.2);
+  margin-bottom: 10px;
+}
+
+/* ─── FIELD GROUP ────────────────────────────── */
+
+.field-group {
+  background: #111;
+  border-radius: 12px;
+  border: 0.5px solid rgba(255,255,255,0.06);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px;
+  border-bottom: 0.5px solid rgba(255,255,255,0.04);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.field-row:last-child {
+  border-bottom: none;
+}
+
+.field-row:active {
+  background: rgba(255,255,255,0.02);
+}
+
+.field-row-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.field-row-value {
+  font-size: 13px;
+  color: #f0f0f0;
+  max-width: 60%;
+  text-align: right;
+}
+
+.field-row-value.empty {
+  color: rgba(255,255,255,0.15);
+  font-style: italic;
+  font-size: 12px;
+}
+
+.field-row-arrow {
+  font-size: 10px;
+  color: rgba(255,255,255,0.15);
+  margin-left: 8px;
+}
+
+/* ─── PLAN CARD ──────────────────────────────── */
+
+.plan-card {
+  background: #111;
+  border-radius: 12px;
+  border: 0.5px solid rgba(180,140,60,0.2);
+  padding: 14px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.plan-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.plan-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(180,140,60,0.12);
+  border: 1px solid rgba(180,140,60,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.plan-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f0f0f0;
+}
+
+.plan-desc {
+  font-size: 10px;
+  color: rgba(255,255,255,0.25);
+  margin-top: 2px;
+}
+
+.plan-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(180,140,60,0.12);
+  border: 0.5px solid rgba(180,140,60,0.3);
+  font-size: 10px;
+  color: rgba(180,140,60,0.8);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* ─── LOGOUT ─────────────────────────────────── */
+
+.logout-btn {
+  width: 100%;
+  padding: 14px;
+  background: transparent;
+  border: 0.5px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  color: rgba(255,255,255,0.3);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: var(--font-inter), sans-serif;
+  transition: border-color 0.2s;
+}
+
+.logout-btn:hover {
+  border-color: rgba(224,92,92,0.3);
+  color: rgba(224,92,92,0.6);
+}
+
+/* ─── EDIT MODAL ─────────────────────────────── */
+
+.edit-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  align-items: flex-end;
+  z-index: 300;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.edit-modal.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.edit-sheet {
+  width: 100%;
+  background: #111;
+  border-radius: 20px 20px 0 0;
+  border-top: 0.5px solid rgba(180,140,60,0.2);
+  padding: 20px 20px 40px;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+}
+
+.edit-modal.open .edit-sheet {
+  transform: translateY(0);
+}
+
+.edit-handle {
+  width: 36px;
+  height: 3px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  margin: 0 auto 20px;
+}
+
+.edit-title {
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  margin-bottom: 14px;
+}
+
+.edit-input {
+  width: 100%;
+  background: #0d0d0d;
+  border: 0.5px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 13px 14px;
+  font-size: 16px;
+  color: #f0f0f0;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+  font-family: var(--font-inter), sans-serif;
+  margin-bottom: 12px;
+}
+
+.edit-input:focus {
+  border-color: rgba(180,140,60,0.5);
+}
+
+.edit-btn {
+  width: 100%;
+  padding: 14px;
+  background: rgba(180,140,60,0.15);
+  border: 1px solid rgba(180,140,60,0.5);
+  border-radius: 8px;
+  color: rgba(180,140,60,0.95);
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: var(--font-inter), sans-serif;
+}
+
+.edit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── STYLE CHIPS ────────────────────────────── */
+
+.style-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.style-chip {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  border: 0.5px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.35);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-inter), sans-serif;
+}
+
+.style-chip.active {
+  background: rgba(180,140,60,0.12);
+  border-color: rgba(180,140,60,0.4);
+  color: rgba(180,140,60,0.9);
+}
+
+/* ─── ONBOARDING ─────────────────────────────── */
+
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: flex-end;
+  z-index: 400;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.onboarding-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.onboarding-sheet {
+  width: 100%;
+  background: #111;
+  border-radius: 20px 20px 0 0;
+  border-top: 0.5px solid rgba(180,140,60,0.25);
+  padding: 20px 20px 44px;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+.onboarding-sheet::-webkit-scrollbar {
+  display: none;
+}
+
+.onboarding-overlay.open .onboarding-sheet {
+  transform: translateY(0);
+}
+
+.onboarding-handle {
+  width: 36px;
+  height: 3px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  margin: 0 auto 20px;
+}
+
+.onboarding-logo {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.onboarding-diamond {
+  width: 12px;
+  height: 12px;
+  background: rgba(180,140,60,0.9);
+  transform: rotate(45deg);
+  margin: 0 auto 10px;
+}
+
+.onboarding-title {
+  font-family: 'Georgia', serif;
+  font-size: 20px;
+  color: #f0f0f0;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.onboarding-sub {
+  font-size: 12px;
+  color: rgba(255,255,255,0.25);
+  margin-top: 6px;
+  line-height: 1.6;
+}
+
+.onboarding-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.onboarding-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  transition: all 0.2s;
+}
+
+.onboarding-dot.active {
+  background: rgba(180,140,60,0.8);
+  width: 18px;
+  border-radius: 3px;
+}
+
+.onboarding-field {
+  margin-bottom: 14px;
+}
+
+.onboarding-label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  margin-bottom: 8px;
+}
+
+.onboarding-input {
+  width: 100%;
+  background: #0d0d0d;
+  border: 0.5px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 13px 14px;
+  font-size: 16px;
+  color: #f0f0f0;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+  font-family: var(--font-inter), sans-serif;
+}
+
+.onboarding-input:focus {
+  border-color: rgba(180,140,60,0.5);
+}
+
+.onboarding-row {
+  display: flex;
+  gap: 10px;
+}
+
+.onboarding-row .onboarding-field {
+  flex: 1;
+}
+
+.onboarding-btn {
+  width: 100%;
+  padding: 14px;
+  background: rgba(180,140,60,0.15);
+  border: 1px solid rgba(180,140,60,0.5);
+  border-radius: 8px;
+  color: rgba(180,140,60,0.95);
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.2s;
+  font-family: var(--font-inter), sans-serif;
+}
+
+.onboarding-btn:hover {
+  background: rgba(180,140,60,0.25);
+}
+
+.onboarding-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.onboarding-success {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.onboarding-success-icon {
+  font-size: 36px;
+  margin-bottom: 12px;
+}
+
+.onboarding-success-title {
+  font-family: 'Georgia', serif;
+  font-size: 20px;
+  color: #f0f0f0;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.onboarding-success-text {
+  font-size: 13px;
+  color: rgba(255,255,255,0.25);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
