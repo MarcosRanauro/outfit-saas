@@ -8,6 +8,7 @@ export type Profile = {
   style: string | null
   avatar_url: string | null
   plan: Plan
+  closet_tour_completed: boolean
   created_at: string
   updated_at: string
 }
@@ -45,5 +46,17 @@ export type OutfitHistory = {
   outfit_id: string | null
   worn_at: string
   occasion: string | null
+  created_at: string
+}
+
+export type WishlistItem = {
+  id: string
+  user_id: string
+  category: string
+  name: string
+  color: string | null
+  reason: string | null
+  priority: 'high' | 'medium' | 'low'
+  purchased: boolean
   created_at: string
 }

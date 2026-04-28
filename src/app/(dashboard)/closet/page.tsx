@@ -1,13 +1,37 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Piece } from '@/types/database'
+import { Piece, WishlistItem } from '@/types/database'
 import '../../closet.css'
 import '../../perfil.css'
+import '../../wishlist.css'
 
 const CATEGORIES = ['Todos', 'Blusa', 'Calça', 'Short', 'Tênis', 'Acessório']
 const STYLE_OPTIONS = ['Streetwear', 'Sportwear', 'Casual', 'Social', 'Minimalista']
+
+const TOUR_STEPS = [
+  {
+    title: '✦ Sugerir Peças',
+    text: 'A IA analisa seu closet e sugere peças que faltam para criar mais combinações.',
+  },
+  {
+    title: '♡ Sua Wishlist',
+    text: 'Aqui ficam as peças que você quer comprar. Quando comprar, adicione direto ao closet com um toque.',
+  },
+  {
+    title: '+ Adicionar Peça',
+    text: 'Cadastre as peças que você já tem para a IA conhecer seu guarda-roupa e gerar outfits perfeitos.',
+  },
+]
+
+type WishlistSuggestion = {
+  category: string
+  name: string
+  color: string
+  reason: string
+  priority: 'high' | 'medium' | 'low'
+}
 
 export default function ClosetPage() {
   const supabase = createClient()
@@ -16,6 +40,7 @@ export default function ClosetPage() {
   const [filtered, setFiltered] = useState<Piece[]>([])
   const [activeFilter, setActiveFilter] = useState('Todos')
   const [loading, setLoading] = useState(true)
+  const [outfitsCount, setOutfitsCount] = useState(0)
   const [modalOpen, setModalOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null)
@@ -40,9 +65,38 @@ export default function ClosetPage() {
   const [obSaving, setObSaving] = useState(false)
   const [showNameField, setShowNameField] = useState(false)
 
+  const [wishlistGenerating, setWishlistGenerating] = useState(false)
+  const [wishlistSuggestions, setWishlistSuggestions] = useState<WishlistSuggestion[]>([])
+  const [wishlistModalOpen, setWishlistModalOpen] = useState(false)
+  const [savedSuggestionIds, setSavedSuggestionIds] = useState<number[]>([])
+  const [wishlistSavedOpen, setWishlistSavedOpen] = useState(false)
+  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([])
+  const [wishlistLoading, setWishlistLoading] = useState(false)
+  const [purchasingWishlistId, setPurchasingWishlistId] = useState<string | null>(null)
+
+  const [tourOpen, setTourOpen] = useState(false)
+  const [tourStep, setTourStep] = useState(0)
+  const [spotlightStyle, setSpotlightStyle] = useState<React.CSSProperties>({})
+  const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({})
+
+  const suggestBtnRef = useRef<HTMLButtonElement>(null)
+  const wishlistBtnRef = useRef<HTMLButtonElement>(null)
+  const addBtnRef = useRef<HTMLButtonElement>(null)
+
   useEffect(() => {
     loadData()
   }, [])
+
+  useEffect(() => {
+    if (!tourOpen) return
+    const refs = [suggestBtnRef, wishlistBtnRef, addBtnRef]
+    const el = refs[tourStep]?.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    setSpotlightStyle({ top: rect.top - 6, left: rect.left - 6, width: rect.width + 12, height: rect.height + 12 })
+    const tooltipLeft = Math.max(10, Math.min(rect.left + rect.width / 2 - 110, window.innerWidth - 230))
+    setTooltipStyle({ top: rect.bottom + 14, left: tooltipLeft })
+  }, [tourStep, tourOpen])
 
   useEffect(() => {
     if (activeFilter === 'Todos') {
@@ -56,9 +110,10 @@ export default function ClosetPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    const [piecesResult, profileResult] = await Promise.all([
+    const [piecesResult, profileResult, outfitsResult] = await Promise.all([
       supabase.from('pieces').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-      supabase.from('profiles').select('name, height, weight, style').eq('id', user.id).single(),
+      supabase.from('profiles').select('name, height, weight, style, closet_tour_completed').eq('id', user.id).single(),
+      supabase.from('outfits').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
     ])
 
     if (piecesResult.data) {
@@ -66,12 +121,16 @@ export default function ClosetPage() {
       setFiltered(piecesResult.data)
     }
 
+    setOutfitsCount(outfitsResult.count || 0)
+
     if (profileResult.data) {
       const p = profileResult.data
       const incomplete = !p.height || !p.weight || !p.style
       if (incomplete) {
         setShowNameField(!p.name)
         setOnboardingOpen(true)
+      } else if (!p.closet_tour_completed) {
+        setTourOpen(true)
       }
     }
 
@@ -130,6 +189,7 @@ export default function ClosetPage() {
     setBrand('')
     setPhoto(null)
     setPhotoPreview(null)
+    setPurchasingWishlistId(null)
     setModalOpen(false)
   }
 
@@ -176,6 +236,11 @@ export default function ClosetPage() {
 
     if (data) {
       setPieces(prev => [data, ...prev])
+    }
+
+    if (purchasingWishlistId) {
+      await supabase.from('wishlist_items').delete().eq('id', purchasingWishlistId)
+      setWishlistItems(prev => prev.filter(i => i.id !== purchasingWishlistId))
     }
 
     setSaving(false)
@@ -231,6 +296,87 @@ export default function ClosetPage() {
     setUploadingPhoto(false)
   }
 
+  async function handleTourFinish() {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      await supabase.from('profiles').update({ closet_tour_completed: true }).eq('id', user.id)
+    }
+    setTourOpen(false)
+  }
+
+  function handleTourNext() {
+    if (tourStep < 2) {
+      setTourStep(prev => prev + 1)
+    } else {
+      handleTourFinish()
+    }
+  }
+
+  async function handleGenerateWishlist() {
+    setWishlistGenerating(true)
+    try {
+      const res = await fetch('/api/wishlist/generate', { method: 'POST' })
+      const data = await res.json()
+      if (data.suggestions) {
+        setWishlistSuggestions(data.suggestions)
+        setSavedSuggestionIds([])
+        setWishlistModalOpen(true)
+      }
+    } catch {
+      // silent
+    }
+    setWishlistGenerating(false)
+  }
+
+  async function loadWishlistItems() {
+    setWishlistLoading(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setWishlistLoading(false); return }
+
+    const { data } = await supabase
+      .from('wishlist_items')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('purchased', false)
+      .order('created_at', { ascending: false })
+
+    setWishlistItems(data || [])
+    setWishlistLoading(false)
+  }
+
+  async function handleSaveToWishlist(suggestion: WishlistSuggestion, index: number) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    await supabase.from('wishlist_items').insert({
+      user_id: user.id,
+      category: suggestion.category,
+      name: suggestion.name,
+      color: suggestion.color || null,
+      reason: suggestion.reason,
+      priority: suggestion.priority,
+    })
+
+    setSavedSuggestionIds(prev => [...prev, index])
+  }
+
+  async function handleRemoveWishlistItem(id: string) {
+    await supabase.from('wishlist_items').delete().eq('id', id)
+    setWishlistItems(prev => prev.filter(i => i.id !== id))
+  }
+
+  function handleWishlistPurchased(item: WishlistItem) {
+    setName(item.name)
+    setCategory(item.category)
+    setColor(item.color || '')
+    setBrand('')
+    setPhoto(null)
+    setPhotoPreview(null)
+    setPurchasingWishlistId(item.id)
+    setWishlistSavedOpen(false)
+    setModalOpen(true)
+  }
+
   const categories = [...new Set(pieces.map(p => p.category))]
 
   return (
@@ -239,12 +385,36 @@ export default function ClosetPage() {
         <h1 className="closet-title">
           Meu <span>Closet</span>
         </h1>
-        <button
-          className="closet-add-btn"
-          onClick={() => setModalOpen(true)}
-        >
-          +
-        </button>
+        <div className="closet-actions">
+          <button
+            ref={suggestBtnRef}
+            className="action-btn"
+            onClick={handleGenerateWishlist}
+            disabled={wishlistGenerating || pieces.length < 3}
+            title={pieces.length < 3 ? 'Adicione pelo menos 3 peças' : ''}
+          >
+            <span className="action-btn-icon gold">
+              {wishlistGenerating ? <span className="wishlist-spinner" /> : '✦'}
+            </span>
+            <span className="action-btn-label">Sugerir</span>
+          </button>
+          <button
+            ref={wishlistBtnRef}
+            className="action-btn"
+            onClick={() => { loadWishlistItems(); setWishlistSavedOpen(true) }}
+          >
+            <span className="action-btn-icon ghost">♡</span>
+            <span className="action-btn-label">Wishlist</span>
+          </button>
+          <button
+            ref={addBtnRef}
+            className="action-btn"
+            onClick={() => setModalOpen(true)}
+          >
+            <span className="action-btn-icon gold">+</span>
+            <span className="action-btn-label">Nova</span>
+          </button>
+        </div>
       </div>
 
       <div className="stats-row">
@@ -257,7 +427,7 @@ export default function ClosetPage() {
           <div className="stat-label">Categorias</div>
         </div>
         <div className="stat-box">
-          <div className="stat-num">0</div>
+          <div className="stat-num">{outfitsCount}</div>
           <div className="stat-label">Outfits</div>
         </div>
       </div>
@@ -482,6 +652,134 @@ export default function ClosetPage() {
               </button>
             </>
           )}
+        </div>
+      </div>
+
+      {/* Tour explicativo */}
+      {tourOpen && (
+        <div className="tour-overlay">
+          <button className="tour-skip" onClick={handleTourFinish}>Pular</button>
+          <div className="tour-spotlight" style={spotlightStyle} />
+          <div className="tour-tooltip" style={tooltipStyle}>
+            <div className="tour-tooltip-title">{TOUR_STEPS[tourStep].title}</div>
+            <div className="tour-tooltip-text">{TOUR_STEPS[tourStep].text}</div>
+            <div className="tour-tooltip-footer">
+              <div className="tour-dots">
+                {TOUR_STEPS.map((_, i) => (
+                  <div key={i} className={`tour-dot ${i === tourStep ? 'active' : ''}`} />
+                ))}
+              </div>
+              <button className="tour-next" onClick={handleTourNext}>
+                {tourStep === 2 ? 'Concluir' : 'Próximo →'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de sugestões da wishlist */}
+      <div
+        className={`wishlist-modal-overlay ${wishlistModalOpen ? 'open' : ''}`}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            setWishlistModalOpen(false)
+            setSavedSuggestionIds([])
+          }
+        }}
+      >
+        <div className="wishlist-modal-sheet">
+          <div className="wishlist-modal-handle" />
+          <div className="wishlist-modal-header">
+            <span className="wishlist-modal-title">Sugestões para o Closet</span>
+            <button
+              className="wishlist-modal-close"
+              onClick={() => {
+                setWishlistModalOpen(false)
+                setSavedSuggestionIds([])
+              }}
+            >
+              ✕
+            </button>
+          </div>
+          <div className="wishlist-modal-scroll">
+            {wishlistSuggestions.map((s, index) => (
+              <div key={index} className="wishlist-card">
+                <div className="wishlist-card-top">
+                  <div className="wishlist-card-name">{s.name}</div>
+                  <span className={`wishlist-badge wishlist-badge-${s.priority}`}>
+                    {s.priority === 'high' ? 'Essencial' : s.priority === 'medium' ? 'Recomendado' : 'Opcional'}
+                  </span>
+                </div>
+                <div className="wishlist-card-meta">{s.category}{s.color ? ` · ${s.color}` : ''}</div>
+                <div className="wishlist-card-reason">{s.reason}</div>
+                <button
+                  className={`wishlist-save-btn ${savedSuggestionIds.includes(index) ? 'saved' : ''}`}
+                  disabled={savedSuggestionIds.includes(index)}
+                  onClick={() => handleSaveToWishlist(s, index)}
+                >
+                  {savedSuggestionIds.includes(index) ? '✓ Salvo' : 'Salvar na Wishlist'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Modal da wishlist salva */}
+      <div
+        className={`wishlist-modal-overlay ${wishlistSavedOpen ? 'open' : ''}`}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) setWishlistSavedOpen(false)
+        }}
+      >
+        <div className="wishlist-modal-sheet">
+          <div className="wishlist-modal-handle" />
+          <div className="wishlist-modal-header">
+            <span className="wishlist-modal-title">Minha Wishlist</span>
+            <button
+              className="wishlist-modal-close"
+              onClick={() => setWishlistSavedOpen(false)}
+            >
+              ✕
+            </button>
+          </div>
+          <div className="wishlist-modal-scroll">
+            {wishlistLoading ? (
+              <div className="wishlist-empty">Carregando...</div>
+            ) : wishlistItems.length === 0 ? (
+              <div className="wishlist-empty">
+                <div className="wishlist-empty-icon">♡</div>
+                Sua wishlist está vazia.{'\n'}Use o botão ✦ para gerar sugestões.
+              </div>
+            ) : (
+              wishlistItems.map(item => (
+                <div key={item.id} className="wishlist-item">
+                  <div className="wishlist-item-top">
+                    <div className="wishlist-item-name">{item.name}</div>
+                    <span className={`wishlist-badge wishlist-badge-${item.priority}`}>
+                      {item.priority === 'high' ? 'Essencial' : item.priority === 'medium' ? 'Recomendado' : 'Opcional'}
+                    </span>
+                  </div>
+                  <div className="wishlist-item-meta">{item.category}{item.color ? ` · ${item.color}` : ''}</div>
+                  {item.reason && <div className="wishlist-item-reason">{item.reason}</div>}
+                  <div className="wishlist-item-actions">
+                    <button
+                      className="wishlist-action-buy"
+                      onClick={() => handleWishlistPurchased(item)}
+                    >
+                      Já comprei
+                    </button>
+                    <button
+                      className="wishlist-action-remove"
+                      onClick={() => handleRemoveWishlistItem(item.id)}
+                    >
+                      Remover
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
 
