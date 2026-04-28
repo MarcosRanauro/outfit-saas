@@ -50,6 +50,7 @@ export default function OutfitIAPage() {
 
   const [generating, setGenerating] = useState(false)
   const [outfits, setOutfits] = useState<GeneratedOutfit[]>([])
+  const [errorMsg, setErrorMsg] = useState('')
 
   const [selectedOutfit, setSelectedOutfit] = useState<GeneratedOutfit | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
@@ -110,6 +111,7 @@ export default function OutfitIAPage() {
     if (!weather) return
     setGenerating(true)
     setOutfits([])
+    setErrorMsg('')
 
     try {
       const res = await fetch('/api/outfit/generate', {
@@ -129,7 +131,7 @@ export default function OutfitIAPage() {
         setOutfits(data.outfits)
         setSavedIds([])
       } else {
-        console.error('Erro da API:', data.error)
+        setErrorMsg('Adicione peças ao closet antes de gerar outfits.')
       }
     } catch (err) {
       console.error('Erro ao gerar outfits:', err)
@@ -240,6 +242,33 @@ export default function OutfitIAPage() {
           {generating ? 'Gerando...' : '✦ Gerar 5 Outfits'}
         </button>
       </div>
+
+      {errorMsg && (
+        <div style={{
+          background: '#111',
+          border: '1px solid rgba(224,92,92,0.3)',
+          borderRadius: '10px',
+          padding: '14px',
+          margin: '12px 16px 0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px',
+        }}>
+          <span style={{ color: 'rgba(224,92,92,0.8)', fontSize: '14px' }}>
+            {errorMsg}
+          </span>
+          <a href="/closet" style={{
+            color: 'rgba(180,140,60,0.9)',
+            fontSize: '13px',
+            fontWeight: 600,
+            whiteSpace: 'nowrap',
+            textDecoration: 'none',
+          }}>
+            Ir para o closet →
+          </a>
+        </div>
+      )}
 
       {generating && (
         <div className="generating-state">
