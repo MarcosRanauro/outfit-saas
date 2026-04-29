@@ -162,7 +162,6 @@ export default function LookbookPage() {
         <div className="lookbook-list">
           {filtered.map(outfit => {
             const outfitPieces = outfit.pieces
-              .slice(0, 3)
               .map(id => pieces[id])
               .filter(Boolean)
 
@@ -182,6 +181,9 @@ export default function LookbookPage() {
                         <img src={outfitPieces[i].photo_url!} alt={outfitPieces[i].name} />
                       ) : (
                         <div className="lookbook-photo-empty" />
+                      )}
+                      {i === 2 && outfitPieces.length > 3 && (
+                        <span className="pieces-badge-more">+{outfitPieces.length - 3}</span>
                       )}
                     </div>
                   ))}
@@ -228,11 +230,17 @@ export default function LookbookPage() {
 
             return (
               <>
-                <div className="lookbook-detail-photos">
-                  {[0, 1, 2].map(i => (
-                    <div key={i} className="lookbook-detail-photo">
-                      {outfitPieces[i]?.photo_url ? (
-                        <img src={outfitPieces[i].photo_url!} alt={outfitPieces[i].name} />
+                <div className="lookbook-detail-photos" style={{
+                  gridTemplateColumns: outfitPieces.length === 4 ? '1fr 1fr' : '1fr 1fr 1fr'
+                }}>
+                  {outfitPieces.map((piece, i) => (
+                    <div
+                      key={i}
+                      className="lookbook-detail-photo"
+                      style={outfitPieces.length === 5 && i === 4 ? { gridColumnStart: '3' } : undefined}
+                    >
+                      {piece.photo_url ? (
+                        <img src={piece.photo_url!} alt={piece.name} />
                       ) : (
                         <div style={{ width: '24px', height: '24px', borderRadius: '4px', background: 'rgba(180,140,60,0.08)', border: '1px dashed rgba(180,140,60,0.2)' }} />
                       )}

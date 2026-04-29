@@ -310,6 +310,9 @@ export default function OutfitIAPage() {
                         border: '1px dashed rgba(180,140,60,0.15)'
                       }} />
                     )}
+                    {i === 2 && outfit.pieces.length > 3 && (
+                      <span className="pieces-badge-more">+{outfit.pieces.length - 3}</span>
+                    )}
                   </div>
                 ))}
               </div>
@@ -346,9 +349,15 @@ export default function OutfitIAPage() {
 
             return (
               <>
-                <div className="outfit-detail-photos">
-                  {selectedOutfit.pieces.slice(0, 3).map((piece: any, i: number) => (
-                    <div key={i} className="outfit-detail-photo">
+                <div className="outfit-detail-photos" style={{
+                  gridTemplateColumns: selectedOutfit.pieces.length === 4 ? '1fr 1fr' : '1fr 1fr 1fr'
+                }}>
+                  {selectedOutfit.pieces.map((piece: any, i: number) => (
+                    <div
+                      key={i}
+                      className="outfit-detail-photo"
+                      style={selectedOutfit.pieces.length === 5 && i === 4 ? { gridColumnStart: '3' } : undefined}
+                    >
                       {piece.photo_url ? (
                         <img src={piece.photo_url} alt={piece.name} />
                       ) : (
