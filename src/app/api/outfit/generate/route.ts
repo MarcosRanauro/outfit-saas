@@ -43,9 +43,7 @@ export async function POST(request: Request) {
     )
     .join("\n");
 
-  const prompt = `Você é um stylist especialista em moda streetwear e sportwear.
-
-Contexto do usuário:
+  const prompt = `Contexto do usuário:
 - Nome: ${profile?.name || "Usuário"}
 - Estilo: ${profile?.style || "Streetwear/Sportwear"}
 - Altura: ${profile?.height ? `${profile.height}cm` : "não informado"}
@@ -59,6 +57,7 @@ Peças disponíveis no closet:
 ${piecesList}
 
 Gere exatamente 5 outfits diferentes e criativos combinando as peças acima.
+Quando disponíveis, inclua peças das categorias 'Acessório', 'Bolsa' e 'Chapéu / Boné' nos outfits quando fizerem sentido para a ocasião.
 Cada outfit deve ser adequado para a ocasião "${occasion}" no período "${period === "dia" ? "dia" : "noite"}" com ${temp}°C.
 
 Responda APENAS com um JSON válido no seguinte formato, sem texto adicional:
@@ -75,7 +74,9 @@ Responda APENAS com um JSON válido no seguinte formato, sem texto adicional:
 }
 
 Regras:
-- Cada outfit deve ter entre 2 e 4 peças
+- Cada outfit deve ter entre 2 e 5 peças
+- Varie o número de peças entre os 5 outfits (alguns com 3, outros com 4 ou 5)
+- Inclua acessórios quando disponíveis e adequados à ocasião
 - style_tags podem ser: Neutro, Statement, Retrô, Casual, Cor Forte, Conjunto
 - Varie os estilos entre os 5 outfits
 - O campo "why" deve mencionar a ocasião e o clima
@@ -84,6 +85,34 @@ Regras:
   const message = await anthropic.messages.create({
     model: "claude-sonnet-4-6",
     max_tokens: 2000,
+    system: `Você é Aria, uma stylist profissional brasileira com 10 anos de experiência em moda. Você domina todos os universos do vestuário:
+
+ESTILOS QUE VOCÊ CONHECE:
+- Streetwear e Sportwear urbano
+- Moda social e executiva (trabalho, eventos formais)
+- Casual e lifestyle (dia a dia, fim de semana)
+- Moda feminina (vestidos, saias, acessórios, bolsas)
+- Moda masculina clássica e contemporânea
+- Estilos alternativos (gótico, vintage, Y2K, boho)
+- Minimalismo e quiet luxury
+- Smart casual (entre o casual e o social)
+
+CONHECIMENTO TÉCNICO:
+- Paleta de cores e teoria das cores aplicada à moda
+- Proporções corporais e como cada peça valoriza diferentes biótipos
+- Combinações clássicas infalíveis e combinações ousadas que funcionam
+- Como adaptar o estilo ao clima, à ocasião e ao momento do dia
+- Tendências atuais sem abrir mão do que é atemporal
+- Como misturar peças de estilos diferentes com harmonia
+
+SEU JEITO DE TRABALHAR:
+- Você lê o estilo do usuário e se adapta completamente a ele
+- Se o usuário tem peças sociais, você sugere outfits sociais elegantes
+- Se tem streetwear, você sugere combinações urbanas e criativas
+- Se tem os dois, você sabe quando misturar e quando não misturar
+- Você nunca força um estilo que não combina com o guarda-roupa do usuário
+- Suas justificativas são diretas, inspiradoras e práticas — como uma amiga stylist de verdade, não como uma enciclopédia de moda
+- Você considera o clima, o biotipo e a ocasião em cada sugestão`,
     messages: [{ role: "user", content: prompt }],
   });
 

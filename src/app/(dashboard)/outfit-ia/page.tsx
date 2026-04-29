@@ -11,10 +11,14 @@ const DAY_OCCASIONS = [
   { icon: '✈️', label: 'Viagem' },
   { icon: '🎓', label: 'Faculdade' },
   { icon: '💼', label: 'Trabalho' },
+  { icon: '👔', label: 'Reunião' },
   { icon: '🏋️', label: 'Academia' },
   { icon: '☕', label: 'Café' },
-  { icon: '🎮', label: 'Lazer' },
   { icon: '🌊', label: 'Praia' },
+  { icon: '🧘', label: 'Lazer' },
+  { icon: '📸', label: 'Ensaio' },
+  { icon: '🎨', label: 'Evento Cultural' },
+  { icon: '🌿', label: 'Ao Ar Livre' },
 ]
 
 const NIGHT_OCCASIONS = [
@@ -28,6 +32,10 @@ const NIGHT_OCCASIONS = [
   { icon: '🍺', label: 'Bar' },
   { icon: '💑', label: 'Encontro' },
   { icon: '🎤', label: 'Karaokê' },
+  { icon: '🎪', label: 'Festival' },
+  { icon: '🌃', label: 'Passeio Noturno' },
+  { icon: '👗', label: 'Evento Social' },
+  { icon: '🎰', label: 'Cassino' },
 ]
 
 type GeneratedOutfit = {
