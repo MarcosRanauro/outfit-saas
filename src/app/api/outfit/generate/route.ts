@@ -6,7 +6,7 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
-const SYSTEM_PROMPT = `Você é Aria, uma stylist profissional brasileira com 10 anos de experiência em moda. Você domina todos os universos do vestuário:
+const SYSTEM_PROMPT = `Você é Mia, uma stylist profissional brasileira com 10 anos de experiência em moda. Você domina todos os universos do vestuário:
 
 ESTILOS QUE VOCÊ CONHECE:
 - Streetwear e Sportwear urbano
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
-  const { period, occasion, temp, weatherDesc } = await request.json();
+  const { period, occasion, temp, weatherDesc, eventDate, eventPeriod } = await request.json();
 
   const { data: pieces } = await supabase
     .from("pieces")
@@ -75,13 +75,20 @@ export async function POST(request: Request) {
 
   const piecesWithPhoto = pieces.filter((p) => p.photo_url);
 
+  const climateBlock = eventDate
+    ? `- Evento: ${eventDate}${eventPeriod ? ` (${eventPeriod})` : ''}
+- Temperatura prevista: ${temp}°C
+- Clima previsto: ${weatherDesc}
+- IMPORTANTE: Gere outfits adequados para este evento futuro, considerando o clima previsto naquele momento.`
+    : `- Temperatura atual: ${temp}°C
+- Clima: ${weatherDesc}`
+
   const contextBlock = `Contexto do usuário:
 - Nome: ${profile?.name || "Usuário"}
 - Estilo: ${profile?.style || "Streetwear/Sportwear"}
 - Altura: ${profile?.height ? `${profile.height}cm` : "não informado"}
 - Peso: ${profile?.weight ? `${profile.weight}kg` : "não informado"}
-- Temperatura atual: ${temp}°C
-- Clima: ${weatherDesc}
+${climateBlock}
 - Período: ${period === "dia" ? "Dia" : "Noite"}
 - Ocasião: ${occasion}
 

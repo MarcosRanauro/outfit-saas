@@ -38,6 +38,36 @@ const NIGHT_OCCASIONS = [
   { icon: '🎰', label: 'Cassino' },
 ]
 
+const PERIODS = [
+  { icon: '🌅', label: 'Manhã (8h–11h)', hour: 9 },
+  { icon: '☀️', label: 'Tarde (12h–17h)', hour: 14 },
+  { icon: '🌆', label: 'Fim de tarde (17h–20h)', hour: 18 },
+  { icon: '🌙', label: 'Noite (20h+)', hour: 21 },
+]
+
+function buildDateChips() {
+  const chips = []
+  const today = new Date()
+  const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
+  for (let i = 0; i < 16; i++) {
+    const d = new Date(today)
+    d.setDate(today.getDate() + i)
+    chips.push({
+      dayName: i === 0 ? 'Hoje' : dayNames[d.getDay()],
+      dayNum: d.getDate(),
+      date: d,
+    })
+  }
+  return chips
+}
+
+function formatDate(d: Date) {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
 type GeneratedOutfit = {
   name: string
   subtitle: string
@@ -52,6 +82,7 @@ export default function OutfitIAPage() {
   const [weather, setWeather] = useState<{ temp: number; desc: string; icon: string } | null>(null)
   const [city, setCity] = useState('')
   const [weatherLoading, setWeatherLoading] = useState(true)
+  const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null)
 
   const [period, setPeriod] = useState('dia')
   const [occasion, setOccasion] = useState('Dia a Dia')
@@ -64,6 +95,13 @@ export default function OutfitIAPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [savedIds, setSavedIds] = useState<number[]>([])
+
+  const [dateModalOpen, setDateModalOpen] = useState(false)
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+  const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null)
+  const [selectedPeriodHour, setSelectedPeriodHour] = useState<number | null>(null)
+  const [customWeather, setCustomWeather] = useState<{ temp: number; desc: string; icon: string } | null>(null)
+  const [dateChips] = useState(buildDateChips)
 
   useEffect(() => {
     getLocation()
@@ -83,6 +121,7 @@ export default function OutfitIAPage() {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude, longitude } = pos.coords
+        setCoords({ lat: latitude, lon: longitude })
 
         try {
           const cityRes = await fetch(
@@ -95,9 +134,7 @@ export default function OutfitIAPage() {
             'Sua cidade'
           setCity(cityName)
 
-          const weatherRes = await fetch(
-            `/api/weather?lat=${latitude}&lon=${longitude}`
-          )
+          const weatherRes = await fetch(`/api/weather?lat=${latitude}&lon=${longitude}`)
           const weatherData = await weatherRes.json()
           setWeather(weatherData)
         } catch {
@@ -115,11 +152,38 @@ export default function OutfitIAPage() {
     )
   }
 
+  async function handleConfirmDate() {
+    if (!selectedDate || selectedPeriodHour === null || !coords) return
+    try {
+      const res = await fetch(
+        `/api/weather?lat=${coords.lat}&lon=${coords.lon}&date=${formatDate(selectedDate)}&hour=${selectedPeriodHour}`
+      )
+      const data = await res.json()
+      setCustomWeather(data)
+    } catch {
+      // silently keep previous weather
+    }
+    setDateModalOpen(false)
+  }
+
+  function handleResetDate() {
+    setCustomWeather(null)
+    setSelectedDate(null)
+    setSelectedPeriod(null)
+    setSelectedPeriodHour(null)
+    setDateModalOpen(false)
+  }
+
   async function handleGenerate() {
-    if (!weather) return
+    const activeWeather = customWeather || weather
+    if (!activeWeather) return
     setGenerating(true)
     setOutfits([])
     setErrorMsg('')
+
+    const eventDate = selectedDate
+      ? selectedDate.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
+      : null
 
     try {
       const res = await fetch('/api/outfit/generate', {
@@ -128,13 +192,14 @@ export default function OutfitIAPage() {
         body: JSON.stringify({
           period,
           occasion,
-          temp: weather.temp,
-          weatherDesc: weather.desc,
+          temp: activeWeather.temp,
+          weatherDesc: activeWeather.desc,
+          eventDate,
+          eventPeriod: selectedPeriod || null,
         }),
       })
 
       const data = await res.json()
-      console.log('Resposta da API:', data)
       if (data.outfits) {
         setOutfits(data.outfits)
         setSavedIds([])
@@ -185,6 +250,12 @@ export default function OutfitIAPage() {
     return map[tag] || 'tag-neutro'
   }
 
+  const activeWeather = customWeather || weather
+
+  const futureBadgeLabel = selectedDate && selectedPeriod
+    ? `📅 ${selectedDate.toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' })} · ${selectedPeriod}`
+    : null
+
   return (
     <>
       <div className="outfitia-header">
@@ -198,18 +269,24 @@ export default function OutfitIAPage() {
           <span>⏳</span>
           <span className="weather-loading-text">Detectando localização...</span>
         </div>
-      ) : weather ? (
-        <div className="weather-card">
+      ) : activeWeather ? (
+        <div className={`weather-card ${customWeather ? 'future' : ''}`}>
           <div className="weather-left">
-            <span className="weather-icon">{weather.icon}</span>
+            <span className="weather-icon">{activeWeather.icon}</span>
             <div>
-              <div className="weather-temp">{weather.temp}°C</div>
-              <div className="weather-desc">{weather.desc}</div>
+              <div className="weather-temp">{activeWeather.temp}°C</div>
+              <div className="weather-desc">{activeWeather.desc}</div>
+              {futureBadgeLabel && (
+                <div className="weather-future-badge">{futureBadgeLabel}</div>
+              )}
             </div>
           </div>
           <div className="weather-right">
             <div className="weather-city">{city}</div>
-            <div className="weather-date">Agora</div>
+            <div className="weather-date">{customWeather ? 'Previsão' : 'Agora'}</div>
+            <button className="weather-edit-btn" onClick={() => setDateModalOpen(true)}>
+              ✏️ mudar data
+            </button>
           </div>
         </div>
       ) : null}
@@ -409,6 +486,66 @@ export default function OutfitIAPage() {
               </>
             )
           })()}
+        </div>
+      </div>
+
+      {/* Modal seleção de data */}
+      <div className={`outfit-modal ${dateModalOpen ? 'open' : ''}`}>
+        <button
+          className="outfit-modal-close"
+          onClick={() => setDateModalOpen(false)}
+        >
+          ✕
+        </button>
+
+        <div className="outfit-modal-inner">
+          <div className="outfit-detail-section" style={{ marginBottom: '16px', fontSize: '12px' }}>
+            Quando é o evento?
+          </div>
+
+          <div className="date-chips-row">
+            {dateChips.map((chip, i) => (
+              <button
+                key={i}
+                className={`date-chip ${selectedDate && formatDate(selectedDate) === formatDate(chip.date) ? 'active' : ''}`}
+                onClick={() => setSelectedDate(chip.date)}
+              >
+                <span className="date-chip-day">{chip.dayName}</span>
+                <span className="date-chip-num">{chip.dayNum}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="outfit-detail-section" style={{ marginBottom: '10px' }}>
+            Período do dia
+          </div>
+
+          <div className="time-chips-row">
+            {PERIODS.map((p) => (
+              <button
+                key={p.label}
+                className={`time-chip ${selectedPeriod === p.label ? 'active' : ''}`}
+                onClick={() => {
+                  setSelectedPeriod(p.label)
+                  setSelectedPeriodHour(p.hour)
+                }}
+              >
+                {p.icon} {p.label}
+              </button>
+            ))}
+          </div>
+
+          <button
+            className="gen-btn"
+            disabled={!selectedDate || !selectedPeriod}
+            onClick={handleConfirmDate}
+          >
+            Confirmar
+          </button>
+
+          <button className="date-modal-btn-secondary" onClick={handleResetDate}>
+            Usar clima atual
+          </button>
         </div>
       </div>
     </>
