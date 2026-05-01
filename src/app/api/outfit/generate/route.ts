@@ -116,7 +116,7 @@ export async function POST(request: Request) {
   const piecesList = Object.entries(categorizedPieces)
     .map(([category, items]) => {
       const itemsList = items.map(p =>
-        `  · [ID: ${p.id}] ${p.name}${p.color ? ` — ${p.color}` : ''}${p.brand ? ` (${p.brand})` : ''}`
+        `  · [ID: ${p.id}] ${p.name}${p.color ? ` — ${p.color}` : ''}${p.brand ? ` (${p.brand})` : ''}${p.fit ? ` | Fit: ${p.fit}` : ''}${p.season ? ` | Estação: ${p.season}` : ''}`
       ).join('\n')
       return `${category.toUpperCase()}:\n${itemsList}`
     })

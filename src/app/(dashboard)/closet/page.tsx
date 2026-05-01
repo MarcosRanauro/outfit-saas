@@ -27,6 +27,8 @@ const CATEGORIES = [
   'Chapéu / Boné',
 ]
 const STYLE_OPTIONS = ['Streetwear', 'Sportwear', 'Casual', 'Social', 'Minimalista']
+const FIT_OPTIONS = ['Oversized', 'Regular', 'Slim', 'Cropped', 'A-line']
+const SEASON_OPTIONS = ['Todas', 'Verão', 'Inverno', 'Meia estação']
 
 const TOUR_STEPS = [
   {
@@ -71,6 +73,13 @@ export default function ClosetPage() {
   const [brand, setBrand] = useState('')
   const [photo, setPhoto] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [photoBase64, setPhotoBase64] = useState<string | null>(null)
+  const [photoMimeType, setPhotoMimeType] = useState<string>('image/jpeg')
+  const [analyzing, setAnalyzing] = useState(false)
+  const [aiSuggestion, setAiSuggestion] = useState<any>(null)
+  const [fit, setFit] = useState('')
+  const [styleType, setStyleType] = useState('')
+  const [season, setSeason] = useState('')
 
   // onboarding
   const [onboardingOpen, setOnboardingOpen] = useState(false)
@@ -198,6 +207,76 @@ export default function ClosetPage() {
     if (!file) return
     setPhoto(file)
     setPhotoPreview(URL.createObjectURL(file))
+    setPhotoMimeType(file.type || 'image/jpeg')
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const result = ev.target?.result as string
+      setPhotoBase64(result.split(',')[1])
+    }
+    reader.readAsDataURL(file)
+  }
+
+  async function compressImage(file: File): Promise<{ base64: string, mimeType: string }> {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')!
+      const img = new Image()
+
+      img.onload = () => {
+        const MAX_SIZE = 800
+        let { width, height } = img
+
+        if (width > height && width > MAX_SIZE) {
+          height = Math.round((height * MAX_SIZE) / width)
+          width = MAX_SIZE
+        } else if (height > MAX_SIZE) {
+          width = Math.round((width * MAX_SIZE) / height)
+          height = MAX_SIZE
+        }
+
+        canvas.width = width
+        canvas.height = height
+        ctx.drawImage(img, 0, 0, width, height)
+
+        const base64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1]
+        resolve({ base64, mimeType: 'image/jpeg' })
+      }
+
+      img.src = URL.createObjectURL(file)
+    })
+  }
+
+  async function handleAnalyze() {
+    if (!photo) return
+    setAnalyzing(true)
+
+    try {
+      const { base64, mimeType } = await compressImage(photo)
+
+      const res = await fetch('/api/pieces/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: base64, mimeType }),
+      })
+
+      const data = await res.json()
+
+      if (data.suggestion) {
+        const s = data.suggestion
+        if (s.name) setName(s.name)
+        if (s.category) setCategory(s.category)
+        if (s.color) setColor(s.color)
+        if (s.brand) setBrand(s.brand)
+        if (s.fit) setFit(s.fit)
+        if (s.style_type) setStyleType(s.style_type)
+        if (s.season) setSeason(s.season)
+        setAiSuggestion(s)
+      }
+    } catch (err) {
+      console.error('Erro ao analisar:', err)
+    }
+
+    setAnalyzing(false)
   }
 
   function resetModal() {
@@ -207,6 +286,11 @@ export default function ClosetPage() {
     setBrand('')
     setPhoto(null)
     setPhotoPreview(null)
+    setPhotoBase64(null)
+    setFit('')
+    setStyleType('')
+    setSeason('')
+    setAiSuggestion(null)
     setPurchasingWishlistId(null)
     setModalOpen(false)
   }
@@ -248,6 +332,9 @@ export default function ClosetPage() {
         color: color || null,
         brand: brand || null,
         photo_url,
+        fit: fit || null,
+        style_type: styleType || null,
+        season: season || null,
       })
       .select()
       .single()
@@ -531,6 +618,28 @@ export default function ClosetPage() {
             </label>
           </div>
 
+          {photoPreview && (
+            <button
+              className="analyze-btn"
+              onClick={handleAnalyze}
+              disabled={analyzing}
+            >
+              {analyzing ? (
+                <>
+                  <span className="analyze-spinner" />
+                  Analisando...
+                </>
+              ) : '✦ Analisar com Mia'}
+            </button>
+          )}
+
+          {aiSuggestion && (
+            <div className="mia-badge">
+              <span className="mia-badge-icon">✦</span>
+              <span className="mia-badge-text">Mia analisou sua peça. Revise e ajuste se quiser.</span>
+            </div>
+          )}
+
           <div className="modal-field">
             <span className="modal-label">Nome</span>
             <input
@@ -572,6 +681,42 @@ export default function ClosetPage() {
               value={brand}
               onChange={(e) => setBrand(e.target.value)}
             />
+          </div>
+
+          <div className="modal-field">
+            <span className="modal-label">
+              Fit
+              {aiSuggestion?.fit && <span className="modal-label-badge">MIA</span>}
+            </span>
+            <div className="modal-chips-row">
+              {FIT_OPTIONS.map(f => (
+                <button
+                  key={f}
+                  className={`modal-chip ${fit === f ? 'active' : ''} ${aiSuggestion?.fit === f && fit === f ? 'ai-filled' : ''}`}
+                  onClick={() => setFit(fit === f ? '' : f)}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="modal-field">
+            <span className="modal-label">
+              Estação
+              {aiSuggestion?.season && <span className="modal-label-badge">MIA</span>}
+            </span>
+            <div className="modal-chips-row">
+              {SEASON_OPTIONS.map(s => (
+                <button
+                  key={s}
+                  className={`modal-chip ${season === s ? 'active' : ''} ${aiSuggestion?.season === s && season === s ? 'ai-filled' : ''}`}
+                  onClick={() => setSeason(season === s ? '' : s)}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
           </div>
 
           <button
