@@ -7,7 +7,25 @@ import '../../closet.css'
 import '../../perfil.css'
 import '../../wishlist.css'
 
-const CATEGORIES = ['Todos', 'Blusa', 'Calça', 'Short', 'Tênis', 'Acessório']
+const CATEGORIES = [
+  'Todos',
+  'Camiseta / Blusa',
+  'Camisa',
+  'Moletom',
+  'Calça',
+  'Short / Bermuda',
+  'Saia',
+  'Vestido',
+  'Macacão',
+  'Tênis',
+  'Sapato / Oxford',
+  'Bota',
+  'Sandália / Chinelo',
+  'Casaco / Jaqueta',
+  'Acessório',
+  'Bolsa',
+  'Chapéu / Boné',
+]
 const STYLE_OPTIONS = ['Streetwear', 'Sportwear', 'Casual', 'Social', 'Minimalista']
 
 const TOUR_STEPS = [
@@ -48,7 +66,7 @@ export default function ClosetPage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
 
   const [name, setName] = useState('')
-  const [category, setCategory] = useState('Blusa')
+  const [category, setCategory] = useState('Camiseta / Blusa')
   const [color, setColor] = useState('')
   const [brand, setBrand] = useState('')
   const [photo, setPhoto] = useState<File | null>(null)
@@ -184,7 +202,7 @@ export default function ClosetPage() {
 
   function resetModal() {
     setName('')
-    setCategory('Blusa')
+    setCategory('Camiseta / Blusa')
     setColor('')
     setBrand('')
     setPhoto(null)
