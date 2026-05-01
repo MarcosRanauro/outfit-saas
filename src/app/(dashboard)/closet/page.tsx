@@ -28,6 +28,7 @@ const CATEGORIES = [
 ]
 const STYLE_OPTIONS = ['Streetwear', 'Sportwear', 'Casual', 'Social', 'Minimalista']
 const FIT_OPTIONS = ['Oversized', 'Regular', 'Slim', 'Cropped', 'A-line']
+const STYLE_TYPE_OPTIONS = ['Casual', 'Social', 'Esportivo', 'Streetwear', 'Minimalista']
 const SEASON_OPTIONS = ['Todas', 'Verão', 'Inverno', 'Meia estação']
 
 const TOUR_STEPS = [
@@ -109,8 +110,6 @@ export default function ClosetPage() {
   const [brand, setBrand] = useState('')
   const [photo, setPhoto] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
-  const [photoBase64, setPhotoBase64] = useState<string | null>(null)
-  const [photoMimeType, setPhotoMimeType] = useState<string>('image/jpeg')
   const [analyzing, setAnalyzing] = useState(false)
   const [aiSuggestion, setAiSuggestion] = useState<any>(null)
   const [fit, setFit] = useState('')
@@ -243,13 +242,6 @@ export default function ClosetPage() {
     if (!file) return
     setPhoto(file)
     setPhotoPreview(URL.createObjectURL(file))
-    setPhotoMimeType(file.type || 'image/jpeg')
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      const result = ev.target?.result as string
-      setPhotoBase64(result.split(',')[1])
-    }
-    reader.readAsDataURL(file)
   }
 
   async function compressImage(file: File): Promise<{ base64: string, mimeType: string }> {
@@ -322,7 +314,6 @@ export default function ClosetPage() {
     setBrand('')
     setPhoto(null)
     setPhotoPreview(null)
-    setPhotoBase64(null)
     setFit('')
     setStyleType('')
     setSeason('')
@@ -732,6 +723,24 @@ export default function ClosetPage() {
                   onClick={() => setFit(fit === f ? '' : f)}
                 >
                   {f}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="modal-field">
+            <span className="modal-label">
+              Estilo da Peça
+              {aiSuggestion?.style_type && <span className="modal-label-badge">MIA</span>}
+            </span>
+            <div className="modal-chips-row">
+              {STYLE_TYPE_OPTIONS.map(option => (
+                <button
+                  key={option}
+                  className={`modal-chip ${styleType === option ? 'active' : ''} ${aiSuggestion?.style_type === option && styleType === option ? 'ai-filled' : ''}`}
+                  onClick={() => setStyleType(prev => prev === option ? '' : option)}
+                >
+                  {option}
                 </button>
               ))}
             </div>

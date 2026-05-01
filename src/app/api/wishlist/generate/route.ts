@@ -109,12 +109,21 @@ export async function POST() {
     .select("name, category, color")
     .eq("user_id", user.id);
 
-  const piecesList = pieces
-    .map(
-      (p) =>
-        `- ${p.name} (${p.category}${p.color ? `, ${p.color}` : ""}${p.brand ? `, ${p.brand}` : ""})`,
-    )
-    .join("\n");
+  const categorizedPieces = pieces.reduce((acc: Record<string, typeof pieces>, piece) => {
+    const cat = piece.category || 'Outros'
+    if (!acc[cat]) acc[cat] = []
+    acc[cat].push(piece)
+    return acc
+  }, {})
+
+  const piecesList = Object.entries(categorizedPieces)
+    .map(([category, items]) => {
+      const itemsList = items.map(p =>
+        `  · ${p.name}${p.color ? ` — ${p.color}` : ''}${p.brand ? ` (${p.brand})` : ''}${p.fit ? ` | Fit: ${p.fit}` : ''}${p.style_type ? ` | Estilo: ${p.style_type}` : ''}${p.season ? ` | Estação: ${p.season}` : ''}`
+      ).join('\n')
+      return `${category.toUpperCase()}:\n${itemsList}`
+    })
+    .join('\n\n')
 
   const alreadyKnown = [
     ...pieces.map((p) => `${p.name} (${p.category})`),

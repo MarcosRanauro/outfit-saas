@@ -16,7 +16,7 @@ const ANALYZE_PROMPT = `Analise esta peça de roupa e retorne APENAS um JSON vá
   "color": "cor principal em português",
   "brand": "marca se visível na peça, null se não visível",
   "fit": "um de: Oversized, Regular, Slim, Cropped, A-line",
-  "style_type": "um de: Casual, Social, Esportivo, Alternativo",
+  "style_type": "um de: Casual, Social, Esportivo, Streetwear, Minimalista",
   "season": "um de: Todas, Verão, Inverno, Meia estação"
 }
 
