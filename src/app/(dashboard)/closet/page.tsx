@@ -53,6 +53,42 @@ type WishlistSuggestion = {
   priority: 'high' | 'medium' | 'low'
 }
 
+async function compressImageForUpload(file: File): Promise<Blob> {
+  return new Promise((resolve) => {
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')!
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+
+    img.onload = () => {
+      const MAX_SIZE = 1200
+      let { width, height } = img
+
+      if (width > height && width > MAX_SIZE) {
+        height = Math.round((height * MAX_SIZE) / width)
+        width = MAX_SIZE
+      } else if (height > MAX_SIZE) {
+        width = Math.round((width * MAX_SIZE) / height)
+        height = MAX_SIZE
+      }
+
+      canvas.width = width
+      canvas.height = height
+      ctx.drawImage(img, 0, 0, width, height)
+
+      URL.revokeObjectURL(url)
+
+      canvas.toBlob(
+        (blob) => resolve(blob!),
+        'image/jpeg',
+        0.85
+      )
+    }
+
+    img.src = url
+  })
+}
+
 export default function ClosetPage() {
   const supabase = createClient()
 
@@ -305,12 +341,12 @@ export default function ClosetPage() {
     let photo_url = null
 
     if (photo) {
-      const ext = photo.name.split('.').pop()
-      const path = `${user.id}/${Date.now()}.${ext}`
+      const path = `${user.id}/${Date.now()}.jpg`
 
+      const compressedPhoto = await compressImageForUpload(photo)
       const { error: uploadError } = await supabase.storage
         .from('pieces')
-        .upload(path, photo)
+        .upload(path, compressedPhoto, { contentType: 'image/jpeg' })
 
       if (!uploadError) {
         const { data: urlData } = supabase.storage
@@ -373,12 +409,12 @@ export default function ClosetPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    const ext = file.name.split('.').pop()
-    const path = `${user.id}/${Date.now()}.${ext}`
+    const path = `${user.id}/${Date.now()}.jpg`
 
+    const compressedFile = await compressImageForUpload(file)
     const { error: uploadError } = await supabase.storage
       .from('pieces')
-      .upload(path, file)
+      .upload(path, compressedFile, { contentType: 'image/jpeg' })
 
     if (!uploadError) {
       const { data: urlData } = supabase.storage

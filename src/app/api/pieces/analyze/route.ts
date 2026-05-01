@@ -2,13 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '20mb',
-    },
-  },
-}
+export const maxDuration = 30
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
 
