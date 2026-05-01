@@ -75,13 +75,11 @@ export default function AvatarCrop({ onSave, onClose, userId }: Props) {
   }
 
   async function handleSave() {
-    console.log('handleSave chamado', { imageSrc: !!imageSrc, croppedAreaPixels })
     if (!imageSrc || !croppedAreaPixels) return
     setSaving(true)
 
     try {
       const blob = await getCroppedImg(imageSrc, croppedAreaPixels)
-      console.log('Blob gerado:', blob.size)
 
       const path = `${userId}/avatar.jpg`
 
@@ -90,8 +88,6 @@ export default function AvatarCrop({ onSave, onClose, userId }: Props) {
         .from('avatars')
         .upload(path, blob, { upsert: true, contentType: 'image/jpeg' })
 
-      console.log('Upload error:', uploadError)
-
       if (!uploadError) {
         const { data: urlData } = supabase
           .storage
@@ -99,7 +95,6 @@ export default function AvatarCrop({ onSave, onClose, userId }: Props) {
           .getPublicUrl(path)
 
         const url = urlData.publicUrl + '?t=' + Date.now()
-        console.log('URL final:', url)
         onSave(url)
       }
     } catch (err) {
