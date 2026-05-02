@@ -89,6 +89,7 @@ export default function OutfitIAPage() {
 
   const [generating, setGenerating] = useState(false)
   const [outfits, setOutfits] = useState<GeneratedOutfit[]>([])
+  const [previousOutfits, setPreviousOutfits] = useState<string[][]>([])
   const [errorMsg, setErrorMsg] = useState('')
 
   const [selectedOutfit, setSelectedOutfit] = useState<GeneratedOutfit | null>(null)
@@ -110,7 +111,12 @@ export default function OutfitIAPage() {
   useEffect(() => {
     const occasions = period === 'dia' ? DAY_OCCASIONS : NIGHT_OCCASIONS
     setOccasion(occasions[0].label)
+    setPreviousOutfits([])
   }, [period])
+
+  useEffect(() => {
+    setPreviousOutfits([])
+  }, [occasion])
 
   function getLocation() {
     if (!navigator.geolocation) {
@@ -163,6 +169,7 @@ export default function OutfitIAPage() {
     } catch {
       // silently keep previous weather
     }
+    setPreviousOutfits([])
     setDateModalOpen(false)
   }
 
@@ -178,6 +185,12 @@ export default function OutfitIAPage() {
     const activeWeather = customWeather || weather
     if (!activeWeather) return
     setGenerating(true)
+
+    if (outfits.length > 0) {
+      const currentIds = outfits.map((o) => o.pieces.map((p: any) => p.id))
+      setPreviousOutfits(prev => [...prev, ...currentIds])
+    }
+
     setOutfits([])
     setErrorMsg('')
 
@@ -196,6 +209,7 @@ export default function OutfitIAPage() {
           weatherDesc: activeWeather.desc,
           eventDate,
           eventPeriod: selectedPeriod || null,
+          previousOutfits,
         }),
       })
 

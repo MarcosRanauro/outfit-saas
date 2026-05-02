@@ -86,7 +86,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
-  const { period, occasion, temp, weatherDesc, eventDate, eventPeriod } = await request.json();
+  const { period, occasion, temp, weatherDesc, eventDate, eventPeriod, previousOutfits } = await request.json();
 
   const { data: pieces } = await supabase
     .from("pieces")
@@ -132,6 +132,15 @@ export async function POST(request: Request) {
     : `- Temperatura atual: ${temp}°C
 - Clima: ${weatherDesc}`
 
+  const previousOutfitsBlock = previousOutfits && previousOutfits.length > 0
+    ? `\nOUTFITS JÁ GERADOS NESTA SESSÃO (não repita estas combinações):
+${previousOutfits.map((ids: string[], i: number) =>
+  `- Geração ${i + 1}: peças [${ids.join(', ')}]`
+).join('\n')}
+
+IMPORTANTE: Crie combinações completamente diferentes das listadas acima.`
+    : ''
+
   const contextBlock = `Contexto do usuário:
 - Nome: ${profile?.name || "Usuário"}
 - Estilo: ${profile?.style || "Streetwear/Sportwear"}
@@ -142,7 +151,7 @@ ${climateBlock}
 - Ocasião: ${occasion}
 
 Peças disponíveis no closet:
-${piecesList}${piecesWithPhoto.length > 0 ? "\n\nPara as peças abaixo, analise também a foto real:" : ""}`;
+${piecesList}${previousOutfitsBlock}${piecesWithPhoto.length > 0 ? "\n\nPara as peças abaixo, analise também a foto real:" : ""}`;
 
   const instructionsBlock = `Gere exatamente 5 outfits usando as peças do closet acima.
 Quando disponíveis, inclua peças de Acessório, Bolsa e Chapéu / Boné quando fizerem sentido.
