@@ -6,6 +6,25 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
+/*
+ * VISÃO COMPUTACIONAL — DESATIVADA TEMPORARIAMENTE
+ * Motivo: custo elevado (~$0.95/geração com 50 peças)
+ * Para reativar: descomentar esta função e o bloco imageBlocks abaixo
+ *
+async function fetchAndCompressImage(url: string): Promise<string | null> {
+  try {
+    const response = await fetch(url)
+    if (!response.ok) return null
+    const arrayBuffer = await response.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
+    if (buffer.length > 500 * 1024) return null
+    return buffer.toString('base64')
+  } catch {
+    return null
+  }
+}
+*/
+
 const SYSTEM_PROMPT = `Você é Mia, stylist profissional brasileira
 com 10 anos de experiência em consultoria de moda pessoal. Você já
 atendeu centenas de clientes e sabe exatamente como transformar um
@@ -71,8 +90,8 @@ SEU JEITO DE TRABALHAR:
 - Você nunca sugere algo que não combina com o que a pessoa já tem
 - Você explica suas escolhas como uma amiga expert — direta, prática e inspiradora
 - Você considera simultaneamente: clima, biotipo, ocasião, estilo pessoal e peças disponíveis
-- Quando vê as fotos das peças, você analisa cor exata, textura do tecido,
-  estilo do corte, fit e detalhes para fazer combinações precisas
+// - Quando vê as fotos das peças, você analisa cor exata, textura do tecido,
+//   estilo do corte, fit e detalhes para fazer combinações precisas
 - Você pensa em como cada peça se relaciona com todas as outras do closet
 - Suas justificativas revelam o raciocínio de styling por trás de cada escolha`;
 
@@ -122,8 +141,6 @@ export async function POST(request: Request) {
     })
     .join('\n\n')
 
-  const piecesWithPhoto = pieces.filter((p) => p.photo_url);
-
   const climateBlock = eventDate
     ? `- Evento: ${eventDate}${eventPeriod ? ` (${eventPeriod})` : ''}
 - Temperatura prevista: ${temp}°C
@@ -151,7 +168,8 @@ ${climateBlock}
 - Ocasião: ${occasion}
 
 Peças disponíveis no closet:
-${piecesList}${previousOutfitsBlock}${piecesWithPhoto.length > 0 ? "\n\nPara as peças abaixo, analise também a foto real:" : ""}`;
+${piecesList}${previousOutfitsBlock}`;
+  // Visão ativa: adicionar ao final do template a linha sobre fotos reais
 
   const instructionsBlock = `Gere exatamente 5 outfits usando as peças do closet acima.
 Quando disponíveis, inclua peças de Acessório, Bolsa e Chapéu / Boné quando fizerem sentido.
@@ -190,26 +208,32 @@ Regras técnicas:
   'calor — prefira tecidos leves e looks arejados'
 }`;
 
+  /*
+   * VISÃO COMPUTACIONAL — DESATIVADA
+   * Para reativar: descomentar e substituir 'content' por 'contentWithImages'
+   *
+  const piecesWithPhoto = pieces.filter((p) => p.photo_url).slice(0, 8)
+  const imageBlocks: Anthropic.ContentBlockParam[] = []
+  for (const piece of piecesWithPhoto) {
+    const base64 = await fetchAndCompressImage(piece.photo_url!)
+    if (base64) {
+      imageBlocks.push({ type: "text", text: `Peça ID: ${piece.id} — ${piece.name} (${piece.category}):` })
+      imageBlocks.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: base64 } })
+    }
+  }
   const contentWithImages: Anthropic.MessageParam["content"] = [
     { type: "text", text: contextBlock },
-    ...piecesWithPhoto.flatMap(
-      (piece): Anthropic.ContentBlockParam[] => [
-        {
-          type: "text",
-          text: `Peça ID: ${piece.id} — ${piece.name} (${piece.category}):`,
-        },
-        {
-          type: "image",
-          source: { type: "url", url: piece.photo_url! },
-        },
-      ],
-    ),
+    ...imageBlocks,
     { type: "text", text: instructionsBlock },
-  ];
+  ]
+  */
+
+  // Versão texto puro (visão desativada — ver bloco comentado acima)
+  const content = `${contextBlock}\n\n${instructionsBlock}`
 
   const baseParams = {
     model: "claude-sonnet-4-6",
-    max_tokens: 2000,
+    max_tokens: 4000,
     system: SYSTEM_PROMPT,
   } as const;
 
@@ -217,15 +241,11 @@ Regras técnicas:
   try {
     message = await anthropic.messages.create({
       ...baseParams,
-      messages: [{ role: "user", content: contentWithImages }],
-    });
-  } catch {
-    message = await anthropic.messages.create({
-      ...baseParams,
-      messages: [
-        { role: "user", content: `${contextBlock}\n\n${instructionsBlock}` },
-      ],
-    });
+      messages: [{ role: "user", content }],
+    })
+  } catch (err) {
+    console.error('[outfit/generate] erro Anthropic:', err)
+    return NextResponse.json({ error: 'Erro na API de IA' }, { status: 500 })
   }
 
   const responseContent = message.content[0];

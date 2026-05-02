@@ -6,6 +6,25 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
+/*
+ * VISÃO COMPUTACIONAL — DESATIVADA TEMPORARIAMENTE
+ * Motivo: custo elevado (~$0.95/geração com 50 peças)
+ * Para reativar: descomentar esta função e o bloco imageBlocks abaixo
+ *
+async function fetchAndCompressImage(url: string): Promise<string | null> {
+  try {
+    const response = await fetch(url)
+    if (!response.ok) return null
+    const arrayBuffer = await response.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
+    if (buffer.length > 500 * 1024) return null
+    return buffer.toString('base64')
+  } catch {
+    return null
+  }
+}
+*/
+
 const SYSTEM_PROMPT = `Você é Mia, stylist profissional brasileira
 com 10 anos de experiência em consultoria de moda pessoal. Você já
 atendeu centenas de clientes e sabe exatamente como transformar um
@@ -71,8 +90,8 @@ SEU JEITO DE TRABALHAR:
 - Você nunca sugere algo que não combina com o que a pessoa já tem
 - Você explica suas escolhas como uma amiga expert — direta, prática e inspiradora
 - Você considera simultaneamente: clima, biotipo, ocasião, estilo pessoal e peças disponíveis
-- Quando vê as fotos das peças, você analisa cor exata, textura do tecido,
-  estilo do corte, fit e detalhes para fazer combinações precisas
+// - Quando vê as fotos das peças, você analisa cor exata, textura do tecido,
+//   estilo do corte, fit e detalhes para fazer combinações precisas
 - Você pensa em como cada peça se relaciona com todas as outras do closet
 - Suas justificativas revelam o raciocínio de styling por trás de cada escolha`;
 
@@ -130,8 +149,6 @@ export async function POST() {
     ...(wishlistItems || []).map((w) => `${w.name} (${w.category})`),
   ].join("\n- ");
 
-  const piecesWithPhoto = pieces.filter((p) => p.photo_url);
-
   const contextBlock = `Contexto do usuário:
 - Nome: ${profile?.name || "Usuário"}
 - Estilo preferido: ${profile?.style || "Streetwear/Sportwear"}
@@ -142,7 +159,8 @@ Peças que o usuário já tem no closet:
 ${piecesList}
 
 Peças que o usuário JÁ POSSUI ou JÁ PLANEJA COMPRAR (não sugira estas nem variações muito similares):
-- ${alreadyKnown}${piecesWithPhoto.length > 0 ? "\n\nPara as peças abaixo, analise também a foto real:" : ""}`;
+- ${alreadyKnown}`;
+  // Visão ativa: adicionar ao final do template a linha sobre fotos reais
 
   const instructionsBlock = `Analise o closet do usuário como uma stylist especialista e identifique as 5 peças mais estratégicas que estão faltando.
 
@@ -178,22 +196,28 @@ Casaco / Jaqueta, Acessório, Bolsa, Chapéu / Boné
 IMPORTANTE: Nunca sugira variações do que já existe no closet ou na wishlist.
 Foque em peças que genuinamente transformam o guarda-roupa existente.`;
 
+  /*
+   * VISÃO COMPUTACIONAL — DESATIVADA
+   * Para reativar: descomentar e substituir 'content' por 'contentWithImages'
+   *
+  const piecesWithPhoto = pieces.filter((p) => p.photo_url).slice(0, 8)
+  const imageBlocks: Anthropic.ContentBlockParam[] = []
+  for (const piece of piecesWithPhoto) {
+    const base64 = await fetchAndCompressImage(piece.photo_url!)
+    if (base64) {
+      imageBlocks.push({ type: "text", text: `Peça: ${piece.name} (${piece.category}):` })
+      imageBlocks.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: base64 } })
+    }
+  }
   const contentWithImages: Anthropic.MessageParam["content"] = [
     { type: "text", text: contextBlock },
-    ...piecesWithPhoto.flatMap(
-      (piece): Anthropic.ContentBlockParam[] => [
-        {
-          type: "text",
-          text: `Peça: ${piece.name} (${piece.category}):`,
-        },
-        {
-          type: "image",
-          source: { type: "url", url: piece.photo_url! },
-        },
-      ],
-    ),
+    ...imageBlocks,
     { type: "text", text: instructionsBlock },
-  ];
+  ]
+  */
+
+  // Versão texto puro (visão desativada — ver bloco comentado acima)
+  const content = `${contextBlock}\n\n${instructionsBlock}`
 
   const baseParams = {
     model: "claude-sonnet-4-6",
@@ -205,15 +229,11 @@ Foque em peças que genuinamente transformam o guarda-roupa existente.`;
   try {
     message = await anthropic.messages.create({
       ...baseParams,
-      messages: [{ role: "user", content: contentWithImages }],
-    });
-  } catch {
-    message = await anthropic.messages.create({
-      ...baseParams,
-      messages: [
-        { role: "user", content: `${contextBlock}\n\n${instructionsBlock}` },
-      ],
-    });
+      messages: [{ role: "user", content }],
+    })
+  } catch (err) {
+    console.error('[wishlist/generate] erro Anthropic:', err)
+    return NextResponse.json({ error: 'Erro na API de IA' }, { status: 500 })
   }
 
   const responseContent = message.content[0];
