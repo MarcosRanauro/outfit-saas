@@ -285,23 +285,29 @@ export default function OutfitIAPage() {
         </div>
       ) : activeWeather ? (
         <div className={`weather-card ${customWeather ? 'future' : ''}`}>
-          <div className="weather-left">
-            <span className="weather-icon">{activeWeather.icon}</span>
-            <div>
-              <div className="weather-temp">{activeWeather.temp}°C</div>
-              <div className="weather-desc">{activeWeather.desc}</div>
-              {futureBadgeLabel && (
-                <div className="weather-future-badge">{futureBadgeLabel}</div>
-              )}
+          <div className="weather-top">
+            <div className="weather-left">
+              <span className="weather-icon">{activeWeather.icon}</span>
+              <div>
+                <div className="weather-temp">{activeWeather.temp}°C</div>
+                <div className="weather-desc">{activeWeather.desc}</div>
+                {futureBadgeLabel && (
+                  <div className="weather-future-badge">{futureBadgeLabel}</div>
+                )}
+              </div>
+            </div>
+            <div className="weather-right">
+              <div className="weather-city">{city}</div>
+              <div className="weather-date">{customWeather ? 'Previsão' : 'Agora'}</div>
             </div>
           </div>
-          <div className="weather-right">
-            <div className="weather-city">{city}</div>
-            <div className="weather-date">{customWeather ? 'Previsão' : 'Agora'}</div>
-            <button className="weather-edit-btn" onClick={() => setDateModalOpen(true)}>
-              ✏️ mudar data
-            </button>
-          </div>
+          <button
+            className={`change-date-btn ${customWeather ? 'active' : ''}`}
+            onClick={() => setDateModalOpen(true)}
+          >
+            <span>📅</span>
+            Mudar data e horário
+          </button>
         </div>
       ) : null}
 
