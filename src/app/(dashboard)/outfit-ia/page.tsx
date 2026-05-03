@@ -201,6 +201,7 @@ export default function OutfitIAPage() {
       // silently keep previous weather
     }
     setPreviousOutfits([])
+    setUsedPieceIds([])
     setDateModalOpen(false)
   }
 
@@ -218,9 +219,11 @@ export default function OutfitIAPage() {
     setGenerating(true)
 
     let newUsedPieceIds = usedPieceIds
+    let newPreviousOutfits = previousOutfits
     if (outfits.length > 0) {
       const currentIds = outfits.map((o) => o.pieces.map((p: any) => p.id))
-      setPreviousOutfits(prev => [...prev, ...currentIds])
+      newPreviousOutfits = [...previousOutfits, ...currentIds]
+      setPreviousOutfits(newPreviousOutfits)
 
       const usedIds = outfits.flatMap((o: any) =>
         o.pieces
@@ -256,7 +259,7 @@ export default function OutfitIAPage() {
           weatherDesc: activeWeather.desc,
           eventDate,
           eventPeriod: selectedPeriod || null,
-          previousOutfits,
+          previousOutfits: newPreviousOutfits,
           usedPieceIds: newUsedPieceIds,
           anchorPiece: anchorPiece ? {
             id: anchorPiece.id,
@@ -294,7 +297,10 @@ export default function OutfitIAPage() {
     setSaving(true)
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) {
+      setSaving(false)
+      return
+    }
 
     await supabase.from('outfits').insert({
       user_id: user.id,

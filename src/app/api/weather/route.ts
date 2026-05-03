@@ -20,6 +20,15 @@ function weatherIcon(code: number) {
   return '🌩️'
 }
 
+async function fetchCurrentWeather(lat: string, lon: string) {
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weathercode&timezone=auto`
+  const res = await fetch(url)
+  const data = await res.json()
+  const code = data.current.weathercode
+  const temp = Math.round(data.current.temperature_2m)
+  return NextResponse.json({ temp, desc: weatherDesc(code), icon: weatherIcon(code) })
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const lat = searchParams.get('lat')
@@ -32,20 +41,23 @@ export async function GET(request: Request) {
   }
 
   if (date && hourParam !== null) {
-    const hour = parseInt(hourParam, 10)
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weathercode&timezone=auto&start_date=${date}&end_date=${date}`
-    const res = await fetch(url)
-    const data = await res.json()
-    const code = data.hourly.weathercode[hour]
-    const temp = Math.round(data.hourly.temperature_2m[hour])
-    return NextResponse.json({ temp, desc: weatherDesc(code), icon: weatherIcon(code) })
+    const hour = Math.min(23, Math.max(0, parseInt(hourParam || '12') || 12))
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weathercode&timezone=auto&start_date=${date}&end_date=${date}`
+      const res = await fetch(url)
+      const data = await res.json()
+
+      if (!data.hourly?.temperature_2m?.[hour]) {
+        throw new Error('Dados de previsão indisponíveis')
+      }
+
+      const code = data.hourly.weathercode[hour]
+      const temp = Math.round(data.hourly.temperature_2m[hour])
+      return NextResponse.json({ temp, desc: weatherDesc(code), icon: weatherIcon(code) })
+    } catch {
+      return fetchCurrentWeather(lat, lon)
+    }
   }
 
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weathercode&timezone=auto`
-  const res = await fetch(url)
-  const data = await res.json()
-  const code = data.current.weathercode
-  const temp = Math.round(data.current.temperature_2m)
-
-  return NextResponse.json({ temp, desc: weatherDesc(code), icon: weatherIcon(code) })
+  return fetchCurrentWeather(lat, lon)
 }

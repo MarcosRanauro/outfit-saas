@@ -397,6 +397,18 @@ export default function ClosetPage() {
       .eq('id', selectedPiece.id)
 
     setPieces(prev => prev.filter(p => p.id !== selectedPiece.id))
+
+    try {
+      const savedAnchor = sessionStorage.getItem('anchor_piece')
+      if (savedAnchor) {
+        const anchor = JSON.parse(savedAnchor)
+        if (anchor.id === selectedPiece.id) {
+          sessionStorage.removeItem('anchor_piece')
+          setAnchorPieceId(null)
+        }
+      }
+    } catch {}
+
     setDetailOpen(false)
     setSelectedPiece(null)
   }
@@ -431,6 +443,9 @@ export default function ClosetPage() {
       if (data) {
         setPieces(prev => prev.map(p => p.id === data.id ? data : p))
         setSelectedPiece(data)
+        if (data.id === anchorPieceId) {
+          sessionStorage.setItem('anchor_piece', JSON.stringify(data))
+        }
       }
     }
 

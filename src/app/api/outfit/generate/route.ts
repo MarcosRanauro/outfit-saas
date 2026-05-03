@@ -248,19 +248,13 @@ Regras técnicas:
     if (base64) {
       imageBlocks.push({ type: "text", text: `Peça ID: ${piece.id} — ${piece.name} (${piece.category}):` })
       imageBlocks.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: base64 } })
-      console.log(`[outfit/generate] imagem enviada: ${piece.name} (${piece.category}) — ID: ${piece.id}`)
-    } else {
-      console.warn(`[outfit/generate] imagem falhou (ignorada): ${piece.name} — URL: ${piece.photo_url}`)
     }
   }
-  console.log(`[outfit/generate] total: ${piecesWithPhoto.length} peças com foto | ${imageBlocks.length / 2} imagens enviadas para a IA`)
   const contentWithImages: Anthropic.MessageParam["content"] = [
     { type: "text", text: contextBlock },
     ...imageBlocks,
     { type: "text", text: instructionsBlock },
   ]
-
-  const content = contentWithImages
 
   const baseParams = {
     model: "claude-sonnet-4-6",
@@ -272,7 +266,7 @@ Regras técnicas:
   try {
     message = await anthropic.messages.create({
       ...baseParams,
-      messages: [{ role: "user", content }],
+      messages: [{ role: "user", content: contentWithImages }],
     })
   } catch (err) {
     console.error('[outfit/generate] erro Anthropic:', err)

@@ -15,13 +15,14 @@ export default function CadastroPage() {
   const [loading, setLoading] = useState(false)
   const [loadingGoogle, setLoadingGoogle] = useState(false)
   const [error, setError] = useState('')
+  const [showConfirmEmail, setShowConfirmEmail] = useState(false)
 
   async function handleCadastro(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -32,6 +33,12 @@ export default function CadastroPage() {
     if (error) {
       setError('Erro ao criar conta. Tente novamente.')
       setLoading(false)
+      return
+    }
+
+    if (!data.session) {
+      setLoading(false)
+      setShowConfirmEmail(true)
       return
     }
 
@@ -70,6 +77,22 @@ export default function CadastroPage() {
           <span className="logo-title">Outfit</span>
           <span className="logo-sub">Style Intelligence</span>
         </div>
+
+        {showConfirmEmail && (
+          <div style={{
+            background: 'rgba(92,200,141,0.08)',
+            border: '0.5px solid rgba(92,200,141,0.3)',
+            borderRadius: '8px',
+            padding: '14px',
+            marginBottom: '16px',
+            fontSize: '13px',
+            color: 'rgba(92,200,141,0.8)',
+            textAlign: 'center',
+            lineHeight: '1.6'
+          }}>
+            ✓ Conta criada! Verifique seu e-mail para confirmar o cadastro.
+          </div>
+        )}
 
         <button
           className="btn-google"
@@ -130,7 +153,7 @@ export default function CadastroPage() {
             <p className="error-msg">{error}</p>
           )}
 
-          <button type="submit" className="btn-primary" disabled={loading}>
+          <button type="submit" className="btn-primary" disabled={loading || showConfirmEmail}>
             {loading ? 'Criando conta...' : 'Criar conta'}
           </button>
         </form>
