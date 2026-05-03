@@ -109,13 +109,30 @@ export default function OutfitIAPage() {
   }, [])
 
   useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem('outfit_ia_results')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        const thirtyMinutes = 30 * 60 * 1000
+        if (Date.now() - parsed.timestamp < thirtyMinutes) {
+          setOutfits(parsed.outfits)
+        } else {
+          sessionStorage.removeItem('outfit_ia_results')
+        }
+      }
+    } catch {}
+  }, [])
+
+  useEffect(() => {
     const occasions = period === 'dia' ? DAY_OCCASIONS : NIGHT_OCCASIONS
     setOccasion(occasions[0].label)
     setPreviousOutfits([])
+    sessionStorage.removeItem('outfit_ia_results')
   }, [period])
 
   useEffect(() => {
     setPreviousOutfits([])
+    sessionStorage.removeItem('outfit_ia_results')
   }, [occasion])
 
   function getLocation() {
@@ -217,6 +234,14 @@ export default function OutfitIAPage() {
       if (data.outfits) {
         setOutfits(data.outfits)
         setSavedIds([])
+        try {
+          sessionStorage.setItem('outfit_ia_results', JSON.stringify({
+            outfits: data.outfits,
+            period,
+            occasion,
+            timestamp: Date.now()
+          }))
+        } catch {}
       } else {
         setErrorMsg('Adicione peças ao closet antes de gerar outfits.')
       }
