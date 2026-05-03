@@ -90,6 +90,7 @@ export default function OutfitIAPage() {
   const [generating, setGenerating] = useState(false)
   const [outfits, setOutfits] = useState<GeneratedOutfit[]>([])
   const [previousOutfits, setPreviousOutfits] = useState<string[][]>([])
+  const [usedPieceIds, setUsedPieceIds] = useState<string[]>([])
   const [errorMsg, setErrorMsg] = useState('')
 
   const [selectedOutfit, setSelectedOutfit] = useState<GeneratedOutfit | null>(null)
@@ -116,6 +117,9 @@ export default function OutfitIAPage() {
         const thirtyMinutes = 30 * 60 * 1000
         if (Date.now() - parsed.timestamp < thirtyMinutes) {
           setOutfits(parsed.outfits)
+          if (parsed.usedPieceIds) {
+            setUsedPieceIds(parsed.usedPieceIds)
+          }
         } else {
           sessionStorage.removeItem('outfit_ia_results')
         }
@@ -127,11 +131,13 @@ export default function OutfitIAPage() {
     const occasions = period === 'dia' ? DAY_OCCASIONS : NIGHT_OCCASIONS
     setOccasion(occasions[0].label)
     setPreviousOutfits([])
+    setUsedPieceIds([])
     sessionStorage.removeItem('outfit_ia_results')
   }, [period])
 
   useEffect(() => {
     setPreviousOutfits([])
+    setUsedPieceIds([])
     sessionStorage.removeItem('outfit_ia_results')
   }, [occasion])
 
@@ -203,9 +209,25 @@ export default function OutfitIAPage() {
     if (!activeWeather) return
     setGenerating(true)
 
+    let newUsedPieceIds = usedPieceIds
     if (outfits.length > 0) {
       const currentIds = outfits.map((o) => o.pieces.map((p: any) => p.id))
       setPreviousOutfits(prev => [...prev, ...currentIds])
+
+      const usedIds = outfits.flatMap((o: any) =>
+        o.pieces
+          .filter((p: any) => {
+            const cat = p.category?.toLowerCase() || ''
+            return !cat.includes('acessório') &&
+                   !cat.includes('acessorio') &&
+                   !cat.includes('bolsa') &&
+                   !cat.includes('chapéu') &&
+                   !cat.includes('chapeu')
+          })
+          .map((p: any) => p.id)
+      )
+      newUsedPieceIds = [...new Set([...usedPieceIds, ...usedIds])]
+      setUsedPieceIds(newUsedPieceIds)
     }
 
     setOutfits([])
@@ -227,6 +249,7 @@ export default function OutfitIAPage() {
           eventDate,
           eventPeriod: selectedPeriod || null,
           previousOutfits,
+          usedPieceIds: newUsedPieceIds,
         }),
       })
 
@@ -239,7 +262,8 @@ export default function OutfitIAPage() {
             outfits: data.outfits,
             period,
             occasion,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            usedPieceIds: newUsedPieceIds,
           }))
         } catch {}
       } else {

@@ -104,7 +104,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
-  const { period, occasion, temp, weatherDesc, eventDate, eventPeriod, previousOutfits } = await request.json();
+  const { period, occasion, temp, weatherDesc, eventDate, eventPeriod, previousOutfits, usedPieceIds } = await request.json();
 
   const { data: pieces } = await supabase
     .from("pieces")
@@ -159,6 +159,16 @@ ${previousOutfits.map((ids: string[], i: number) =>
 IMPORTANTE: Crie combinações completamente diferentes das listadas acima.`
     : ''
 
+  const usedPiecesBlock = usedPieceIds?.length > 0
+    ? `\nPEÇAS JÁ USADAS NAS GERAÇÕES ANTERIORES (não use estas peças nos novos outfits, exceto acessórios, bolsas e chapéus):
+${usedPieceIds.map((id: string) => {
+  const piece = pieces.find(p => p.id === id)
+  return piece ? `- [ID: ${piece.id}] ${piece.name} (${piece.category})` : ''
+}).filter(Boolean).join('\n')}
+
+IMPORTANTE: Se não houver peças suficientes disponíveis para montar 5 outfits completos sem usar as peças bloqueadas, você pode reutilizar peças bloqueadas para completar os outfits. Acessórios, bolsas e chapéus SEMPRE podem ser reutilizados.`
+    : ''
+
   const contextBlock = `Contexto do usuário:
 - Nome: ${profile?.name || "Usuário"}
 - Estilo: ${profile?.style || "Streetwear/Sportwear"}
@@ -169,7 +179,7 @@ ${climateBlock}
 - Ocasião: ${occasion}
 
 Peças disponíveis no closet:
-${piecesList}${previousOutfitsBlock}${piecesWithPhoto.length > 0 ? "\n\nPara as peças abaixo, analise também a foto real:" : ""}`;
+${piecesList}${previousOutfitsBlock}${usedPiecesBlock}${piecesWithPhoto.length > 0 ? "\n\nPara as peças abaixo, analise também a foto real:" : ""}`;
 
 
   const instructionsBlock = `Gere exatamente 5 outfits usando as peças do closet acima.
