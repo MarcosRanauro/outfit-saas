@@ -22,6 +22,9 @@ export type Piece = {
   color: string | null
   brand: string | null
   photo_url: string | null
+  fit: string | null
+  style_type: string | null
+  season: string | null
   created_at: string
 }
 
