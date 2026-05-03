@@ -123,6 +123,10 @@ export default function LoginPage() {
           Não tem conta?{' '}
           <a href="/cadastro">Criar conta</a>
         </div>
+
+        <div className="footer-link" style={{ marginTop: '8px' }}>
+          <a href="/esqueci-senha">Esqueci minha senha</a>
+        </div>
       </div>
     </main>
   )
