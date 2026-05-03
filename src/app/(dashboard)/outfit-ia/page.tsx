@@ -90,12 +90,15 @@ export default function OutfitIAPage() {
   const [generating, setGenerating] = useState(false)
   const [outfits, setOutfits] = useState<GeneratedOutfit[]>([])
   const [previousOutfits, setPreviousOutfits] = useState<string[][]>([])
+  const [usedPieceIds, setUsedPieceIds] = useState<string[]>([])
   const [errorMsg, setErrorMsg] = useState('')
 
   const [selectedOutfit, setSelectedOutfit] = useState<GeneratedOutfit | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [savedIds, setSavedIds] = useState<number[]>([])
+
+  const [anchorPiece, setAnchorPiece] = useState<any>(null)
 
   const [dateModalOpen, setDateModalOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
@@ -109,13 +112,41 @@ export default function OutfitIAPage() {
   }, [])
 
   useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem('outfit_ia_results')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        const thirtyMinutes = 30 * 60 * 1000
+        if (Date.now() - parsed.timestamp < thirtyMinutes) {
+          setOutfits(parsed.outfits)
+          if (parsed.usedPieceIds) {
+            setUsedPieceIds(parsed.usedPieceIds)
+          }
+        } else {
+          sessionStorage.removeItem('outfit_ia_results')
+        }
+      }
+    } catch {}
+    try {
+      const savedAnchor = sessionStorage.getItem('anchor_piece')
+      if (savedAnchor) {
+        setAnchorPiece(JSON.parse(savedAnchor))
+      }
+    } catch {}
+  }, [])
+
+  useEffect(() => {
     const occasions = period === 'dia' ? DAY_OCCASIONS : NIGHT_OCCASIONS
     setOccasion(occasions[0].label)
     setPreviousOutfits([])
+    setUsedPieceIds([])
+    sessionStorage.removeItem('outfit_ia_results')
   }, [period])
 
   useEffect(() => {
     setPreviousOutfits([])
+    setUsedPieceIds([])
+    sessionStorage.removeItem('outfit_ia_results')
   }, [occasion])
 
   function getLocation() {
@@ -170,6 +201,7 @@ export default function OutfitIAPage() {
       // silently keep previous weather
     }
     setPreviousOutfits([])
+    setUsedPieceIds([])
     setDateModalOpen(false)
   }
 
@@ -186,9 +218,27 @@ export default function OutfitIAPage() {
     if (!activeWeather) return
     setGenerating(true)
 
+    let newUsedPieceIds = usedPieceIds
+    let newPreviousOutfits = previousOutfits
     if (outfits.length > 0) {
       const currentIds = outfits.map((o) => o.pieces.map((p: any) => p.id))
-      setPreviousOutfits(prev => [...prev, ...currentIds])
+      newPreviousOutfits = [...previousOutfits, ...currentIds]
+      setPreviousOutfits(newPreviousOutfits)
+
+      const usedIds = outfits.flatMap((o: any) =>
+        o.pieces
+          .filter((p: any) => {
+            const cat = p.category?.toLowerCase() || ''
+            return !cat.includes('acessório') &&
+                   !cat.includes('acessorio') &&
+                   !cat.includes('bolsa') &&
+                   !cat.includes('chapéu') &&
+                   !cat.includes('chapeu')
+          })
+          .map((p: any) => p.id)
+      )
+      newUsedPieceIds = [...new Set([...usedPieceIds, ...usedIds])]
+      setUsedPieceIds(newUsedPieceIds)
     }
 
     setOutfits([])
@@ -209,7 +259,14 @@ export default function OutfitIAPage() {
           weatherDesc: activeWeather.desc,
           eventDate,
           eventPeriod: selectedPeriod || null,
-          previousOutfits,
+          previousOutfits: newPreviousOutfits,
+          usedPieceIds: newUsedPieceIds,
+          anchorPiece: anchorPiece ? {
+            id: anchorPiece.id,
+            name: anchorPiece.name,
+            category: anchorPiece.category,
+            color: anchorPiece.color,
+          } : null,
         }),
       })
 
@@ -217,6 +274,15 @@ export default function OutfitIAPage() {
       if (data.outfits) {
         setOutfits(data.outfits)
         setSavedIds([])
+        try {
+          sessionStorage.setItem('outfit_ia_results', JSON.stringify({
+            outfits: data.outfits,
+            period,
+            occasion,
+            timestamp: Date.now(),
+            usedPieceIds: newUsedPieceIds,
+          }))
+        } catch {}
       } else {
         setErrorMsg('Adicione peças ao closet antes de gerar outfits.')
       }
@@ -231,7 +297,10 @@ export default function OutfitIAPage() {
     setSaving(true)
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) {
+      setSaving(false)
+      return
+    }
 
     await supabase.from('outfits').insert({
       user_id: user.id,
@@ -285,25 +354,60 @@ export default function OutfitIAPage() {
         </div>
       ) : activeWeather ? (
         <div className={`weather-card ${customWeather ? 'future' : ''}`}>
-          <div className="weather-left">
-            <span className="weather-icon">{activeWeather.icon}</span>
-            <div>
-              <div className="weather-temp">{activeWeather.temp}°C</div>
-              <div className="weather-desc">{activeWeather.desc}</div>
-              {futureBadgeLabel && (
-                <div className="weather-future-badge">{futureBadgeLabel}</div>
-              )}
+          <div className="weather-top">
+            <div className="weather-left">
+              <span className="weather-icon">{activeWeather.icon}</span>
+              <div>
+                <div className="weather-temp">{activeWeather.temp}°C</div>
+                <div className="weather-desc">{activeWeather.desc}</div>
+                {futureBadgeLabel && (
+                  <div className="weather-future-badge">{futureBadgeLabel}</div>
+                )}
+              </div>
+            </div>
+            <div className="weather-right">
+              <div className="weather-city">{city}</div>
+              <div className="weather-date">{customWeather ? 'Previsão' : 'Agora'}</div>
             </div>
           </div>
-          <div className="weather-right">
-            <div className="weather-city">{city}</div>
-            <div className="weather-date">{customWeather ? 'Previsão' : 'Agora'}</div>
-            <button className="weather-edit-btn" onClick={() => setDateModalOpen(true)}>
-              ✏️ mudar data
-            </button>
-          </div>
+          <button
+            className={`change-date-btn ${customWeather ? 'active' : ''}`}
+            onClick={() => setDateModalOpen(true)}
+          >
+            <span>📅</span>
+            Mudar data e horário
+          </button>
         </div>
       ) : null}
+
+      {anchorPiece && (
+        <div className="anchor-card">
+          <div className="anchor-card-photo">
+            {anchorPiece.photo_url ? (
+              <img src={anchorPiece.photo_url} alt={anchorPiece.name}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
+            ) : (
+              <span style={{ fontSize: '20px', opacity: 0.3 }}>👕</span>
+            )}
+          </div>
+          <div className="anchor-card-info">
+            <div className="anchor-card-label">📌 Peça âncora</div>
+            <div className="anchor-card-name">{anchorPiece.name}</div>
+            <div className="anchor-card-cat">
+              {anchorPiece.category}{anchorPiece.color ? ` · ${anchorPiece.color}` : ''}
+            </div>
+          </div>
+          <button
+            className="anchor-remove"
+            onClick={() => {
+              sessionStorage.removeItem('anchor_piece')
+              setAnchorPiece(null)
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       <div className="period-row">
         <button

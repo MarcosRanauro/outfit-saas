@@ -5,8 +5,8 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import '../../lookbook.css'
 
-const DAY_OCCASIONS = ['Todos', 'Dia a Dia', 'Shopping', 'Amigos', 'Viagem', 'Faculdade', 'Trabalho', 'Academia', 'Café', 'Lazer', 'Praia']
-const NIGHT_OCCASIONS = ['Todos', 'Aniversário', 'Balada', 'Jantar', 'Show', 'Festa', 'Cinema', 'Jogos', 'Bar', 'Encontro', 'Karaokê']
+const DAY_OCCASIONS = ['Todos', 'Dia a Dia', 'Shopping', 'Amigos', 'Viagem', 'Faculdade', 'Trabalho', 'Reunião', 'Academia', 'Café', 'Praia', 'Lazer', 'Ensaio', 'Evento Cultural', 'Ao Ar Livre']
+const NIGHT_OCCASIONS = ['Todos', 'Aniversário', 'Balada', 'Jantar', 'Show', 'Festa', 'Cinema', 'Jogos', 'Bar', 'Encontro', 'Karaokê', 'Festival', 'Passeio Noturno', 'Evento Social', 'Cassino']
 
 type Outfit = {
   id: string

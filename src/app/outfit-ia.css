@@ -29,8 +29,15 @@
   border: 0.5px solid rgba(180,140,60,0.15);
   padding: 12px 16px;
   display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.weather-top {
+  display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-bottom: 0;
 }
 
 .weather-left {
@@ -566,6 +573,37 @@
   text-align: right;
 }
 
+.change-date-btn {
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.03);
+  border: 0.5px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  color: rgba(255,255,255,0.4);
+  font-size: 11px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: all 0.2s;
+  font-family: var(--font-inter), sans-serif;
+  margin-top: 8px;
+}
+
+.change-date-btn:hover {
+  background: rgba(180,140,60,0.08);
+  border-color: rgba(180,140,60,0.25);
+  color: rgba(180,140,60,0.7);
+}
+
+.change-date-btn.active {
+  background: rgba(180,140,60,0.08);
+  border-color: rgba(180,140,60,0.25);
+  color: rgba(180,140,60,0.7);
+}
+
 .weather-future-badge {
   display: inline-flex;
   align-items: center;
@@ -663,6 +701,70 @@
   margin-top: 8px;
   font-family: var(--font-inter), sans-serif;
 }
+
+/* ─── ÂNCORA ─────────────────────────────────── */
+
+.anchor-card {
+  margin: 0 20px 10px;
+  background: rgba(180,140,60,0.06);
+  border: 1px solid rgba(180,140,60,0.3);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.anchor-card-photo {
+  width: 44px;
+  height: 44px;
+  background: #1a1a1a;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 0.5px solid rgba(180,140,60,0.2);
+}
+
+.anchor-card-info { flex: 1; }
+
+.anchor-card-label {
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(180,140,60,0.6);
+  margin-bottom: 3px;
+}
+
+.anchor-card-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #f0f0f0;
+}
+
+.anchor-card-cat {
+  font-size: 9px;
+  color: rgba(255,255,255,0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+.anchor-remove {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.2);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.anchor-remove:hover { color: rgba(224,92,92,0.6); }
 
 /* ─── BADGE "+N" PEÇAS ───────────────────────── */
 

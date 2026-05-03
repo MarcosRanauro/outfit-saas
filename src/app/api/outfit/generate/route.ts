@@ -104,7 +104,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
-  const { period, occasion, temp, weatherDesc, eventDate, eventPeriod, previousOutfits } = await request.json();
+  const { period, occasion, temp, weatherDesc, eventDate, eventPeriod, previousOutfits, usedPieceIds, anchorPiece } = await request.json();
 
   const { data: pieces } = await supabase
     .from("pieces")
@@ -140,7 +140,22 @@ export async function POST(request: Request) {
     })
     .join('\n\n')
 
-  const piecesWithPhoto = pieces.filter((p) => p.photo_url)
+  const usedIdsSet = new Set(usedPieceIds || [])
+  const anchorCat = anchorPiece?.category?.toLowerCase()
+
+  let piecesWithPhoto = pieces.filter(p => {
+    if (!p.photo_url) return false
+    if (usedIdsSet.has(p.id)) return false
+    if (anchorPiece && p.category?.toLowerCase() === anchorCat && p.id !== anchorPiece.id) return false
+    return true
+  })
+
+  if (anchorPiece) {
+    const anchorPieceFull = pieces.find(p => p.id === anchorPiece.id)
+    if (anchorPieceFull?.photo_url && !piecesWithPhoto.find(p => p.id === anchorPiece.id)) {
+      piecesWithPhoto.unshift(anchorPieceFull)
+    }
+  }
 
   const climateBlock = eventDate
     ? `- Evento: ${eventDate}${eventPeriod ? ` (${eventPeriod})` : ''}
@@ -159,6 +174,23 @@ ${previousOutfits.map((ids: string[], i: number) =>
 IMPORTANTE: Crie combinações completamente diferentes das listadas acima.`
     : ''
 
+  const anchorBlock = anchorPiece
+    ? `\nPEÇA ÂNCORA — OBRIGATÓRIO incluir em TODOS os 5 outfits:
+- [ID: ${anchorPiece.id}] ${anchorPiece.name} (${anchorPiece.category}${anchorPiece.color ? `, ${anchorPiece.color}` : ''})
+
+Esta peça é a escolha do usuário para o dia. Todos os 5 outfits DEVEM incluir esta peça. Construa os looks em torno dela.`
+    : ''
+
+  const usedPiecesBlock = usedPieceIds?.length > 0
+    ? `\nPEÇAS JÁ USADAS NAS GERAÇÕES ANTERIORES (não use estas peças nos novos outfits, exceto acessórios, bolsas e chapéus):
+${usedPieceIds.map((id: string) => {
+  const piece = pieces.find(p => p.id === id)
+  return piece ? `- [ID: ${piece.id}] ${piece.name} (${piece.category})` : ''
+}).filter(Boolean).join('\n')}
+
+IMPORTANTE: Se não houver peças suficientes disponíveis para montar 5 outfits completos sem usar as peças bloqueadas, você pode reutilizar peças bloqueadas para completar os outfits. Acessórios, bolsas e chapéus SEMPRE podem ser reutilizados.`
+    : ''
+
   const contextBlock = `Contexto do usuário:
 - Nome: ${profile?.name || "Usuário"}
 - Estilo: ${profile?.style || "Streetwear/Sportwear"}
@@ -169,7 +201,7 @@ ${climateBlock}
 - Ocasião: ${occasion}
 
 Peças disponíveis no closet:
-${piecesList}${previousOutfitsBlock}${piecesWithPhoto.length > 0 ? "\n\nPara as peças abaixo, analise também a foto real:" : ""}`;
+${piecesList}${previousOutfitsBlock}${usedPiecesBlock}${anchorBlock}${piecesWithPhoto.length > 0 ? "\n\nPara as peças abaixo, analise também a foto real:" : ""}`;
 
 
   const instructionsBlock = `Gere exatamente 5 outfits usando as peças do closet acima.
@@ -216,19 +248,13 @@ Regras técnicas:
     if (base64) {
       imageBlocks.push({ type: "text", text: `Peça ID: ${piece.id} — ${piece.name} (${piece.category}):` })
       imageBlocks.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: base64 } })
-      console.log(`[outfit/generate] imagem enviada: ${piece.name} (${piece.category}) — ID: ${piece.id}`)
-    } else {
-      console.warn(`[outfit/generate] imagem falhou (ignorada): ${piece.name} — URL: ${piece.photo_url}`)
     }
   }
-  console.log(`[outfit/generate] total: ${piecesWithPhoto.length} peças com foto | ${imageBlocks.length / 2} imagens enviadas para a IA`)
   const contentWithImages: Anthropic.MessageParam["content"] = [
     { type: "text", text: contextBlock },
     ...imageBlocks,
     { type: "text", text: instructionsBlock },
   ]
-
-  const content = contentWithImages
 
   const baseParams = {
     model: "claude-sonnet-4-6",
@@ -240,7 +266,7 @@ Regras técnicas:
   try {
     message = await anthropic.messages.create({
       ...baseParams,
-      messages: [{ role: "user", content }],
+      messages: [{ role: "user", content: contentWithImages }],
     })
   } catch (err) {
     console.error('[outfit/generate] erro Anthropic:', err)

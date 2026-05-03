@@ -96,7 +96,7 @@ export default function PerfilPage() {
     if (editModal === 'style') {
       const all = [...editStyles]
       if (editCustomStyle.trim()) all.push(editCustomStyle.trim())
-      updateData.style = all.join(' / ')
+      updateData.style = all.length > 0 ? all.join(' / ') : null
     }
 
     const { data } = await supabase
