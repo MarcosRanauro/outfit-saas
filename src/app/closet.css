@@ -280,6 +280,24 @@
   border-color: rgba(180,140,60,0.3);
 }
 
+.piece-card.anchored {
+  border-color: rgba(180,140,60,0.5);
+  box-shadow: 0 0 0 1px rgba(180,140,60,0.15);
+}
+
+.anchor-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(180,140,60,0.9);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 9px;
+  color: #080808;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
 .piece-photo {
   width: 100%;
   aspect-ratio: 1;
@@ -337,6 +355,25 @@
   margin-top: 3px;
   letter-spacing: 0.5px;
   text-transform: uppercase;
+}
+
+.anchor-piece-btn {
+  width: 100%;
+  padding: 12px;
+  background: rgba(180,140,60,0.12);
+  border: 1px solid rgba(180,140,60,0.4);
+  border-radius: 8px;
+  color: rgba(180,140,60,0.9);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-inter), sans-serif;
 }
 
 /* ─── EMPTY STATE ────────────────────────────── */

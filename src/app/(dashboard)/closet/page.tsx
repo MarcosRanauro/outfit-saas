@@ -127,6 +127,8 @@ export default function ClosetPage() {
   const [obSaving, setObSaving] = useState(false)
   const [showNameField, setShowNameField] = useState(false)
 
+  const [anchorPieceId, setAnchorPieceId] = useState<string | null>(null)
+
   const [wishlistGenerating, setWishlistGenerating] = useState(false)
   const [wishlistSuggestions, setWishlistSuggestions] = useState<WishlistSuggestion[]>([])
   const [wishlistModalOpen, setWishlistModalOpen] = useState(false)
@@ -147,6 +149,13 @@ export default function ClosetPage() {
 
   useEffect(() => {
     loadData()
+    try {
+      const savedAnchor = sessionStorage.getItem('anchor_piece')
+      if (savedAnchor) {
+        const anchor = JSON.parse(savedAnchor)
+        setAnchorPieceId(anchor.id)
+      }
+    } catch {}
   }, [])
 
   useEffect(() => {
@@ -592,13 +601,13 @@ export default function ClosetPage() {
           filtered.map(piece => (
             <div
               key={piece.id}
-              className="piece-card"
+              className={`piece-card ${piece.id === anchorPieceId ? 'anchored' : ''}`}
               onClick={() => {
                 setSelectedPiece(piece)
                 setDetailOpen(true)
               }}
             >
-              <div className="piece-photo">
+              <div className="piece-photo" style={{ position: 'relative' }}>
                 {piece.photo_url ? (
                   <img src={piece.photo_url} alt={piece.name} />
                 ) : (
@@ -606,6 +615,9 @@ export default function ClosetPage() {
                     <div className="piece-photo-icon" />
                     <span className="piece-photo-text">Sem foto</span>
                   </div>
+                )}
+                {piece.id === anchorPieceId && (
+                  <div className="anchor-badge">📌</div>
                 )}
               </div>
               <div className="piece-info">
@@ -846,6 +858,21 @@ export default function ClosetPage() {
                   />
                 </label>
               )}
+
+              <button
+                className="anchor-piece-btn"
+                onClick={() => {
+                  if (selectedPiece) {
+                    sessionStorage.setItem('anchor_piece', JSON.stringify(selectedPiece))
+                    setAnchorPieceId(selectedPiece.id)
+                    setDetailOpen(false)
+                    setSelectedPiece(null)
+                  }
+                }}
+              >
+                <span>📌</span>
+                Usar como peça âncora
+              </button>
 
               <button
                 className="modal-btn"

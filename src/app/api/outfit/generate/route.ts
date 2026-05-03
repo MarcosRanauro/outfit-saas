@@ -104,7 +104,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
-  const { period, occasion, temp, weatherDesc, eventDate, eventPeriod, previousOutfits, usedPieceIds } = await request.json();
+  const { period, occasion, temp, weatherDesc, eventDate, eventPeriod, previousOutfits, usedPieceIds, anchorPiece } = await request.json();
 
   const { data: pieces } = await supabase
     .from("pieces")
@@ -140,7 +140,22 @@ export async function POST(request: Request) {
     })
     .join('\n\n')
 
-  const piecesWithPhoto = pieces.filter((p) => p.photo_url)
+  const usedIdsSet = new Set(usedPieceIds || [])
+  const anchorCat = anchorPiece?.category?.toLowerCase()
+
+  let piecesWithPhoto = pieces.filter(p => {
+    if (!p.photo_url) return false
+    if (usedIdsSet.has(p.id)) return false
+    if (anchorPiece && p.category?.toLowerCase() === anchorCat && p.id !== anchorPiece.id) return false
+    return true
+  })
+
+  if (anchorPiece) {
+    const anchorPieceFull = pieces.find(p => p.id === anchorPiece.id)
+    if (anchorPieceFull?.photo_url && !piecesWithPhoto.find(p => p.id === anchorPiece.id)) {
+      piecesWithPhoto.unshift(anchorPieceFull)
+    }
+  }
 
   const climateBlock = eventDate
     ? `- Evento: ${eventDate}${eventPeriod ? ` (${eventPeriod})` : ''}
@@ -157,6 +172,13 @@ ${previousOutfits.map((ids: string[], i: number) =>
 ).join('\n')}
 
 IMPORTANTE: Crie combinações completamente diferentes das listadas acima.`
+    : ''
+
+  const anchorBlock = anchorPiece
+    ? `\nPEÇA ÂNCORA — OBRIGATÓRIO incluir em TODOS os 5 outfits:
+- [ID: ${anchorPiece.id}] ${anchorPiece.name} (${anchorPiece.category}${anchorPiece.color ? `, ${anchorPiece.color}` : ''})
+
+Esta peça é a escolha do usuário para o dia. Todos os 5 outfits DEVEM incluir esta peça. Construa os looks em torno dela.`
     : ''
 
   const usedPiecesBlock = usedPieceIds?.length > 0
@@ -179,7 +201,7 @@ ${climateBlock}
 - Ocasião: ${occasion}
 
 Peças disponíveis no closet:
-${piecesList}${previousOutfitsBlock}${usedPiecesBlock}${piecesWithPhoto.length > 0 ? "\n\nPara as peças abaixo, analise também a foto real:" : ""}`;
+${piecesList}${previousOutfitsBlock}${usedPiecesBlock}${anchorBlock}${piecesWithPhoto.length > 0 ? "\n\nPara as peças abaixo, analise também a foto real:" : ""}`;
 
 
   const instructionsBlock = `Gere exatamente 5 outfits usando as peças do closet acima.

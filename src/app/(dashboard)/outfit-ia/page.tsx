@@ -98,6 +98,8 @@ export default function OutfitIAPage() {
   const [saving, setSaving] = useState(false)
   const [savedIds, setSavedIds] = useState<number[]>([])
 
+  const [anchorPiece, setAnchorPiece] = useState<any>(null)
+
   const [dateModalOpen, setDateModalOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [selectedPeriod, setSelectedPeriod] = useState<string | null>(null)
@@ -123,6 +125,12 @@ export default function OutfitIAPage() {
         } else {
           sessionStorage.removeItem('outfit_ia_results')
         }
+      }
+    } catch {}
+    try {
+      const savedAnchor = sessionStorage.getItem('anchor_piece')
+      if (savedAnchor) {
+        setAnchorPiece(JSON.parse(savedAnchor))
       }
     } catch {}
   }, [])
@@ -250,6 +258,12 @@ export default function OutfitIAPage() {
           eventPeriod: selectedPeriod || null,
           previousOutfits,
           usedPieceIds: newUsedPieceIds,
+          anchorPiece: anchorPiece ? {
+            id: anchorPiece.id,
+            name: anchorPiece.name,
+            category: anchorPiece.category,
+            color: anchorPiece.color,
+          } : null,
         }),
       })
 
@@ -359,6 +373,35 @@ export default function OutfitIAPage() {
           </button>
         </div>
       ) : null}
+
+      {anchorPiece && (
+        <div className="anchor-card">
+          <div className="anchor-card-photo">
+            {anchorPiece.photo_url ? (
+              <img src={anchorPiece.photo_url} alt={anchorPiece.name}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
+            ) : (
+              <span style={{ fontSize: '20px', opacity: 0.3 }}>👕</span>
+            )}
+          </div>
+          <div className="anchor-card-info">
+            <div className="anchor-card-label">📌 Peça âncora</div>
+            <div className="anchor-card-name">{anchorPiece.name}</div>
+            <div className="anchor-card-cat">
+              {anchorPiece.category}{anchorPiece.color ? ` · ${anchorPiece.color}` : ''}
+            </div>
+          </div>
+          <button
+            className="anchor-remove"
+            onClick={() => {
+              sessionStorage.removeItem('anchor_piece')
+              setAnchorPiece(null)
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       <div className="period-row">
         <button
