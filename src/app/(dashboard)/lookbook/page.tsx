@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import DashboardTopBanner from '@/components/layout/DashboardTopBanner'
 import '../../lookbook.css'
 
 const DAY_OCCASIONS = ['Todos', 'Dia a Dia', 'Shopping', 'Amigos', 'Viagem', 'Faculdade', 'Trabalho', 'Reunião', 'Academia', 'Café', 'Praia', 'Lazer', 'Ensaio', 'Evento Cultural', 'Ao Ar Livre']
@@ -109,6 +110,8 @@ export default function LookbookPage() {
 
   return (
     <>
+      <DashboardTopBanner />
+
       <div className="lookbook-header">
         <h1 className="lookbook-title">
           Look<span>book</span>

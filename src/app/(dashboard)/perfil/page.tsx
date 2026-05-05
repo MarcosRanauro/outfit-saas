@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import AvatarCrop from '@/components/ui/AvatarCrop'
+import DashboardTopBanner from '@/components/layout/DashboardTopBanner'
 import '../../perfil.css'
 
 const STYLES = ['Streetwear', 'Sportwear', 'Casual', 'Social', 'Minimalista']
@@ -137,6 +138,8 @@ export default function PerfilPage() {
 
   return (
     <>
+      <DashboardTopBanner />
+
       <div className="perfil-header">
         <h1 className="perfil-title">
           Meu <span>Perfil</span>

@@ -1,0 +1,322 @@
+'use client'
+
+import { useState, useEffect, useRef } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
+import '../../mia.css'
+
+interface Message {
+  role: 'mia' | 'user'
+  content: string
+  outfits?: any[]
+  wishlist?: any[]
+  time: string
+}
+
+interface Weather {
+  temp: number
+  desc: string
+  icon: string
+}
+
+const QUICK_ACTIONS = [
+  { label: '🌤 Outfit de hoje', message: 'Me monta um outfit para hoje' },
+  { label: '📅 Para um evento', message: 'Preciso de um look para um evento especial' },
+  { label: '🛍 O que comprar?', message: 'O que está faltando no meu closet?' },
+  { label: '✦ Peça âncora', message: 'Quero montar um look em torno de uma peça específica' },
+  { label: '💬 Dica de moda', message: 'Me dá uma dica de moda para o meu estilo' },
+]
+
+function getTime() {
+  return new Date().toLocaleTimeString('pt-BR', {
+    hour: '2-digit', minute: '2-digit'
+  })
+}
+
+export default function MiaPage() {
+  const supabase = createClient()
+  const router = useRouter()
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
+
+  const [messages, setMessages] = useState<Message[]>([])
+  const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [weather, setWeather] = useState<Weather | null>(null)
+  const [savedOutfitIds, setSavedOutfitIds] = useState<Set<string>>(new Set())
+  const [profile, setProfile] = useState<any>(null)
+
+  // Carrega perfil e clima ao montar
+  useEffect(() => {
+    loadProfileAndWeather()
+  }, [])
+
+  // Scroll automático para última mensagem
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, loading])
+
+  async function loadProfileAndWeather() {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { router.push('/login'); return }
+
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('name, style, height, weight')
+      .eq('id', user.id)
+      .single()
+
+    setProfile(profileData)
+
+    // Busca clima
+    let weatherData = null
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
+      })
+      const { latitude: lat, longitude: lon } = position.coords
+      const res = await fetch(`/api/weather?lat=${lat}&lon=${lon}`)
+      if (res.ok) weatherData = await res.json()
+    } catch {
+      // sem clima
+    }
+    setWeather(weatherData)
+
+    // Mensagem de boas vindas
+    const name = profileData?.name?.split(' ')[0] || 'você'
+    const weatherMsg = weatherData
+      ? `Tô vendo que tá ${weatherData.temp}°C aí agora. `
+      : ''
+
+    setMessages([{
+      role: 'mia',
+      content: `Oi, ${name}! 👋 Sou a Mia, sua stylist pessoal.
+
+${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra você. O que a gente monta hoje? 🌟`,
+      time: getTime(),
+    }])
+  }
+
+  async function sendMessage(text: string) {
+    if (!text.trim() || loading) return
+
+    const userMessage: Message = {
+      role: 'user',
+      content: text.trim(),
+      time: getTime(),
+    }
+
+    setMessages(prev => [...prev, userMessage])
+    setInput('')
+    setLoading(true)
+
+    // Monta histórico para enviar (sem a mensagem de boas vindas)
+    const history = messages
+      .slice(1) // remove boas vindas
+      .map(m => ({ role: m.role === 'mia' ? 'assistant' : 'user', content: m.content }))
+
+    try {
+      const res = await fetch('/api/mia/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: text.trim(),
+          history,
+          weather,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (data.error) throw new Error(data.error)
+
+      const miaMessage: Message = {
+        role: 'mia',
+        content: data.message,
+        outfits: data.outfits || null,
+        wishlist: data.wishlist || null,
+        time: getTime(),
+      }
+
+      setMessages(prev => [...prev, miaMessage])
+    } catch {
+      setMessages(prev => [...prev, {
+        role: 'mia',
+        content: 'Ops, tive um probleminha aqui! 😅 Pode repetir?',
+        time: getTime(),
+      }])
+    }
+
+    setLoading(false)
+  }
+
+  async function handleSaveOutfit(outfit: any, msgIndex: number, outfitIndex: number) {
+    const saveKey = `${msgIndex}-${outfitIndex}`
+    if (savedOutfitIds.has(saveKey)) return
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    const { error } = await supabase.from('outfits').insert({
+      user_id: user.id,
+      name: outfit.name,
+      subtitle: outfit.subtitle,
+      style_tags: outfit.style_tags || [],
+      occasion_tags: [],
+      period: 'dia',
+      occasion: 'Dia a Dia',
+      why: outfit.why,
+      pieces: outfit.piece_ids || outfit.pieces?.map((p: any) => p.id) || [],
+    })
+
+    if (!error) {
+      setSavedOutfitIds(prev => new Set([...prev, saveKey]))
+    }
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      sendMessage(input)
+    }
+  }
+
+  return (
+    <div className="mia-wrap">
+
+      {/* Header */}
+      <div className="mia-header">
+        <div className="mia-avatar">✦</div>
+        <div className="mia-header-info">
+          <div className="mia-header-name">Mia</div>
+          <div className="mia-header-sub">
+            <div className="mia-status-dot" />
+            Sua stylist pessoal
+          </div>
+        </div>
+        {weather && (
+          <div className="mia-weather-pill">
+            {weather.icon} {weather.temp}°C
+          </div>
+        )}
+      </div>
+
+      {/* Ações rápidas */}
+      <div className="mia-quick-actions">
+        {QUICK_ACTIONS.map((action) => (
+          <button
+            key={action.label}
+            className="mia-quick-btn"
+            onClick={() => sendMessage(action.message)}
+            disabled={loading}
+          >
+            {action.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Mensagens */}
+      <div className="mia-messages">
+        {messages.map((msg, msgIndex) => (
+          <div key={msgIndex} className={`mia-msg ${msg.role}`}>
+            {msg.role === 'mia' && (
+              <div className="mia-msg-avatar">✦</div>
+            )}
+            <div className="mia-msg-content">
+              <div className="mia-msg-bubble">
+                {msg.content.split('\n').map((line, i) => (
+                  <span key={i}>{line}{i < msg.content.split('\n').length - 1 && <br />}</span>
+                ))}
+
+                {/* Cards de outfit dentro da mensagem */}
+                {msg.outfits && msg.outfits.map((outfit, outfitIndex) => {
+                  const saveKey = `${msgIndex}-${outfitIndex}`
+                  const isSaved = savedOutfitIds.has(saveKey)
+                  const photos = outfit.pieces?.slice(0, 3) || []
+
+                  return (
+                    <div key={outfitIndex} className="mia-outfit-card">
+                      <div className="mia-outfit-photos">
+                        {photos.map((piece: any, pi: number) => (
+                          <div key={pi} className="mia-outfit-photo">
+                            {piece.photo_url ? (
+                              <img src={piece.photo_url} alt={piece.name} />
+                            ) : (
+                              <span className="mia-outfit-photo-placeholder">👕</span>
+                            )}
+                          </div>
+                        ))}
+                        {[...Array(Math.max(0, 3 - photos.length))].map((_, i) => (
+                          <div key={`empty-${i}`} className="mia-outfit-photo">
+                            <span className="mia-outfit-photo-placeholder">👕</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mia-outfit-body">
+                        <div className="mia-outfit-name">{outfit.name}</div>
+                        {outfit.subtitle && (
+                          <div className="mia-outfit-sub">{outfit.subtitle}</div>
+                        )}
+                        {outfit.style_tags?.length > 0 && (
+                          <div className="mia-outfit-tags">
+                            {outfit.style_tags.map((tag: string, ti: number) => (
+                              <span key={ti} className="mia-outfit-tag">{tag}</span>
+                            ))}
+                          </div>
+                        )}
+                        <button
+                          className={`mia-outfit-save ${isSaved ? 'saved' : ''}`}
+                          onClick={() => handleSaveOutfit(outfit, msgIndex, outfitIndex)}
+                          disabled={isSaved}
+                        >
+                          {isSaved ? '✓ Salvo no Lookbook' : '♡ Salvar no Lookbook'}
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+              <div className="mia-msg-time">{msg.time}</div>
+            </div>
+          </div>
+        ))}
+
+        {/* Typing indicator */}
+        {loading && (
+          <div className="mia-msg mia">
+            <div className="mia-msg-avatar">✦</div>
+            <div className="mia-typing">
+              <div className="mia-typing-dot" />
+              <div className="mia-typing-dot" />
+              <div className="mia-typing-dot" />
+            </div>
+          </div>
+        )}
+
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input */}
+      <div className="mia-input-wrap">
+        <textarea
+          ref={inputRef}
+          className="mia-input"
+          placeholder="Fala com a Mia..."
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          rows={1}
+          disabled={loading}
+        />
+        <button
+          className="mia-send-btn"
+          onClick={() => sendMessage(input)}
+          disabled={!input.trim() || loading}
+        >
+          →
+        </button>
+      </div>
+
+    </div>
+  )
+}

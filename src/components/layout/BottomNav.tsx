@@ -3,7 +3,13 @@
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 
-const navItems = [
+type NavItem = {
+  href: string
+  label: string
+  icon: ((active: boolean) => React.ReactNode) | 'mia'
+}
+
+const navItems: NavItem[] = [
   {
     href: '/closet',
     label: 'Closet',
@@ -42,18 +48,9 @@ const navItems = [
     ),
   },
   {
-    href: '/outfit-ia',
-    label: 'Outfit IA',
-    icon: (active: boolean) => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="3"
-          stroke={active ? 'rgba(180,140,60,0.9)' : 'rgba(255,255,255,0.25)'}
-          strokeWidth="1.5"/>
-        <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
-          stroke={active ? 'rgba(180,140,60,0.9)' : 'rgba(255,255,255,0.25)'}
-          strokeWidth="1.5" strokeLinecap="round"/>
-      </svg>
-    ),
+    href: '/mia',
+    label: 'Mia',
+    icon: 'mia',
   },
   {
     href: '/perfil',
@@ -80,7 +77,25 @@ export default function BottomNav() {
         const active = pathname.startsWith(item.href)
         return (
           <Link key={item.href} href={item.href} className="nav-item">
-            {item.icon(active)}
+            {item.icon === 'mia' ? (
+              <div style={{
+                width: '28px',
+                height: '28px',
+                borderRadius: '50%',
+                background: active
+                  ? 'linear-gradient(135deg, rgba(180,140,60,0.4), rgba(180,140,60,0.15))'
+                  : 'linear-gradient(135deg, rgba(180,140,60,0.2), rgba(180,140,60,0.05))',
+                border: `1.5px solid ${active ? 'rgba(180,140,60,0.7)' : 'rgba(180,140,60,0.3)'}`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '13px',
+              }}>
+                ✦
+              </div>
+            ) : (
+              item.icon(active)
+            )}
             <span className="nav-label" style={{
               color: active ? 'rgba(180,140,60,0.9)' : 'rgba(255,255,255,0.25)'
             }}>
