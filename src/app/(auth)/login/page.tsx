@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import '../../auth.css'
@@ -59,12 +60,16 @@ export default function LoginPage() {
       <div className="card">
         <div className="card-top-line" />
 
-        <div className="logo">
-          <div className="logo-mark">
-            <div className="logo-diamond" />
-          </div>
-          <span className="logo-title">Outfit</span>
-          <span className="logo-sub">Style Intelligence</span>
+        <div className="auth-brand-logo">
+          <Image
+            src="/logos-mia-ai/mia-outfit-ai.png"
+            alt="Mia Outfit AI"
+            width={1536}
+            height={1024}
+            priority
+            className="auth-brand-logo-img"
+            sizes="(max-width: 480px) 88vw, 360px"
+          />
         </div>
 
         <button

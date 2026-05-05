@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import DashboardTopBanner from '@/components/layout/DashboardTopBanner'
 import '../../outfit-ia.css'
 
 const DAY_OCCASIONS = [
@@ -341,6 +342,8 @@ export default function OutfitIAPage() {
 
   return (
     <>
+      <DashboardTopBanner />
+
       <div className="outfitia-header">
         <h1 className="outfitia-title">
           Outfit <span>IA</span>

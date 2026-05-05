@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import DashboardTopBanner from '@/components/layout/DashboardTopBanner'
 import { Piece, WishlistItem } from '@/types/database'
 import '../../closet.css'
 import '../../perfil.css'
@@ -537,6 +538,8 @@ export default function ClosetPage() {
 
   return (
     <>
+      <DashboardTopBanner priority />
+
       <div className="closet-header">
         <h1 className="closet-title">
           Meu <span>Closet</span>
