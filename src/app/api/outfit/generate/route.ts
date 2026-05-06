@@ -7,7 +7,6 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
-// TESTE DE CUSTO — reverter após teste
 async function fetchAndCompressImage(url: string): Promise<string | null> {
   try {
     const response = await fetch(url)
@@ -241,7 +240,6 @@ Regras técnicas:
   'calor — prefira tecidos leves e looks arejados'
 }`;
 
-  // TESTE DE CUSTO — reverter após teste
   const imageBlocks: Anthropic.ContentBlockParam[] = []
   for (const piece of piecesWithPhoto) {
     const base64 = await fetchAndCompressImage(piece.photo_url!)
