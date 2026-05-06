@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import '../../auth.css'
@@ -14,6 +14,18 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [sessionReady, setSessionReady] = useState(false)
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === 'PASSWORD_RECOVERY' || session) {
+          setSessionReady(true)
+        }
+      }
+    )
+    return () => subscription.unsubscribe()
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -45,6 +57,21 @@ export default function ResetPasswordPage() {
     setTimeout(() => {
       router.push('/closet')
     }, 2000)
+  }
+
+  if (!sessionReady) {
+    return (
+      <main className="login-wrap">
+        <div className="bg-grid" />
+        <div className="bg-glow" />
+        <div className="card" style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '24px', marginBottom: '12px' }}>⏳</div>
+          <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>
+            Verificando link...
+          </div>
+        </div>
+      </main>
+    )
   }
 
   return (
@@ -118,7 +145,7 @@ export default function ResetPasswordPage() {
               <button
                 type="submit"
                 className="btn-primary"
-                disabled={loading}
+                disabled={loading || !sessionReady}
               >
                 {loading ? 'Redefinindo...' : 'Redefinir senha'}
               </button>

@@ -45,7 +45,9 @@ COMO VOCÊ RESPONDE:
        "subtitle": "Descrição visual",
        "style_tags": ["tag1", "tag2"],
        "piece_ids": ["id1", "id2", "id3"],
-       "why": "Por que esse look funciona"
+       "why": "Por que esse look funciona",
+       "period": "dia ou noite",
+       "occasion": "ocasião do outfit (ex: Dia a Dia, Jantar, Shopping)"
      }
    ]}
    [/MIA_OUTFITS]
@@ -212,7 +214,7 @@ Mensagem do usuário: ${message}`
       try {
         const parsed = JSON.parse(wishlistMatch[1].trim());
         wishlist = parsed.suggestions;
-        cleanText = text.replace(/\[MIA_WISHLIST\][\s\S]*?\[\/MIA_WISHLIST\]/, "").trim();
+        cleanText = cleanText.replace(/\[MIA_WISHLIST\][\s\S]*?\[\/MIA_WISHLIST\]/, "").trim();
       } catch {
         // Se falhar o parse, só retorna o texto
       }

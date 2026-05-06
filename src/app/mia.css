@@ -1,7 +1,7 @@
 .mia-wrap {
   display: flex;
   flex-direction: column;
-  height: 100dvh;
+  height: calc(100dvh - 64px);
   background: #080808;
   overflow: hidden;
 }

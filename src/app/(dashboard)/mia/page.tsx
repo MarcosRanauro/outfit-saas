@@ -154,23 +154,27 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
     const saveKey = `${msgIndex}-${outfitIndex}`
     if (savedOutfitIds.has(saveKey)) return
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
 
-    const { error } = await supabase.from('outfits').insert({
-      user_id: user.id,
-      name: outfit.name,
-      subtitle: outfit.subtitle,
-      style_tags: outfit.style_tags || [],
-      occasion_tags: [],
-      period: 'dia',
-      occasion: 'Dia a Dia',
-      why: outfit.why,
-      pieces: outfit.piece_ids || outfit.pieces?.map((p: any) => p.id) || [],
-    })
+      const { error } = await supabase.from('outfits').insert({
+        user_id: user.id,
+        name: outfit.name,
+        subtitle: outfit.subtitle,
+        style_tags: outfit.style_tags || [],
+        occasion_tags: [],
+        period: outfit.period || 'dia',
+        occasion: outfit.occasion || 'Dia a Dia',
+        why: outfit.why,
+        pieces: outfit.piece_ids || outfit.pieces?.map((p: any) => p.id) || [],
+      })
 
-    if (!error) {
+      if (error) throw error
+
       setSavedOutfitIds(prev => new Set([...prev, saveKey]))
+    } catch {
+      alert('Erro ao salvar outfit. Tente novamente.')
     }
   }
 
@@ -303,7 +307,11 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
           className="mia-input"
           placeholder="Fala com a Mia..."
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={(e) => {
+            setInput(e.target.value)
+            e.target.style.height = 'auto'
+            e.target.style.height = Math.min(e.target.scrollHeight, 100) + 'px'
+          }}
           onKeyDown={handleKeyDown}
           rows={1}
           disabled={loading}
