@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit, incrementUsage } from "@/lib/rate-limit";
 
 export const maxDuration = 30
 
@@ -29,6 +30,14 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+
+  const rateCheck = await checkRateLimit(user.id, 'pieces_analyze')
+  if (!rateCheck.allowed) {
+    return NextResponse.json(
+      { error: `Limite de análises atingido (${rateCheck.used}/${rateCheck.limit}). Faça upgrade para o plano Pro.` },
+      { status: 429 }
+    )
+  }
 
   try {
     const { imageBase64: rawBase64, mimeType: rawMimeType } = await request.json();
@@ -64,9 +73,10 @@ export async function POST(request: Request) {
 
     const clean = content.text.replace(/```json|```/g, "").trim();
     const suggestion = JSON.parse(clean);
+    await incrementUsage(user.id, 'pieces_analyze')
     return NextResponse.json({ suggestion });
   } catch (error) {
     console.error("Erro na análise:", error);
-    return NextResponse.json({ error: "Erro interno", details: String(error) }, { status: 500 });
+    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }

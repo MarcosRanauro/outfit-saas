@@ -299,6 +299,11 @@ export default function ClosetPage() {
 
       const data = await res.json()
 
+      if (!res.ok) {
+        alert(data.error || 'Erro ao analisar a foto. Tente novamente.')
+        return
+      }
+
       if (data.suggestion) {
         const s = data.suggestion
         if (s.name) setName(s.name)
@@ -310,11 +315,11 @@ export default function ClosetPage() {
         if (s.season) setSeason(s.season)
         setAiSuggestion(s)
       }
-    } catch (err) {
-      console.error('Erro ao analisar:', err)
+    } catch {
+      alert('Erro ao analisar a foto. Tente novamente.')
+    } finally {
+      setAnalyzing(false)
     }
-
-    setAnalyzing(false)
   }
 
   function resetModal() {
@@ -336,82 +341,95 @@ export default function ClosetPage() {
     if (!name || !category) return
     setSaving(true)
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
 
-    let photo_url = null
+      let photo_url = null
 
-    if (photo) {
-      const path = `${user.id}/${Date.now()}.jpg`
+      if (photo) {
+        const path = `${user.id}/${Date.now()}.jpg`
 
-      const compressedPhoto = await compressImageForUpload(photo)
-      const { error: uploadError } = await supabase.storage
-        .from('pieces')
-        .upload(path, compressedPhoto, { contentType: 'image/jpeg' })
-
-      if (!uploadError) {
-        const { data: urlData } = supabase.storage
+        const compressedPhoto = await compressImageForUpload(photo)
+        const { error: uploadError } = await supabase.storage
           .from('pieces')
-          .getPublicUrl(path)
-        photo_url = urlData.publicUrl
+          .upload(path, compressedPhoto, { contentType: 'image/jpeg' })
+
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage
+            .from('pieces')
+            .getPublicUrl(path)
+          photo_url = urlData.publicUrl
+        }
       }
+
+      const code = `P${Date.now()}`
+
+      const { data, error } = await supabase
+        .from('pieces')
+        .insert({
+          user_id: user.id,
+          code,
+          name,
+          category,
+          color: color || null,
+          brand: brand || null,
+          photo_url,
+          fit: fit || null,
+          style_type: styleType || null,
+          season: season || null,
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+
+      if (data) {
+        setPieces(prev => [data, ...prev])
+      }
+
+      if (purchasingWishlistId) {
+        await supabase.from('wishlist_items').delete().eq('id', purchasingWishlistId)
+        setWishlistItems(prev => prev.filter(i => i.id !== purchasingWishlistId))
+      }
+
+      resetModal()
+    } catch {
+      alert('Erro ao salvar a peça. Tente novamente.')
+    } finally {
+      setSaving(false)
     }
-
-    const code = `P${Date.now()}`
-
-    const { data } = await supabase
-      .from('pieces')
-      .insert({
-        user_id: user.id,
-        code,
-        name,
-        category,
-        color: color || null,
-        brand: brand || null,
-        photo_url,
-        fit: fit || null,
-        style_type: styleType || null,
-        season: season || null,
-      })
-      .select()
-      .single()
-
-    if (data) {
-      setPieces(prev => [data, ...prev])
-    }
-
-    if (purchasingWishlistId) {
-      await supabase.from('wishlist_items').delete().eq('id', purchasingWishlistId)
-      setWishlistItems(prev => prev.filter(i => i.id !== purchasingWishlistId))
-    }
-
-    setSaving(false)
-    resetModal()
   }
 
   async function handleDelete() {
     if (!selectedPiece) return
 
-    await supabase
-      .from('pieces')
-      .delete()
-      .eq('id', selectedPiece.id)
-
-    setPieces(prev => prev.filter(p => p.id !== selectedPiece.id))
-
     try {
-      const savedAnchor = sessionStorage.getItem('anchor_piece')
-      if (savedAnchor) {
-        const anchor = JSON.parse(savedAnchor)
-        if (anchor.id === selectedPiece.id) {
-          sessionStorage.removeItem('anchor_piece')
-          setAnchorPieceId(null)
-        }
-      }
-    } catch {}
+      const { error } = await supabase
+        .from('pieces')
+        .delete()
+        .eq('id', selectedPiece.id)
 
-    setDetailOpen(false)
-    setSelectedPiece(null)
+      if (error) throw error
+
+      setPieces(prev => prev.filter(p => p.id !== selectedPiece.id))
+
+      try {
+        const savedAnchor = sessionStorage.getItem('anchor_piece')
+        if (savedAnchor) {
+          const anchor = JSON.parse(savedAnchor)
+          if (anchor.id === selectedPiece.id) {
+            sessionStorage.removeItem('anchor_piece')
+            setAnchorPieceId(null)
+          }
+        }
+      } catch {}
+
+      setDetailOpen(false)
+      setSelectedPiece(null)
+    } catch {
+      alert('Erro ao excluir a peça. Tente novamente.')
+    }
   }
 
   async function handleAddPhoto(e: React.ChangeEvent<HTMLInputElement>) {
