@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import Image from 'next/image'
 import '../../auth.css'
 
 export default function EsqueciSenhaPage() {
@@ -74,15 +75,21 @@ export default function EsqueciSenhaPage() {
           </>
         ) : (
           <>
-            <div className="logo">
-              <div className="logo-mark">
-                <div className="logo-diamond" />
-              </div>
-              <span className="logo-title">Outfit</span>
-              <span className="logo-sub" style={{ marginTop: '8px', display: 'block', fontSize: '11px', color: 'rgba(255,255,255,0.3)', lineHeight: '1.6' }}>
-                Digite seu e-mail e enviaremos um link para redefinir sua senha.
-              </span>
+            <div className="auth-brand-logo">
+              <Image
+                src="/logos-mia-ai/mia-outfit-ai.png"
+                alt="Mia Outfit AI"
+                width={1536}
+                height={1024}
+                className="auth-brand-logo-img"
+                priority
+                sizes="(max-width: 480px) min(280px, 70vw), 320px"
+              />
             </div>
+
+            <p style={{ marginTop: '8px', marginBottom: '20px', fontSize: '11px', color: 'rgba(255,255,255,0.3)', lineHeight: '1.6', textAlign: 'center' }}>
+              Digite seu e-mail e enviaremos um link para redefinir sua senha.
+            </p>
 
             <form onSubmit={handleSubmit}>
               <div className="field">

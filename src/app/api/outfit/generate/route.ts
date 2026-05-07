@@ -112,7 +112,25 @@ export async function POST(request: Request) {
     )
   }
 
-  const { period, occasion, temp, weatherDesc, eventDate, eventPeriod, previousOutfits, usedPieceIds, anchorPiece } = await request.json();
+  let period, occasion, temp, weatherDesc, eventDate, eventPeriod, previousOutfits, usedPieceIds, anchorPiece
+
+  try {
+    const body = await request.json()
+    period = body.period
+    occasion = body.occasion
+    temp = body.temp
+    weatherDesc = body.weatherDesc
+    eventDate = body.eventDate
+    eventPeriod = body.eventPeriod
+    previousOutfits = body.previousOutfits
+    usedPieceIds = body.usedPieceIds
+    anchorPiece = body.anchorPiece
+  } catch {
+    return NextResponse.json(
+      { error: 'Body inválido' },
+      { status: 400 }
+    )
+  }
 
   const { data: pieces } = await supabase
     .from("pieces")

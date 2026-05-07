@@ -560,3 +560,26 @@
   line-height: 1.6;
   margin-bottom: 24px;
 }
+
+/* ─── UPGRADE BTN ────────────────────────────── */
+
+.upgrade-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, rgba(180,140,60,0.2), rgba(180,140,60,0.1));
+  border: 1px solid rgba(180,140,60,0.5);
+  border-radius: 10px;
+  color: rgba(180,140,60,0.95);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  margin-top: 12px;
+  font-family: var(--font-inter), sans-serif;
+  transition: all 0.2s;
+}
+
+.upgrade-btn:hover {
+  background: linear-gradient(135deg, rgba(180,140,60,0.3), rgba(180,140,60,0.15));
+  border-color: rgba(180,140,60,0.7);
+}

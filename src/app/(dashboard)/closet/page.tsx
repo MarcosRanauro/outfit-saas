@@ -437,38 +437,43 @@ export default function ClosetPage() {
     if (!file || !selectedPiece) return
     setUploadingPhoto(true)
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
 
-    const path = `${user.id}/${Date.now()}.jpg`
+      const path = `${user.id}/${Date.now()}.jpg`
 
-    const compressedFile = await compressImageForUpload(file)
-    const { error: uploadError } = await supabase.storage
-      .from('pieces')
-      .upload(path, compressedFile, { contentType: 'image/jpeg' })
-
-    if (!uploadError) {
-      const { data: urlData } = supabase.storage
+      const compressedFile = await compressImageForUpload(file)
+      const { error: uploadError } = await supabase.storage
         .from('pieces')
-        .getPublicUrl(path)
+        .upload(path, compressedFile, { contentType: 'image/jpeg' })
 
-      const { data } = await supabase
-        .from('pieces')
-        .update({ photo_url: urlData.publicUrl })
-        .eq('id', selectedPiece.id)
-        .select()
-        .single()
+      if (!uploadError) {
+        const { data: urlData } = supabase.storage
+          .from('pieces')
+          .getPublicUrl(path)
 
-      if (data) {
-        setPieces(prev => prev.map(p => p.id === data.id ? data : p))
-        setSelectedPiece(data)
-        if (data.id === anchorPieceId) {
-          sessionStorage.setItem('anchor_piece', JSON.stringify(data))
+        const { data } = await supabase
+          .from('pieces')
+          .update({ photo_url: urlData.publicUrl })
+          .eq('id', selectedPiece.id)
+          .select()
+          .single()
+
+        if (data) {
+          setPieces(prev => prev.map(p => p.id === data.id ? data : p))
+          setSelectedPiece(data)
+          if (data.id === anchorPieceId) {
+            sessionStorage.setItem('anchor_piece', JSON.stringify(data))
+          }
         }
       }
+    } catch (err) {
+      console.error('Erro ao adicionar foto:', err)
+      alert('Erro ao adicionar foto. Tente novamente.')
+    } finally {
+      setUploadingPhoto(false)
     }
-
-    setUploadingPhoto(false)
   }
 
   async function handleTourFinish() {
@@ -520,24 +525,33 @@ export default function ClosetPage() {
   }
 
   async function handleSaveToWishlist(suggestion: WishlistSuggestion, index: number) {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
 
-    await supabase.from('wishlist_items').insert({
-      user_id: user.id,
-      category: suggestion.category,
-      name: suggestion.name,
-      color: suggestion.color || null,
-      reason: suggestion.reason,
-      priority: suggestion.priority,
-    })
+      await supabase.from('wishlist_items').insert({
+        user_id: user.id,
+        category: suggestion.category,
+        name: suggestion.name,
+        color: suggestion.color || null,
+        reason: suggestion.reason,
+        priority: suggestion.priority,
+      })
 
-    setSavedSuggestionIds(prev => [...prev, index])
+      setSavedSuggestionIds(prev => [...prev, index])
+    } catch (err) {
+      console.error('Erro ao salvar na wishlist:', err)
+      alert('Erro ao salvar. Tente novamente.')
+    }
   }
 
   async function handleRemoveWishlistItem(id: string) {
-    await supabase.from('wishlist_items').delete().eq('id', id)
-    setWishlistItems(prev => prev.filter(i => i.id !== id))
+    try {
+      await supabase.from('wishlist_items').delete().eq('id', id)
+      setWishlistItems(prev => prev.filter(i => i.id !== id))
+    } catch (err) {
+      console.error('Erro ao remover da wishlist:', err)
+    }
   }
 
   function handleWishlistPurchased(item: WishlistItem) {

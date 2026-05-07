@@ -9,6 +9,9 @@ export type Profile = {
   avatar_url: string | null
   plan: Plan
   closet_tour_completed: boolean
+  usage_mia_generations: number | null
+  usage_pieces_analyzed: number | null
+  usage_reset_at: string | null
   created_at: string
   updated_at: string
 }

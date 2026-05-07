@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import Image from 'next/image'
 import '../../auth.css'
 
 export default function CadastroPage() {
@@ -70,12 +71,16 @@ export default function CadastroPage() {
       <div className="card">
         <div className="card-top-line" />
 
-        <div className="logo">
-          <div className="logo-mark">
-            <div className="logo-diamond" />
-          </div>
-          <span className="logo-title">Outfit</span>
-          <span className="logo-sub">Style Intelligence</span>
+        <div className="auth-brand-logo">
+          <Image
+            src="/logos-mia-ai/mia-outfit-ai.png"
+            alt="Mia Outfit AI"
+            width={1536}
+            height={1024}
+            className="auth-brand-logo-img"
+            priority
+            sizes="(max-width: 480px) min(280px, 70vw), 320px"
+          />
         </div>
 
         {showConfirmEmail && (

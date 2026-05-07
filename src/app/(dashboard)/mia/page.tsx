@@ -45,6 +45,7 @@ export default function MiaPage() {
   const [weather, setWeather] = useState<Weather | null>(null)
   const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null)
   const [savedOutfitIds, setSavedOutfitIds] = useState<Set<string>>(new Set())
+  const [savedWishlistIds, setSavedWishlistIds] = useState<Set<string>>(new Set())
   const [anchorPiece, setAnchorPiece] = useState<any>(null)
 
   // Carrega perfil e clima ao montar
@@ -173,6 +174,18 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
           anchorPiece,
         }),
       })
+
+      // Verifica rate limit antes de parsear
+      if (res.status === 429) {
+        const errorData = await res.json()
+        setMessages(prev => [...prev, {
+          role: 'mia',
+          content: errorData.error || 'Você atingiu o limite do plano Free. Faça upgrade para o Pro para continuar usando a Mia sem limites! 🚀',
+          time: getTime(),
+        }])
+        setLoading(false)
+        return
+      }
 
       const data = await res.json()
       if (data.error) throw new Error(data.error)
@@ -343,6 +356,70 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
                           disabled={isSaved}
                         >
                           {isSaved ? '✓ Salvo no Lookbook' : '♡ Salvar no Lookbook'}
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+
+                {/* Cards de wishlist dentro da mensagem */}
+                {msg.wishlist && msg.wishlist.map((item: any, itemIndex: number) => {
+                  const wishlistKey = `${msgIndex}-w-${itemIndex}`
+                  const isWishlistSaved = savedWishlistIds.has(wishlistKey)
+                  return (
+                    <div key={itemIndex} className="mia-outfit-card" style={{ marginTop: itemIndex === 0 ? '8px' : '6px' }}>
+                      <div className="mia-outfit-body" style={{ padding: '10px' }}>
+                        <div style={{
+                          fontSize: '8px',
+                          letterSpacing: '2px',
+                          textTransform: 'uppercase',
+                          color: 'rgba(180,140,60,0.6)',
+                          marginBottom: '4px'
+                        }}>
+                          {item.priority === 'high' ? '⭐ Essencial' :
+                           item.priority === 'medium' ? '👍 Recomendado' : '✨ Nice to have'}
+                        </div>
+                        <div className="mia-outfit-name">{item.name}</div>
+                        <div className="mia-outfit-sub">{item.category} · {item.color}</div>
+                        <div style={{
+                          fontSize: '11px',
+                          color: 'rgba(255,255,255,0.4)',
+                          lineHeight: '1.5',
+                          marginTop: '6px',
+                          marginBottom: '8px'
+                        }}>
+                          {item.reason}
+                        </div>
+                        <button
+                          key={`${msgIndex}-wishlist-${itemIndex}`}
+                          className={`mia-outfit-save ${isWishlistSaved ? 'saved' : ''}`}
+                          disabled={isWishlistSaved}
+                          onClick={async () => {
+                            try {
+                              const { data: { user } } = await supabase.auth.getUser()
+                              if (!user) return
+                              const { error } = await supabase
+                                .from('wishlist_items')
+                                .insert({
+                                  user_id: user.id,
+                                  name: item.name,
+                                  category: item.category,
+                                  color: item.color,
+                                  reason: item.reason,
+                                  priority: item.priority,
+                                  purchased: false,
+                                })
+                              if (!error) {
+                                setSavedWishlistIds(prev =>
+                                  new Set([...prev, wishlistKey])
+                                )
+                              }
+                            } catch {
+                              alert('Erro ao salvar. Tente novamente.')
+                            }
+                          }}
+                        >
+                          {isWishlistSaved ? '✓ Salvo na Wishlist' : '♡ Salvar na Wishlist'}
                         </button>
                       </div>
                     </div>
