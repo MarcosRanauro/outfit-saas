@@ -40,6 +40,18 @@ export default function PerfilPage() {
     loadData()
   }, [])
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('upgrade') === 'success') {
+      alert('🎉 Bem-vindo ao Mia Pro! Seu plano foi ativado.')
+      window.history.replaceState({}, '', '/perfil')
+      loadData()
+    }
+    if (params.get('upgrade') === 'cancelled') {
+      window.history.replaceState({}, '', '/perfil')
+    }
+  }, [])
+
   async function loadData() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
@@ -100,28 +112,69 @@ export default function PerfilPage() {
       updateData.style = all.length > 0 ? all.join(' / ') : null
     }
 
-    const { data } = await supabase
-      .from('profiles')
-      .update(updateData)
-      .eq('id', profile.id)
-      .select()
-      .single()
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(updateData)
+        .eq('id', profile.id)
+        .select()
+        .single()
 
-    if (data) setProfile(data)
-    setSaving(false)
-    setEditModal(null)
+      if (error) throw error
+
+      if (data) setProfile(data)
+      setEditModal(null)
+    } catch (err) {
+      console.error('Erro ao salvar perfil:', err)
+      alert('Erro ao salvar. Tente novamente.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleUpgrade() {
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      }
+    } catch {
+      alert('Erro ao iniciar pagamento. Tente novamente.')
+    }
+  }
+
+  async function handleManageSubscription() {
+    try {
+      const res = await fetch('/api/stripe/portal', {
+        method: 'POST',
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      }
+    } catch {
+      alert('Erro ao abrir portal. Tente novamente.')
+    }
   }
 
   async function handleAvatarSave(url: string) {
     if (!profile) return;
 
-    await supabase
-      .from("profiles")
-      .update({ avatar_url: url })
-      .eq("id", profile.id);
+    try {
+      await supabase
+        .from("profiles")
+        .update({ avatar_url: url })
+        .eq("id", profile.id);
 
-    setCropOpen(false);
-    window.location.reload();
+      setCropOpen(false);
+      window.location.reload();
+    } catch (err) {
+      console.error('Erro ao salvar avatar:', err)
+      alert('Erro ao salvar foto. Tente novamente.')
+    }
   }
 
   const stylesCount = profile?.style
@@ -244,7 +297,7 @@ export default function PerfilPage() {
               <div className="plan-desc">
                 {profile?.plan === "pro"
                   ? "Acesso ilimitado"
-                  : "Limitado a 10 peças"}
+                  : "20 msgs Mia · 5 outfits · 3 análises por mês"}
               </div>
             </div>
           </div>
@@ -252,6 +305,22 @@ export default function PerfilPage() {
             {profile?.plan === "pro" ? "Pro" : "Free"}
           </div>
         </div>
+
+        {profile?.plan === 'free' && (
+          <button className="upgrade-btn" onClick={handleUpgrade}>
+            ⚡ Fazer upgrade para Pro — R$19/mês
+          </button>
+        )}
+
+        {profile?.plan === 'pro' && (
+          <button
+            className="upgrade-btn"
+            onClick={handleManageSubscription}
+            style={{ background: 'rgba(92,200,141,0.1)', borderColor: 'rgba(92,200,141,0.4)', color: 'rgba(92,200,141,0.9)' }}
+          >
+            ✓ Plano Pro ativo — Gerenciar assinatura
+          </button>
+        )}
 
         {/* Logout */}
         <button className="logout-btn" onClick={handleLogout}>

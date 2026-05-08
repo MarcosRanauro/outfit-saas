@@ -77,15 +77,23 @@ export default function LookbookPage() {
     if (!selectedOutfit) return
     setDeleting(true)
 
-    await supabase
-      .from('outfits')
-      .delete()
-      .eq('id', selectedOutfit.id)
+    try {
+      const { error } = await supabase
+        .from('outfits')
+        .delete()
+        .eq('id', selectedOutfit.id)
 
-    setOutfits(prev => prev.filter(o => o.id !== selectedOutfit.id))
-    setDeleting(false)
-    setModalOpen(false)
-    setSelectedOutfit(null)
+      if (error) throw error
+
+      setOutfits(prev => prev.filter(o => o.id !== selectedOutfit.id))
+      setSelectedOutfit(null)
+      setModalOpen(false)
+    } catch (err) {
+      console.error('Erro ao deletar outfit:', err)
+      alert('Erro ao excluir outfit. Tente novamente.')
+    } finally {
+      setDeleting(false)
+    }
   }
 
   const tagClass = (tag: string) => {

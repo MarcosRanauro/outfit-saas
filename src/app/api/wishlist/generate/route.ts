@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit, incrementUsage } from "@/lib/rate-limit";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -101,6 +102,14 @@ export async function POST() {
   } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  }
+
+  const rateCheck = await checkRateLimit(user.id, 'wishlist_generate')
+  if (!rateCheck.allowed) {
+    return NextResponse.json(
+      { error: `Limite de sugestões atingido (${rateCheck.used}/${rateCheck.limit}). Faça upgrade para o plano Pro.` },
+      { status: 429 }
+    )
   }
 
   const { data: pieces } = await supabase
@@ -242,6 +251,7 @@ Foque em peças que genuinamente transformam o guarda-roupa existente.`;
   try {
     const clean = responseContent.text.replace(/```json|```/g, "").trim();
     const parsed = JSON.parse(clean);
+    await incrementUsage(user.id, 'wishlist_generate')
     return NextResponse.json({ suggestions: parsed.suggestions });
   } catch {
     return NextResponse.json(

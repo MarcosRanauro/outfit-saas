@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.0",
+    "@stripe/stripe-js": "^9.4.0",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.104.1",
     "lucide-react": "^1.9.0",
@@ -17,7 +18,8 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-easy-crop": "^5.5.7",
-    "sharp": "^0.34.5"
+    "sharp": "^0.34.5",
+    "stripe": "^22.1.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.4",

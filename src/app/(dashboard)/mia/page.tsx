@@ -43,8 +43,10 @@ export default function MiaPage() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [weather, setWeather] = useState<Weather | null>(null)
+  const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null)
   const [savedOutfitIds, setSavedOutfitIds] = useState<Set<string>>(new Set())
-  const [profile, setProfile] = useState<any>(null)
+  const [savedWishlistIds, setSavedWishlistIds] = useState<Set<string>>(new Set())
+  const [anchorPiece, setAnchorPiece] = useState<any>(null)
 
   // Carrega perfil e clima ao montar
   useEffect(() => {
@@ -60,13 +62,16 @@ export default function MiaPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/login'); return }
 
+    try {
+      const saved = sessionStorage.getItem('anchor_piece')
+      if (saved) setAnchorPiece(JSON.parse(saved))
+    } catch {}
+
     const { data: profileData } = await supabase
       .from('profiles')
       .select('name, style, height, weight')
       .eq('id', user.id)
       .single()
-
-    setProfile(profileData)
 
     // Busca clima
     let weatherData = null
@@ -75,6 +80,7 @@ export default function MiaPage() {
         navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
       })
       const { latitude: lat, longitude: lon } = position.coords
+      setCoords({ lat, lon })
       const res = await fetch(`/api/weather?lat=${lat}&lon=${lon}`)
       if (res.ok) weatherData = await res.json()
     } catch {
@@ -97,6 +103,19 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
     }])
   }
 
+  async function fetchFutureWeather(date: string, hour: number): Promise<Weather | null> {
+    if (!coords) return null
+    try {
+      const res = await fetch(
+        `/api/weather?lat=${coords.lat}&lon=${coords.lon}&date=${date}&hour=${hour}`
+      )
+      if (!res.ok) return null
+      return await res.json()
+    } catch {
+      return null
+    }
+  }
+
   async function sendMessage(text: string) {
     if (!text.trim() || loading) return
 
@@ -110,35 +129,75 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
     setInput('')
     setLoading(true)
 
-    // Monta histórico para enviar (sem a mensagem de boas vindas)
     const history = messages
-      .slice(1) // remove boas vindas
+      .slice(1)
       .map(m => ({ role: m.role === 'mia' ? 'assistant' : 'user', content: m.content }))
 
     try {
+      // PASSO 1 — Pré-chamada leve para extrair data se houver
+      let activeWeather = weather
+      let weatherContext: string | null = null
+
+      if (coords) {
+        const dateRes = await fetch('/api/mia/extract-date', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text.trim(), history }),
+        })
+
+        if (dateRes.ok) {
+          const dateData = await dateRes.json()
+
+          if (dateData.event_date && dateData.event_hour != null) {
+            const futureWeather = await fetchFutureWeather(
+              dateData.event_date,
+              dateData.event_hour
+            )
+
+            if (futureWeather) {
+              activeWeather = futureWeather
+              weatherContext = `Clima previsto para ${dateData.event_date} às ${dateData.event_hour}h: ${futureWeather.temp}°C, ${futureWeather.desc}`
+            }
+          }
+        }
+      }
+
+      // PASSO 2 — Chamada principal com clima correto
       const res = await fetch('/api/mia/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: text.trim(),
           history,
-          weather,
+          weather: activeWeather,
+          weatherContext,
+          anchorPiece,
         }),
       })
 
-      const data = await res.json()
+      // Verifica rate limit antes de parsear
+      if (res.status === 429) {
+        const errorData = await res.json()
+        setMessages(prev => [...prev, {
+          role: 'mia',
+          content: errorData.error || 'Você atingiu o limite do plano Free. Faça upgrade para o Pro para continuar usando a Mia sem limites! 🚀',
+          time: getTime(),
+        }])
+        setLoading(false)
+        return
+      }
 
+      const data = await res.json()
       if (data.error) throw new Error(data.error)
 
-      const miaMessage: Message = {
+      setMessages(prev => [...prev, {
         role: 'mia',
         content: data.message,
         outfits: data.outfits || null,
         wishlist: data.wishlist || null,
         time: getTime(),
-      }
-
-      setMessages(prev => [...prev, miaMessage])
+      }])
+      setTimeout(() => inputRef.current?.focus(), 100)
     } catch {
       setMessages(prev => [...prev, {
         role: 'mia',
@@ -211,13 +270,36 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
           <button
             key={action.label}
             className="mia-quick-btn"
-            onClick={() => sendMessage(action.message)}
+            onClick={() => { sendMessage(action.message); setTimeout(() => inputRef.current?.focus(), 100) }}
             disabled={loading}
           >
             {action.label}
           </button>
         ))}
       </div>
+
+      {/* Peça âncora */}
+      {anchorPiece && (
+        <div className="mia-anchor-card">
+          <div className="mia-anchor-photo">
+            {anchorPiece.photo_url
+              ? <img src={anchorPiece.photo_url} alt={anchorPiece.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : <span style={{ fontSize: 18, opacity: 0.3 }}>👕</span>
+            }
+          </div>
+          <div className="mia-anchor-info">
+            <div className="mia-anchor-label">Peça âncora</div>
+            <div className="mia-anchor-name">{anchorPiece.name}</div>
+          </div>
+          <button
+            className="mia-anchor-remove"
+            onClick={() => {
+              setAnchorPiece(null)
+              try { sessionStorage.removeItem('anchor_piece') } catch {}
+            }}
+          >×</button>
+        </div>
+      )}
 
       {/* Mensagens */}
       <div className="mia-messages">
@@ -274,6 +356,70 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
                           disabled={isSaved}
                         >
                           {isSaved ? '✓ Salvo no Lookbook' : '♡ Salvar no Lookbook'}
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+
+                {/* Cards de wishlist dentro da mensagem */}
+                {msg.wishlist && msg.wishlist.map((item: any, itemIndex: number) => {
+                  const wishlistKey = `${msgIndex}-w-${itemIndex}`
+                  const isWishlistSaved = savedWishlistIds.has(wishlistKey)
+                  return (
+                    <div key={itemIndex} className="mia-outfit-card" style={{ marginTop: itemIndex === 0 ? '8px' : '6px' }}>
+                      <div className="mia-outfit-body" style={{ padding: '10px' }}>
+                        <div style={{
+                          fontSize: '8px',
+                          letterSpacing: '2px',
+                          textTransform: 'uppercase',
+                          color: 'rgba(180,140,60,0.6)',
+                          marginBottom: '4px'
+                        }}>
+                          {item.priority === 'high' ? '⭐ Essencial' :
+                           item.priority === 'medium' ? '👍 Recomendado' : '✨ Nice to have'}
+                        </div>
+                        <div className="mia-outfit-name">{item.name}</div>
+                        <div className="mia-outfit-sub">{item.category} · {item.color}</div>
+                        <div style={{
+                          fontSize: '11px',
+                          color: 'rgba(255,255,255,0.4)',
+                          lineHeight: '1.5',
+                          marginTop: '6px',
+                          marginBottom: '8px'
+                        }}>
+                          {item.reason}
+                        </div>
+                        <button
+                          key={`${msgIndex}-wishlist-${itemIndex}`}
+                          className={`mia-outfit-save ${isWishlistSaved ? 'saved' : ''}`}
+                          disabled={isWishlistSaved}
+                          onClick={async () => {
+                            try {
+                              const { data: { user } } = await supabase.auth.getUser()
+                              if (!user) return
+                              const { error } = await supabase
+                                .from('wishlist_items')
+                                .insert({
+                                  user_id: user.id,
+                                  name: item.name,
+                                  category: item.category,
+                                  color: item.color,
+                                  reason: item.reason,
+                                  priority: item.priority,
+                                  purchased: false,
+                                })
+                              if (!error) {
+                                setSavedWishlistIds(prev =>
+                                  new Set([...prev, wishlistKey])
+                                )
+                              }
+                            } catch {
+                              alert('Erro ao salvar. Tente novamente.')
+                            }
+                          }}
+                        >
+                          {isWishlistSaved ? '✓ Salvo na Wishlist' : '♡ Salvar na Wishlist'}
                         </button>
                       </div>
                     </div>

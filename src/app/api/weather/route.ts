@@ -30,6 +30,7 @@ async function fetchCurrentWeather(lat: string, lon: string) {
 }
 
 export async function GET(request: Request) {
+  try {
   const { searchParams } = new URL(request.url)
   const lat = searchParams.get('lat')
   const lon = searchParams.get('lon')
@@ -60,4 +61,8 @@ export async function GET(request: Request) {
   }
 
   return fetchCurrentWeather(lat, lon)
+  } catch (error) {
+    console.error('[weather] erro:', error)
+    return NextResponse.json({ error: 'Erro ao buscar clima' }, { status: 500 })
+  }
 }

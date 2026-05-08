@@ -9,6 +9,13 @@ export type Profile = {
   avatar_url: string | null
   plan: Plan
   closet_tour_completed: boolean
+  stripe_customer_id: string | null
+  stripe_subscription_id: string | null
+  plan_expires_at: string | null
+  usage_mia_generations: number | null
+  usage_outfit_generations: number | null
+  usage_pieces_analyzed: number | null
+  usage_reset_at: string | null
   created_at: string
   updated_at: string
 }

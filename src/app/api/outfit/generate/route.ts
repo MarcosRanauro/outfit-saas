@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import sharp from 'sharp'
+import { checkRateLimit, incrementUsage } from "@/lib/rate-limit";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -103,7 +104,33 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
-  const { period, occasion, temp, weatherDesc, eventDate, eventPeriod, previousOutfits, usedPieceIds, anchorPiece } = await request.json();
+  const rateCheck = await checkRateLimit(user.id, 'outfit_generate')
+  if (!rateCheck.allowed) {
+    return NextResponse.json(
+      { error: `Limite de gerações atingido (${rateCheck.used}/${rateCheck.limit}). Faça upgrade para o plano Pro.` },
+      { status: 429 }
+    )
+  }
+
+  let period, occasion, temp, weatherDesc, eventDate, eventPeriod, previousOutfits, usedPieceIds, anchorPiece
+
+  try {
+    const body = await request.json()
+    period = body.period
+    occasion = body.occasion
+    temp = body.temp
+    weatherDesc = body.weatherDesc
+    eventDate = body.eventDate
+    eventPeriod = body.eventPeriod
+    previousOutfits = body.previousOutfits
+    usedPieceIds = body.usedPieceIds
+    anchorPiece = body.anchorPiece
+  } catch {
+    return NextResponse.json(
+      { error: 'Body inválido' },
+      { status: 400 }
+    )
+  }
 
   const { data: pieces } = await supabase
     .from("pieces")
@@ -285,6 +312,7 @@ Regras técnicas:
       pieces: pieces.filter((p) => outfit.piece_ids.includes(p.id)),
     }));
 
+    await incrementUsage(user.id, 'outfit_generate')
     return NextResponse.json({ outfits: outfitsWithPieces });
   } catch {
     return NextResponse.json(

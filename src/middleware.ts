@@ -37,7 +37,8 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/login') ||
     request.nextUrl.pathname.startsWith('/cadastro') ||
     request.nextUrl.pathname.startsWith('/auth') ||
-    request.nextUrl.pathname.startsWith('/esqueci-senha')
+    request.nextUrl.pathname.startsWith('/esqueci-senha') ||
+    request.nextUrl.pathname.startsWith('/api/stripe/webhook')
 
   const isPublicRoute =
     request.nextUrl.pathname === '/'
