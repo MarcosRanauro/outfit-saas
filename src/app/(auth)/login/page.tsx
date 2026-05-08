@@ -132,6 +132,24 @@ export default function LoginPage() {
         <div className="footer-link" style={{ marginTop: '8px' }}>
           <a href="/esqueci-senha">Esqueci minha senha</a>
         </div>
+
+        <div style={{
+          marginTop: '20px',
+          paddingTop: '16px',
+          borderTop: '0.5px solid rgba(255,255,255,0.06)',
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '16px',
+          fontSize: '11px'
+        }}>
+          <a href="/termos" style={{ color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
+            Termos de Uso
+          </a>
+          <span style={{ color: 'rgba(255,255,255,0.1)' }}>·</span>
+          <a href="/privacidade" style={{ color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
+            Privacidade
+          </a>
+        </div>
       </div>
     </main>
   )
