@@ -40,6 +40,18 @@ export default function PerfilPage() {
     loadData()
   }, [])
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('upgrade') === 'success') {
+      alert('🎉 Bem-vindo ao Mia Pro! Seu plano foi ativado.')
+      window.history.replaceState({}, '', '/perfil')
+      loadData()
+    }
+    if (params.get('upgrade') === 'cancelled') {
+      window.history.replaceState({}, '', '/perfil')
+    }
+  }, [])
+
   async function loadData() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
@@ -117,6 +129,34 @@ export default function PerfilPage() {
       alert('Erro ao salvar. Tente novamente.')
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handleUpgrade() {
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      }
+    } catch {
+      alert('Erro ao iniciar pagamento. Tente novamente.')
+    }
+  }
+
+  async function handleManageSubscription() {
+    try {
+      const res = await fetch('/api/stripe/portal', {
+        method: 'POST',
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      }
+    } catch {
+      alert('Erro ao abrir portal. Tente novamente.')
     }
   }
 
@@ -267,14 +307,18 @@ export default function PerfilPage() {
         </div>
 
         {profile?.plan === 'free' && (
+          <button className="upgrade-btn" onClick={handleUpgrade}>
+            ⚡ Fazer upgrade para Pro — R$19/mês
+          </button>
+        )}
+
+        {profile?.plan === 'pro' && (
           <button
             className="upgrade-btn"
-            onClick={() => {
-              // TODO: redirecionar para checkout Stripe
-              alert('Em breve! Estamos implementando o pagamento.')
-            }}
+            onClick={handleManageSubscription}
+            style={{ background: 'rgba(92,200,141,0.1)', borderColor: 'rgba(92,200,141,0.4)', color: 'rgba(92,200,141,0.9)' }}
           >
-            ⚡ Fazer upgrade para Pro — R$19/mês
+            ✓ Plano Pro ativo — Gerenciar assinatura
           </button>
         )}
 
