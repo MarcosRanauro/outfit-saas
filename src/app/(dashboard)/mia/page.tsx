@@ -46,7 +46,15 @@ export default function MiaPage() {
   const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null)
   const [savedOutfitIds, setSavedOutfitIds] = useState<Set<string>>(new Set())
   const [savedWishlistIds, setSavedWishlistIds] = useState<Set<string>>(new Set())
-  const [anchorPiece, setAnchorPiece] = useState<any>(null)
+  const [anchorPiece, setAnchorPiece] = useState<any>(() => {
+    if (typeof window === 'undefined') return null
+    try {
+      const saved = sessionStorage.getItem('anchor_piece')
+      return saved ? JSON.parse(saved) : null
+    } catch {
+      return null
+    }
+  })
 
   // Carrega perfil e clima ao montar
   useEffect(() => {
@@ -61,11 +69,6 @@ export default function MiaPage() {
   async function loadProfileAndWeather() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/login'); return }
-
-    try {
-      const saved = sessionStorage.getItem('anchor_piece')
-      if (saved) setAnchorPiece(JSON.parse(saved))
-    } catch {}
 
     const { data: profileData } = await supabase
       .from('profiles')
