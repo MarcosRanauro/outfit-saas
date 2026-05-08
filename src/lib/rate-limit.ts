@@ -25,7 +25,7 @@ export async function checkRateLimit(
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('plan, usage_mia_generations, usage_pieces_analyzed, usage_reset_at')
+    .select('plan, usage_mia_generations, usage_outfit_generations, usage_pieces_analyzed, usage_reset_at')
     .eq('id', userId)
     .single()
 
@@ -43,6 +43,7 @@ export async function checkRateLimit(
       .from('profiles')
       .update({
         usage_mia_generations: 0,
+        usage_outfit_generations: 0,
         usage_pieces_analyzed: 0,
         usage_reset_at: now.toISOString(),
       })
@@ -51,7 +52,7 @@ export async function checkRateLimit(
 
   const usageMap: Record<ActionType, number> = {
     mia_chat: profile.usage_mia_generations || 0,
-    outfit_generate: profile.usage_mia_generations || 0,
+    outfit_generate: profile.usage_outfit_generations || 0,
     pieces_analyze: profile.usage_pieces_analyzed || 0,
     wishlist_generate: profile.usage_pieces_analyzed || 0,
   }
@@ -74,7 +75,7 @@ export async function incrementUsage(
 
   const columnMap: Record<ActionType, string> = {
     mia_chat: 'usage_mia_generations',
-    outfit_generate: 'usage_mia_generations',
+    outfit_generate: 'usage_outfit_generations',
     pieces_analyze: 'usage_pieces_analyzed',
     wishlist_generate: 'usage_pieces_analyzed',
   }
