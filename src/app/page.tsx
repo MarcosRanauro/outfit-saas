@@ -11,6 +11,6 @@ export default async function HomePage() {
   if (user) {
     redirect('/closet')
   } else {
-    redirect('/login')
+    redirect('/landing')
   }
 }
