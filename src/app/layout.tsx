@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, Bebas_Neue } from 'next/font/google'
 import './globals.css'
+import { GoogleAnalytics } from '@next/third-parties/google'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -81,6 +82,7 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={`${inter.variable} ${bebas.variable}`}>
         {children}
+        <GoogleAnalytics gaId="G-BE79RBHKKT" />
       </body>
     </html>
   )
