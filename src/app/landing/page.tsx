@@ -196,6 +196,7 @@ export default function LandingPage() {
           Mia <span>Outfit AI</span> · 2026
         </div>
         <div className="lp-footer-links">
+          <Link href="/faq">FAQ</Link>
           <Link href="/termos">Termos de Uso</Link>
           <Link href="/privacidade">Privacidade</Link>
           <a href="mailto:suporte@miaoutfitai.com.br">suporte@miaoutfitai.com.br</a>
