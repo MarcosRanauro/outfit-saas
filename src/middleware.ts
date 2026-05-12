@@ -41,6 +41,7 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/landing') ||
     request.nextUrl.pathname.startsWith('/termos') ||
     request.nextUrl.pathname.startsWith('/privacidade') ||
+    request.nextUrl.pathname.startsWith('/faq') ||
     request.nextUrl.pathname.startsWith('/api/stripe/webhook')
 
   const isPublicRoute =

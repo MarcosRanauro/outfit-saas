@@ -150,9 +150,9 @@ export default function LandingPage() {
               <span className="lp-period">/mês</span>
             </div>
             <ul className="lp-pricing-features">
-              <li>✓ 20 mensagens com a Mia/mês</li>
-              <li>✓ 5 gerações de outfits/mês</li>
-              <li>✓ 3 análises de peças/mês</li>
+              <li>✓ 10 mensagens com a Mia/mês</li>
+              <li>✓ 3 análises de peças com IA/mês</li>
+              <li>✓ 3 sugestões de wishlist/mês</li>
               <li>✓ Closet e Lookbook</li>
             </ul>
             <Link href="/cadastro" className="lp-pricing-btn lp-btn-outline">
@@ -196,6 +196,7 @@ export default function LandingPage() {
           Mia <span>Outfit AI</span> · 2026
         </div>
         <div className="lp-footer-links">
+          <Link href="/faq">FAQ</Link>
           <Link href="/termos">Termos de Uso</Link>
           <Link href="/privacidade">Privacidade</Link>
           <a href="mailto:suporte@miaoutfitai.com.br">suporte@miaoutfitai.com.br</a>

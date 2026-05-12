@@ -297,7 +297,7 @@ export default function PerfilPage() {
               <div className="plan-desc">
                 {profile?.plan === "pro"
                   ? "Acesso ilimitado"
-                  : "20 msgs Mia · 5 outfits · 3 análises por mês"}
+                  : "10 msgs com a Mia · 3 análises · 3 wishlists/mês"}
               </div>
             </div>
           </div>

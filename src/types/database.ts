@@ -15,6 +15,7 @@ export type Profile = {
   usage_mia_generations: number | null
   usage_outfit_generations: number | null
   usage_pieces_analyzed: number | null
+  usage_wishlist_generations: number | null
   usage_reset_at: string | null
   created_at: string
   updated_at: string

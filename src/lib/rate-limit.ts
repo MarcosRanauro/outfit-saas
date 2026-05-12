@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 
 const LIMITS = {
   free: {
-    mia_chat: 20,
+    mia_chat: 10,
     outfit_generate: 5,
     pieces_analyze: 3,
     wishlist_generate: 3,
@@ -25,7 +25,7 @@ export async function checkRateLimit(
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('plan, usage_mia_generations, usage_outfit_generations, usage_pieces_analyzed, usage_reset_at')
+    .select('plan, usage_mia_generations, usage_outfit_generations, usage_pieces_analyzed, usage_wishlist_generations, usage_reset_at')
     .eq('id', userId)
     .single()
 
@@ -45,6 +45,7 @@ export async function checkRateLimit(
         usage_mia_generations: 0,
         usage_outfit_generations: 0,
         usage_pieces_analyzed: 0,
+        usage_wishlist_generations: 0,
         usage_reset_at: now.toISOString(),
       })
       .eq('id', userId)
@@ -54,7 +55,7 @@ export async function checkRateLimit(
     mia_chat: profile.usage_mia_generations || 0,
     outfit_generate: profile.usage_outfit_generations || 0,
     pieces_analyze: profile.usage_pieces_analyzed || 0,
-    wishlist_generate: profile.usage_pieces_analyzed || 0,
+    wishlist_generate: profile.usage_wishlist_generations || 0,
   }
 
   const used = usageMap[action]
@@ -77,7 +78,7 @@ export async function incrementUsage(
     mia_chat: 'usage_mia_generations',
     outfit_generate: 'usage_outfit_generations',
     pieces_analyze: 'usage_pieces_analyzed',
-    wishlist_generate: 'usage_pieces_analyzed',
+    wishlist_generate: 'usage_wishlist_generations',
   }
 
   const column = columnMap[action]
