@@ -46,6 +46,7 @@ export default function MiaPage() {
   const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null)
   const [savedOutfitIds, setSavedOutfitIds] = useState<Set<string>>(new Set())
   const [savedWishlistIds, setSavedWishlistIds] = useState<Set<string>>(new Set())
+  const [expandedOutfits, setExpandedOutfits] = useState<Set<string>>(new Set())
   const [anchorPiece, setAnchorPiece] = useState<any>(() => {
     if (typeof window === 'undefined') return null
     try {
@@ -319,14 +320,17 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
 
                 {/* Cards de outfit dentro da mensagem */}
                 {msg.outfits && msg.outfits.map((outfit, outfitIndex) => {
-                  const saveKey = `${msgIndex}-${outfitIndex}`
-                  const isSaved = savedOutfitIds.has(saveKey)
-                  const photos = outfit.pieces?.slice(0, 3) || []
+                  const outfitKey = `${msgIndex}-${outfitIndex}`
+                  const isSaved = savedOutfitIds.has(outfitKey)
+                  const outfitPieces = outfit.pieces || []
+                  const isExpanded = expandedOutfits.has(outfitKey)
+                  const visiblePieces = isExpanded ? outfitPieces : outfitPieces.slice(0, 3)
+                  const extraCount = outfitPieces.length - 3
 
                   return (
                     <div key={outfitIndex} className="mia-outfit-card">
-                      <div className="mia-outfit-photos">
-                        {photos.map((piece: any, pi: number) => (
+                      <div className={`mia-outfit-photos${isExpanded ? ' expanded' : ''}`}>
+                        {visiblePieces.map((piece: any, pi: number) => (
                           <div key={pi} className="mia-outfit-photo">
                             {piece.photo_url ? (
                               <img src={piece.photo_url} alt={piece.name} />
@@ -335,11 +339,21 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
                             )}
                           </div>
                         ))}
-                        {[...Array(Math.max(0, 3 - photos.length))].map((_, i) => (
-                          <div key={`empty-${i}`} className="mia-outfit-photo">
-                            <span className="mia-outfit-photo-placeholder">👕</span>
+                        {!isExpanded && extraCount > 0 && (
+                          <div
+                            className="mia-outfit-photo mia-outfit-more"
+                            onClick={() => setExpandedOutfits(prev => new Set([...prev, outfitKey]))}
+                          >
+                            +{extraCount}
                           </div>
-                        ))}
+                        )}
+                        {!isExpanded && outfitPieces.length < 3 && (
+                          [...Array(Math.max(0, 3 - outfitPieces.length))].map((_, i) => (
+                            <div key={`empty-${i}`} className="mia-outfit-photo">
+                              <span className="mia-outfit-photo-placeholder">👕</span>
+                            </div>
+                          ))
+                        )}
                       </div>
                       <div className="mia-outfit-body">
                         <div className="mia-outfit-name">{outfit.name}</div>
