@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter, Bebas_Neue } from 'next/font/google'
 import './globals.css'
 import { GoogleAnalytics } from '@next/third-parties/google'
+import Script from 'next/script'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -83,6 +84,22 @@ export default function RootLayout({
       <body className={`${inter.variable} ${bebas.variable}`}>
         {children}
         <GoogleAnalytics gaId="G-BE79RBHKKT" />
+        <Script
+          id="register-sw"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js')
+                    .catch(function(err) {
+                      console.error('SW erro:', err);
+                    });
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   )

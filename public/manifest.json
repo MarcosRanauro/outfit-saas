@@ -3,9 +3,13 @@
   "short_name": "Mia",
   "description": "Sua stylist pessoal com inteligência artificial",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#080808",
   "theme_color": "#080808",
+  "lang": "pt-BR",
+  "categories": ["lifestyle", "fashion"],
   "icons": [
     {
       "src": "/favicon/favicon-192x192.png",
@@ -18,6 +22,14 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/logos-mia-ai/banner-1.png",
+      "sizes": "1536x1024",
+      "type": "image/png",
+      "label": "Mia Outfit AI"
     }
   ]
 }
