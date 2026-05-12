@@ -143,7 +143,7 @@ export async function POST(request: Request) {
   const rateCheck = await checkRateLimit(user.id, 'mia_chat')
   if (!rateCheck.allowed) {
     return NextResponse.json(
-      { error: `Limite de mensagens atingido (${rateCheck.used}/${rateCheck.limit}). Faça upgrade para o plano Pro.` },
+      { error: `Você atingiu o limite de mensagens do plano Free. Faça upgrade para o Pro para continuar! 🚀` },
       { status: 429 }
     )
   }

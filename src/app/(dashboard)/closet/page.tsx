@@ -98,6 +98,7 @@ export default function ClosetPage() {
   const [filtered, setFiltered] = useState<Piece[]>([])
   const [activeFilter, setActiveFilter] = useState('Todos')
   const [loading, setLoading] = useState(true)
+  const [userPlan, setUserPlan] = useState<string>('free')
   const [outfitsCount, setOutfitsCount] = useState(0)
   const [modalOpen, setModalOpen] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -139,6 +140,7 @@ export default function ClosetPage() {
   const [wishlistLoading, setWishlistLoading] = useState(false)
   const [purchasingWishlistId, setPurchasingWishlistId] = useState<string | null>(null)
 
+  const [showUpgradeBanner, setShowUpgradeBanner] = useState(false)
   const [tourOpen, setTourOpen] = useState(false)
   const [tourStep, setTourStep] = useState(0)
   const [spotlightStyle, setSpotlightStyle] = useState<React.CSSProperties>({})
@@ -184,7 +186,7 @@ export default function ClosetPage() {
 
     const [piecesResult, profileResult, outfitsResult] = await Promise.all([
       supabase.from('pieces').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-      supabase.from('profiles').select('name, height, weight, style, closet_tour_completed').eq('id', user.id).single(),
+      supabase.from('profiles').select('plan, name, height, weight, style, closet_tour_completed').eq('id', user.id).single(),
       supabase.from('outfits').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
     ])
 
@@ -197,6 +199,7 @@ export default function ClosetPage() {
 
     if (profileResult.data) {
       const p = profileResult.data
+      setUserPlan(p.plan || 'free')
       const incomplete = !p.height || !p.weight || !p.style
       if (incomplete) {
         setShowNameField(!p.name)
@@ -340,6 +343,13 @@ export default function ClosetPage() {
   async function handleSave() {
     if (!name || !category) return
     setSaving(true)
+
+    if (userPlan === 'free' && pieces.length >= 10) {
+      setShowUpgradeBanner(true)
+      setSaving(false)
+      resetModal()
+      return
+    }
 
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -572,6 +582,76 @@ export default function ClosetPage() {
     <>
       <DashboardTopBanner priority />
 
+      {showUpgradeBanner && (
+        <div style={{
+          margin: '12px 16px',
+          background: 'linear-gradient(135deg, rgba(180,140,60,0.12), rgba(180,140,60,0.06))',
+          border: '1px solid rgba(180,140,60,0.35)',
+          borderRadius: '12px',
+          padding: '14px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          flexWrap: 'wrap' as const,
+        }}>
+          <div style={{ flex: 1, minWidth: '200px' }}>
+            <div style={{
+              fontSize: '13px',
+              fontWeight: 600,
+              color: 'rgba(180,140,60,0.95)',
+              marginBottom: '4px'
+            }}>
+              🔒 Limite do plano Free atingido
+            </div>
+            <div style={{
+              fontSize: '12px',
+              color: 'rgba(255,255,255,0.45)',
+              lineHeight: 1.5
+            }}>
+              Você tem 10 peças cadastradas. Faça upgrade para o Pro
+              e tenha closet ilimitado.
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+            <button
+              onClick={() => setShowUpgradeBanner(false)}
+              style={{
+                background: 'transparent',
+                border: '0.5px solid rgba(255,255,255,0.15)',
+                borderRadius: '7px',
+                padding: '8px 14px',
+                fontSize: '12px',
+                color: 'rgba(255,255,255,0.3)',
+                cursor: 'pointer',
+                fontFamily: 'var(--font-inter), sans-serif',
+              }}
+            >
+              Fechar
+            </button>
+            <a
+              href="/perfil"
+              style={{
+                background: 'rgba(180,140,60,0.9)',
+                border: 'none',
+                borderRadius: '7px',
+                padding: '8px 16px',
+                fontSize: '12px',
+                fontWeight: 600,
+                color: '#fff',
+                cursor: 'pointer',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontFamily: 'var(--font-inter), sans-serif',
+              }}
+            >
+              ⚡ Upgrade para Pro
+            </a>
+          </div>
+        </div>
+      )}
+
       <div className="closet-header">
         <h1 className="closet-title">
           Meu <span>Closet</span>
@@ -597,14 +677,27 @@ export default function ClosetPage() {
             <span className="action-btn-icon ghost">♡</span>
             <span className="action-btn-label">Wishlist</span>
           </button>
-          <button
-            ref={addBtnRef}
-            className="action-btn"
-            onClick={() => setModalOpen(true)}
-          >
-            <span className="action-btn-icon gold">+</span>
-            <span className="action-btn-label">Nova</span>
-          </button>
+          {userPlan === 'free' && pieces.length >= 10 ? (
+            <button
+              ref={addBtnRef}
+              className="action-btn"
+              onClick={() => setShowUpgradeBanner(true)}
+              title="Limite atingido — Upgrade para Pro"
+              style={{ opacity: 0.5 }}
+            >
+              <span className="action-btn-icon gold">🔒</span>
+              <span className="action-btn-label">Nova</span>
+            </button>
+          ) : (
+            <button
+              ref={addBtnRef}
+              className="action-btn"
+              onClick={() => setModalOpen(true)}
+            >
+              <span className="action-btn-icon gold">+</span>
+              <span className="action-btn-label">Nova</span>
+            </button>
+          )}
         </div>
       </div>
 
