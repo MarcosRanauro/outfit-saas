@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+
 export default function PrivacidadePage() {
   return (
     <main style={{
@@ -18,7 +20,7 @@ export default function PrivacidadePage() {
           paddingBottom: '20px',
           borderBottom: '0.5px solid rgba(180,140,60,0.15)'
         }}>
-          <a href="/" style={{
+          <Link href="/" style={{
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
@@ -37,7 +39,7 @@ export default function PrivacidadePage() {
               color: '#f0f0f0',
               letterSpacing: '1px'
             }}>Mia <span style={{color:'rgba(180,140,60,0.9)'}}>Outfit AI</span></span>
-          </a>
+          </Link>
         </div>
 
         <div style={{

@@ -56,10 +56,11 @@ src/
 
 ## Banco de dados
 
-- `profiles` — id, name, height, weight, style, avatar_url, plan (`free` | `pro` | `stylist`), created_at, updated_at
-- `pieces` — id, user_id, code, name, category, color, brand, photo_url, created_at
+- `profiles` — id, name, height, weight, style, avatar_url, plan (`free` | `pro` | `stylist`), closet_tour_completed, stripe_customer_id, stripe_subscription_id, plan_expires_at, usage_mia_generations, usage_outfit_generations, usage_pieces_analyzed, usage_wishlist_generations, usage_reset_at, created_at, updated_at
+- `pieces` — id, user_id, code, name, category, color, brand, photo_url, fit, style_type, season, created_at
 - `outfits` — id, user_id, name, subtitle, style_tags[], occasion_tags[], period, occasion, why, pieces (IDs[]), notes, created_at
 - `outfit_history` — id, user_id, outfit_id, worn_at, occasion, created_at
+- `wishlist_items` — id, user_id, name, category, color, reason, priority (`high` | `medium` | `low`), purchased, created_at
 - Trigger `on_auth_user_created` cria perfil automaticamente no signup
 - **RLS ativado em todas as tabelas** — toda query precisa respeitar `auth.uid()`
 
@@ -92,7 +93,7 @@ src/
 | Plano | Preço | Limite |
 |---|---|---|
 | Free | R$ 0 | limitado (peças e sugestões/mês) |
-| Pro | R$ 29/mês | ilimitado |
+| Pro | R$ 19/mês | ilimitado |
 | Stylist | R$ 79/mês | multi-closet (para personal stylists) |
 
 ## Convenções de código
@@ -137,13 +138,12 @@ npx supabase gen types typescript --linked > src/types/database.ts  # regenerar 
 - [x] Fase 3 — Lookbook (outfits salvos, filtro por período/ocasião)
 - [x] Fase 4 — Outfit IA (geração com clima + ocasião, salvar no lookbook)
 - [x] Fase 5 — Perfil (nome, altura, peso, estilo, avatar crop, logout, onboarding)
-- [ ] Fase 6 — Deploy (Vercel) ← **próxima**
-- [ ] Fase 7 — Monetização (Stripe)
+- [x] Fase 6 — Deploy (Vercel) — miaoutfitai.com.br em produção
+- [x] Fase 7 — Monetização (Stripe live, checkout, webhook, portal)
 
 ## Dívidas técnicas conhecidas
 
 - `middleware.ts` está deprecado no Next.js 16 — deve ser renomeado para `proxy.ts` (não urgente)
-- `src/app/(auth)/callback/route.ts` parece duplicata de `src/app/auth/callback/route.ts` — verificar qual é usada e remover a outra
 
 ## Como trabalhar comigo
 
