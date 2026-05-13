@@ -210,6 +210,24 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* CURADORIA */}
+      <section className="lp-curadoria">
+        <div className="lp-curadoria-inner">
+          <div className="lp-section-label">✦ CURADORIA</div>
+          <h2 className="lp-curadoria-title">
+            A Mia não é só tecnologia.<br />
+            <em className="lp-curadoria-subtitle">É experiência de quem vive moda.</em>
+          </h2>
+          <div className="lp-curadoria-divider" />
+          <p className="lp-curadoria-text">
+            A Mia foi construída com quem vive moda todos os dias. Especialistas em consultoria de imagem,
+            styling pessoal e comportamento de moda contribuíram para cada decisão — das categorias de peças
+            ao jeito como ela analisa clima, biotipo e ocasião. O resultado é uma IA que não apenas sugere
+            roupas, mas entende de estilo de verdade.
+          </p>
+        </div>
+      </section>
+
       {/* PLANOS */}
       <section className="lp-pricing" id="planos">
         <div className="lp-section-label">✦ Planos</div>
