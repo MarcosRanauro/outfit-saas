@@ -6,10 +6,20 @@ import '../landing.css'
 export default function LandingPage() {
   const [installPrompt, setInstallPrompt] = useState<any>(null)
   const [isInstalled, setIsInstalled] = useState(false)
+  const [showIOSInstructions, setShowIOSInstructions] = useState(false)
 
   useEffect(() => {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+    const isIOSSafari = isIOS && isSafari
+
     if (window.matchMedia('(display-mode: standalone)').matches) {
       setIsInstalled(true)
+      return
+    }
+
+    if (isIOSSafari) {
+      setShowIOSInstructions(true)
       return
     }
 
@@ -70,11 +80,29 @@ export default function LandingPage() {
           <a href="#funcionalidades" className="lp-btn-secondary">Ver como funciona</a>
         </div>
 
+        {/* Android — botão automático */}
         {installPrompt && !isInstalled && (
-          <div style={{ marginTop: '12px' }}>
+          <div style={{ textAlign: 'center', marginTop: '12px' }}>
             <button onClick={handleInstall} className="lp-btn-install">
               📲 Instalar app no celular
             </button>
+          </div>
+        )}
+
+        {/* iOS — instrução manual */}
+        {showIOSInstructions && (
+          <div style={{
+            textAlign: 'center',
+            marginTop: '12px',
+            padding: '10px 16px',
+            background: 'rgba(180,140,60,0.06)',
+            border: '0.5px solid rgba(180,140,60,0.25)',
+            borderRadius: '8px',
+            fontSize: '12px',
+            color: 'rgba(180,140,60,0.7)',
+            lineHeight: 1.5,
+          }}>
+            📲 Para instalar: toque em <strong style={{color:'rgba(180,140,60,0.9)'}}>Compartilhar</strong> → <strong style={{color:'rgba(180,140,60,0.9)'}}>Adicionar à Tela de Início</strong>
           </div>
         )}
 
