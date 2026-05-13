@@ -288,6 +288,7 @@ export default function LandingPage() {
         </div>
         <div className="lp-footer-links">
           <Link href="/faq">FAQ</Link>
+          <Link href="/sobre">Sobre</Link>
           <Link href="/termos">Termos de Uso</Link>
           <Link href="/privacidade">Privacidade</Link>
           <a href="mailto:suporte@miaoutfitai.com.br">suporte@miaoutfitai.com.br</a>

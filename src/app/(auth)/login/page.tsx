@@ -217,6 +217,10 @@ export default function LoginPage() {
           <a href="/privacidade" style={{ color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
             Privacidade
           </a>
+          <span style={{ color: 'rgba(255,255,255,0.1)' }}>·</span>
+          <a href="/sobre" style={{ color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
+            Sobre
+          </a>
         </div>
       </div>
     </main>

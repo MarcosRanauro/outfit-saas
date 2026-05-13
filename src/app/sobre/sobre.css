@@ -1,0 +1,240 @@
+.sobre-wrap {
+  min-height: 100vh;
+  background: #080808;
+  color: rgba(255,255,255,0.85);
+  font-family: var(--font-inter), sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.sobre-bg-glow {
+  position: fixed;
+  top: -200px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(180,140,60,0.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.sobre-section {
+  padding: 72px 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.sobre-section-alt {
+  background: rgba(255,255,255,0.02);
+  border-top: 0.5px solid rgba(255,255,255,0.04);
+  border-bottom: 0.5px solid rgba(255,255,255,0.04);
+}
+
+.sobre-inner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.sobre-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(180,140,60,0.08);
+  border: 0.5px solid rgba(180,140,60,0.25);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: rgba(180,140,60,0.9);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.sobre-title {
+  font-family: var(--font-bebas), 'Bebas Neue', sans-serif;
+  font-size: clamp(28px, 6vw, 44px);
+  font-weight: 400;
+  line-height: 1.15;
+  color: #fff;
+  margin: 0 0 8px;
+  letter-spacing: 0.01em;
+}
+
+.sobre-subtitle {
+  color: rgba(180,140,60,0.85);
+  font-style: italic;
+  font-family: var(--font-inter), sans-serif;
+  font-size: clamp(16px, 3vw, 22px);
+  font-weight: 400;
+}
+
+.sobre-divider {
+  width: 40px;
+  height: 1px;
+  background: rgba(180,140,60,0.3);
+  margin: 24px 0;
+}
+
+.sobre-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sobre-body p {
+  font-size: 15px;
+  line-height: 1.8;
+  color: rgba(255,255,255,0.6);
+  margin: 0;
+}
+
+/* Cards especialistas */
+.sobre-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.sobre-card {
+  background: #111;
+  border: 0.5px solid rgba(180,140,60,0.15);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.sobre-card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.sobre-card-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(180,140,60,0.15);
+  border: 0.5px solid rgba(180,140,60,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(180,140,60,0.9);
+  flex-shrink: 0;
+}
+
+.sobre-card-nome {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.sobre-card-local {
+  font-size: 12px;
+  color: rgba(180,140,60,0.6);
+}
+
+.sobre-card-badge {
+  display: inline-block;
+  background: rgba(180,140,60,0.08);
+  border: 0.5px solid rgba(180,140,60,0.2);
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 11px;
+  color: rgba(180,140,60,0.8);
+  margin-bottom: 14px;
+}
+
+.sobre-card-texto {
+  font-size: 13px;
+  line-height: 1.75;
+  color: rgba(255,255,255,0.5);
+  margin: 0;
+}
+
+/* Missão */
+.sobre-quote {
+  border-left: 2px solid rgba(180,140,60,0.4);
+  padding-left: 20px;
+  margin: 0 0 24px;
+  font-size: 15px;
+  line-height: 1.8;
+  color: rgba(255,255,255,0.6);
+  font-style: normal;
+}
+
+.sobre-destaque {
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(180,140,60,0.85);
+  margin: 0;
+}
+
+/* Visão */
+.sobre-visao {
+  font-size: 16px;
+  line-height: 1.8;
+  color: rgba(255,255,255,0.6);
+  margin: 0;
+}
+
+/* Produto */
+.sobre-produto-texto {
+  font-size: 15px;
+  line-height: 1.8;
+  color: rgba(255,255,255,0.6);
+  margin: 0 0 24px;
+}
+
+.sobre-link {
+  color: rgba(180,140,60,0.85);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.sobre-cta {
+  display: inline-block;
+  background: rgba(180,140,60,1);
+  color: #080808;
+  font-weight: 700;
+  font-size: 14px;
+  border-radius: 8px;
+  padding: 12px 28px;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.sobre-cta:hover {
+  opacity: 0.88;
+}
+
+/* Rodapé */
+.sobre-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  border-top: 0.5px solid rgba(255,255,255,0.06);
+}
+
+.sobre-footer-link {
+  font-size: 12px;
+  color: rgba(255,255,255,0.25);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.sobre-footer-link:hover {
+  color: rgba(180,140,60,0.7);
+}
+
+@media (max-width: 640px) {
+  .sobre-section { padding: 52px 20px; }
+}
