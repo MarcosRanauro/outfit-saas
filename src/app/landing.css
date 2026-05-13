@@ -381,6 +381,22 @@
   text-decoration: none;
 }
 
+.lp-btn-install {
+  background: transparent;
+  border: 0.5px solid rgba(180,140,60,0.4);
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-size: 13px;
+  color: rgba(180,140,60,0.8);
+  cursor: pointer;
+  font-family: var(--font-inter), sans-serif;
+  transition: all 0.2s;
+}
+
+.lp-btn-install:hover {
+  background: rgba(180,140,60,0.08);
+}
+
 /* Mobile */
 @media (max-width: 640px) {
   .lp-nav { padding: 14px 20px; }

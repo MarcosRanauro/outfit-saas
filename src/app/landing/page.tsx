@@ -1,8 +1,45 @@
 'use client'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import '../landing.css'
 
 export default function LandingPage() {
+  const [installPrompt, setInstallPrompt] = useState<any>(null)
+  const [isInstalled, setIsInstalled] = useState(false)
+
+  useEffect(() => {
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setIsInstalled(true)
+      return
+    }
+
+    const handler = (e: any) => {
+      e.preventDefault()
+      setInstallPrompt(e)
+    }
+
+    window.addEventListener('beforeinstallprompt', handler)
+
+    window.addEventListener('appinstalled', () => {
+      setIsInstalled(true)
+      setInstallPrompt(null)
+    })
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler)
+    }
+  }, [])
+
+  const handleInstall = async () => {
+    if (!installPrompt) return
+    installPrompt.prompt()
+    const result = await installPrompt.userChoice
+    if (result.outcome === 'accepted') {
+      setInstallPrompt(null)
+      setIsInstalled(true)
+    }
+  }
+
   return (
     <div className="lp">
 
@@ -32,6 +69,14 @@ export default function LandingPage() {
           <Link href="/cadastro" className="lp-btn-primary">Começar grátis</Link>
           <a href="#funcionalidades" className="lp-btn-secondary">Ver como funciona</a>
         </div>
+
+        {installPrompt && !isInstalled && (
+          <div style={{ marginTop: '12px' }}>
+            <button onClick={handleInstall} className="lp-btn-install">
+              📲 Instalar app no celular
+            </button>
+          </div>
+        )}
 
         {/* Phone mockup */}
         <div className="lp-phones">
