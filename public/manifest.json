@@ -2,7 +2,6 @@
   "name": "Mia Outfit AI",
   "short_name": "Mia",
   "description": "Sua stylist pessoal com inteligência artificial",
-  "id": "https://www.miaoutfitai.com.br/",
   "start_url": "/landing",
   "scope": "/",
   "display": "standalone",
