@@ -24,6 +24,7 @@ const CATEGORIES = [
   'Sandália / Chinelo',
   'Casaco / Jaqueta',
   'Acessório',
+  'Relógio',
   'Bolsa',
   'Chapéu / Boné',
 ]
