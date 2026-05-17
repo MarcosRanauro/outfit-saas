@@ -6,6 +6,11 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import '../../auth.css'
 
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
+}
+
 export default function LoginPage() {
   const router = useRouter()
   const supabase = createClient()
@@ -15,42 +20,44 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [loadingGoogle, setLoadingGoogle] = useState(false)
   const [error, setError] = useState('')
-  const [installPrompt, setInstallPrompt] = useState<any>(null)
-  const [isInstalled, setIsInstalled] = useState(false)
-  const [showIOSInstructions, setShowIOSInstructions] = useState(false)
-
-  useEffect(() => {
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
+  const [isInstalled, setIsInstalled] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    return window.matchMedia('(display-mode: standalone)').matches
+  })
+  const [showIOSInstructions] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    if (window.matchMedia('(display-mode: standalone)').matches) return false
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
-    const isIOSSafari = isIOS && isSafari
+    return isIOS && isSafari
+  })
 
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setIsInstalled(true)
-      return
-    }
+  useEffect(() => {
+    if (isInstalled || showIOSInstructions) return
 
-    if (isIOSSafari) {
-      setShowIOSInstructions(true)
-      return
-    }
-
-    const handler = (e: any) => {
+    const handler = (e: Event) => {
       e.preventDefault()
-      setInstallPrompt(e)
+      setInstallPrompt(e as BeforeInstallPromptEvent)
     }
-    window.addEventListener('beforeinstallprompt', handler)
-    window.addEventListener('appinstalled', () => {
+
+    const handleInstalled = () => {
       setIsInstalled(true)
       setInstallPrompt(null)
-    })
+    }
+
+    window.addEventListener('beforeinstallprompt', handler)
+    window.addEventListener('appinstalled', handleInstalled)
+
     return () => {
       window.removeEventListener('beforeinstallprompt', handler)
+      window.removeEventListener('appinstalled', handleInstalled)
     }
-  }, [])
+  }, [isInstalled, showIOSInstructions])
 
   const handleInstall = async () => {
     if (!installPrompt) return
-    installPrompt.prompt()
+    await installPrompt.prompt()
     const result = await installPrompt.userChoice
     if (result.outcome === 'accepted') {
       setInstallPrompt(null)
@@ -216,6 +223,10 @@ export default function LoginPage() {
           <span style={{ color: 'rgba(255,255,255,0.1)' }}>·</span>
           <a href="/privacidade" style={{ color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
             Privacidade
+          </a>
+          <span style={{ color: 'rgba(255,255,255,0.1)' }}>·</span>
+          <a href="/sobre" style={{ color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
+            Sobre
           </a>
         </div>
       </div>

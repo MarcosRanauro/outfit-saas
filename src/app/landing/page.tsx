@@ -3,46 +3,50 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import '../landing.css'
 
-export default function LandingPage() {
-  const [installPrompt, setInstallPrompt] = useState<any>(null)
-  const [isInstalled, setIsInstalled] = useState(false)
-  const [showIOSInstructions, setShowIOSInstructions] = useState(false)
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
+}
 
-  useEffect(() => {
+export default function LandingPage() {
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
+  const [isInstalled, setIsInstalled] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    return window.matchMedia('(display-mode: standalone)').matches
+  })
+  const [showIOSInstructions] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    if (window.matchMedia('(display-mode: standalone)').matches) return false
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
-    const isIOSSafari = isIOS && isSafari
+    return isIOS && isSafari
+  })
 
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setIsInstalled(true)
-      return
-    }
+  useEffect(() => {
+    if (isInstalled || showIOSInstructions) return
 
-    if (isIOSSafari) {
-      setShowIOSInstructions(true)
-      return
-    }
-
-    const handler = (e: any) => {
+    const handler = (e: Event) => {
       e.preventDefault()
-      setInstallPrompt(e)
+      setInstallPrompt(e as BeforeInstallPromptEvent)
+    }
+
+    const handleInstalled = () => {
+      setIsInstalled(true)
+      setInstallPrompt(null)
     }
 
     window.addEventListener('beforeinstallprompt', handler)
-
-    window.addEventListener('appinstalled', () => {
-      setIsInstalled(true)
-      setInstallPrompt(null)
-    })
+    window.addEventListener('appinstalled', handleInstalled)
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handler)
+      window.removeEventListener('appinstalled', handleInstalled)
     }
-  }, [])
+  }, [isInstalled, showIOSInstructions])
 
   const handleInstall = async () => {
     if (!installPrompt) return
-    installPrompt.prompt()
+    await installPrompt.prompt()
     const result = await installPrompt.userChoice
     if (result.outcome === 'accepted') {
       setInstallPrompt(null)
@@ -210,6 +214,24 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* CURADORIA */}
+      <section className="lp-curadoria">
+        <div className="lp-curadoria-inner">
+          <div className="lp-section-label">✦ CURADORIA</div>
+          <h2 className="lp-curadoria-title">
+            A Mia não é só tecnologia.<br />
+            <em className="lp-curadoria-subtitle">É experiência de quem vive moda.</em>
+          </h2>
+          <div className="lp-curadoria-divider" />
+          <p className="lp-curadoria-text">
+            A Mia foi construída com quem vive moda todos os dias. Especialistas em consultoria de imagem,
+            styling pessoal e comportamento de moda contribuíram para cada decisão — das categorias de peças
+            ao jeito como ela analisa clima, biotipo e ocasião. O resultado é uma IA que não apenas sugere
+            roupas, mas entende de estilo de verdade.
+          </p>
+        </div>
+      </section>
+
       {/* PLANOS */}
       <section className="lp-pricing" id="planos">
         <div className="lp-section-label">✦ Planos</div>
@@ -270,6 +292,7 @@ export default function LandingPage() {
         </div>
         <div className="lp-footer-links">
           <Link href="/faq">FAQ</Link>
+          <Link href="/sobre">Sobre</Link>
           <Link href="/termos">Termos de Uso</Link>
           <Link href="/privacidade">Privacidade</Link>
           <a href="mailto:suporte@miaoutfitai.com.br">suporte@miaoutfitai.com.br</a>

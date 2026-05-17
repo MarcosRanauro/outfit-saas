@@ -42,6 +42,7 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/termos') ||
     request.nextUrl.pathname.startsWith('/privacidade') ||
     request.nextUrl.pathname.startsWith('/faq') ||
+    request.nextUrl.pathname.startsWith('/sobre') ||
     request.nextUrl.pathname.startsWith('/offline') ||
     request.nextUrl.pathname.startsWith('/api/stripe/webhook')
 

@@ -17,6 +17,7 @@ export default function DashboardTopBanner({ priority = false }: Props) {
         className="dashboard-top-banner-img"
         sizes="100vw"
         priority={priority}
+        loading="eager"
       />
     </div>
   )

@@ -326,6 +326,21 @@ export default function PerfilPage() {
         <button className="logout-btn" onClick={handleLogout}>
           Sair da conta
         </button>
+
+        <div style={{
+          marginTop: '32px',
+          paddingTop: '20px',
+          borderTop: '0.5px solid rgba(255,255,255,0.06)',
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '20px',
+          flexWrap: 'wrap',
+        }}>
+          <a href="/sobre" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>Sobre o Mia Outfit AI</a>
+          <a href="/faq" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>FAQ</a>
+          <a href="/termos" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>Termos</a>
+          <a href="/privacidade" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>Privacidade</a>
+        </div>
       </div>
 
       {/* Modal de edição */}
