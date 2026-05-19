@@ -21,7 +21,7 @@ const ANALYZE_PROMPT = `Analise esta peça de roupa e retorne APENAS um JSON vá
   "season": "um de: Todas, Verão, Inverno, Meia estação"
 }
 
-Categorias permitidas: Camiseta / Blusa, Camisa, Moletom, Calça, Short / Bermuda, Saia, Vestido, Macacão, Tênis, Sapato / Oxford, Bota, Sandália / Chinelo, Casaco / Jaqueta, Acessório, Bolsa, Chapéu / Boné
+Categorias permitidas: Camiseta / Blusa, Camisa, Moletom, Calça, Short / Bermuda, Saia, Vestido, Macacão, Tênis, Sapato / Oxford, Bota, Sandália / Chinelo, Casaco / Jaqueta, Acessório, Relógio, Bolsa, Chapéu / Boné
 
 Seja preciso na cor (ex: 'Azul marinho' não apenas 'Azul').
 Se não conseguir identificar algum campo, use null.`;
