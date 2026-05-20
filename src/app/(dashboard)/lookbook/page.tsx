@@ -28,6 +28,14 @@ type Piece = {
   photo_url: string | null
 }
 
+function getCategoryForTryOn(category: string): string {
+  const bottomsCategories = ['Calça', 'Short / Bermuda', 'Saia', 'Macacão']
+  const topsCategories = ['Camiseta / Blusa', 'Camisa', 'Moletom', 'Casaco / Jaqueta', 'Vestido']
+  if (bottomsCategories.includes(category)) return 'bottoms'
+  if (topsCategories.includes(category)) return 'tops'
+  return 'tops'
+}
+
 export default function LookbookPage() {
   const supabase = createClient()
 
@@ -39,6 +47,15 @@ export default function LookbookPage() {
   const [selectedOutfit, setSelectedOutfit] = useState<Outfit | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [userPlan, setUserPlan] = useState<string>('free')
+
+  const [tryOnOpen, setTryOnOpen] = useState(false)
+  const [tryOnOutfit, setTryOnOutfit] = useState<Outfit | null>(null)
+  const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null)
+  const [modelPhoto, setModelPhoto] = useState<string | null>(null)
+  const [tryOnLoading, setTryOnLoading] = useState(false)
+  const [tryOnResult, setTryOnResult] = useState<string | null>(null)
+  const [tryOnError, setTryOnError] = useState<string | null>(null)
 
   useEffect(() => {
     loadData()
@@ -63,12 +80,19 @@ export default function LookbookPage() {
       .select('*')
       .eq('user_id', user.id)
 
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('plan')
+      .eq('id', user.id)
+      .single()
+
     if (outfitsData) setOutfits(outfitsData)
     if (piecesData) {
       const map: Record<string, Piece> = {}
       piecesData.forEach(p => { map[p.id] = p })
       setPieces(map)
     }
+    setUserPlan(profileData?.plan || 'free')
 
     setLoading(false)
   }
@@ -94,6 +118,78 @@ export default function LookbookPage() {
     } finally {
       setDeleting(false)
     }
+  }
+
+  async function handleTryOn() {
+    if (!modelPhoto || !selectedPiece) return
+    setTryOnLoading(true)
+    setTryOnError(null)
+
+    try {
+      if (!selectedPiece.photo_url) {
+        setTryOnError('Selecione uma peça para experimentar')
+        setTryOnLoading(false)
+        return
+      }
+
+      const res = await fetch('/api/tryon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          modelImage: modelPhoto,
+          garmentImage: selectedPiece.photo_url,
+          category: getCategoryForTryOn(selectedPiece.category),
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setTryOnError(data.error || 'Erro ao processar')
+        setTryOnLoading(false)
+        return
+      }
+
+      const predictionId = data.predictionId
+      let attempts = 0
+      const maxAttempts = 30
+
+      const poll = async () => {
+        if (attempts >= maxAttempts) {
+          setTryOnError('Tempo limite excedido. Tente novamente.')
+          setTryOnLoading(false)
+          return
+        }
+
+        const statusRes = await fetch(`/api/tryon/status?id=${predictionId}`)
+        const statusData = await statusRes.json()
+
+        if (statusData.status === 'completed') {
+          setTryOnResult(statusData.output?.[0] || null)
+          setTryOnLoading(false)
+        } else if (statusData.status === 'failed') {
+          setTryOnError('Falha ao gerar imagem. Tente novamente.')
+          setTryOnLoading(false)
+        } else {
+          attempts++
+          setTimeout(poll, 1000)
+        }
+      }
+
+      poll()
+
+    } catch {
+      setTryOnError('Erro de conexão. Tente novamente.')
+      setTryOnLoading(false)
+    }
+  }
+
+  function closeTryOn() {
+    setTryOnOpen(false)
+    setSelectedPiece(null)
+    setTryOnResult(null)
+    setModelPhoto(null)
+    setTryOnError(null)
   }
 
   const tagClass = (tag: string) => {
@@ -293,18 +389,163 @@ export default function LookbookPage() {
                   </div>
                 )}
 
-                <button
-                  className="delete-outfit-btn"
-                  onClick={handleDelete}
-                  disabled={deleting}
-                >
-                  {deleting ? 'Removendo...' : 'Remover do Lookbook'}
-                </button>
+                <div className="lookbook-detail-actions">
+                  {userPlan === 'pro' && (
+                    <button
+                      className="tryon-btn"
+                      onClick={() => {
+                        setTryOnOutfit(selectedOutfit)
+                        setTryOnOpen(true)
+                        setTryOnResult(null)
+                        setTryOnError(null)
+                        setModelPhoto(null)
+                        setSelectedPiece(null)
+                      }}
+                    >
+                      👤 Experimentar look
+                    </button>
+                  )}
+
+                  <button
+                    className="delete-outfit-btn"
+                    onClick={handleDelete}
+                    disabled={deleting}
+                  >
+                    {deleting ? 'Removendo...' : 'Remover do Lookbook'}
+                  </button>
+                </div>
               </>
             )
           })()}
         </div>
       </div>
+
+      {/* Modal Try-On */}
+      {tryOnOpen && tryOnOutfit && (
+        <div className="tryon-overlay" onClick={closeTryOn}>
+          <div className="tryon-modal" onClick={e => e.stopPropagation()}>
+
+            <div className="tryon-header">
+              <div className="tryon-title">👤 Experimentar Look</div>
+              <button className="tryon-close" onClick={closeTryOn}>✕</button>
+            </div>
+
+            {!tryOnResult ? (
+              <>
+                <div className="tryon-piece-selector">
+                  <p className="tryon-subtitle">Escolha qual peça quer experimentar:</p>
+                  <div className="tryon-pieces-grid">
+                    {tryOnOutfit.pieces
+                      .map(id => pieces[id])
+                      .filter(p => p?.photo_url)
+                      .map(piece => (
+                        <div
+                          key={piece.id}
+                          className={`tryon-piece-option ${selectedPiece?.id === piece.id ? 'selected' : ''}`}
+                          onClick={() => setSelectedPiece(
+                            selectedPiece?.id === piece.id ? null : piece
+                          )}
+                        >
+                          <img
+                            src={piece.photo_url!}
+                            alt={piece.name}
+                            className="tryon-piece-thumb"
+                          />
+                          <span className="tryon-piece-name">{piece.name}</span>
+                        </div>
+                      ))
+                    }
+                  </div>
+                </div>
+
+                {selectedPiece && !modelPhoto && (
+                  <label className="tryon-upload">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (!file) return
+                        const reader = new FileReader()
+                        reader.onload = (ev) => {
+                          setModelPhoto(ev.target?.result as string)
+                        }
+                        reader.readAsDataURL(file)
+                      }}
+                    />
+                    <div className="tryon-upload-icon">📸</div>
+                    <div className="tryon-upload-text">Toque para enviar sua foto</div>
+                    <div className="tryon-upload-hint">Foto de corpo inteiro, boa iluminação</div>
+                  </label>
+                )}
+
+                {!selectedPiece && (
+                  <p style={{
+                    textAlign: 'center',
+                    fontSize: '13px',
+                    color: 'rgba(255,255,255,0.25)',
+                    padding: '20px',
+                  }}>
+                    Selecione uma peça acima para continuar
+                  </p>
+                )}
+
+                {selectedPiece && modelPhoto && (
+                  <div className="tryon-preview">
+                    <img src={modelPhoto} alt="Sua foto" className="tryon-preview-img" />
+                    <button
+                      className="tryon-change-photo"
+                      onClick={() => setModelPhoto(null)}
+                    >
+                      Trocar foto
+                    </button>
+                  </div>
+                )}
+
+                {tryOnError && (
+                  <div className="tryon-error">{tryOnError}</div>
+                )}
+
+                <button
+                  className="tryon-generate-btn"
+                  onClick={handleTryOn}
+                  disabled={!selectedPiece || !modelPhoto || tryOnLoading}
+                >
+                  {tryOnLoading ? (
+                    <span>⏳ Gerando... pode levar até 20s</span>
+                  ) : (
+                    <span>✦ Experimentar agora</span>
+                  )}
+                </button>
+              </>
+            ) : (
+              <div className="tryon-result">
+                <img src={tryOnResult} alt="Try-on resultado" className="tryon-result-img" />
+                <div className="tryon-result-actions">
+                  <button
+                    className="tryon-generate-btn"
+                    onClick={() => {
+                      setTryOnResult(null)
+                      setModelPhoto(null)
+                    }}
+                  >
+                    Tentar novamente
+                  </button>
+                  <a
+                    href={tryOnResult}
+                    download="mia-look.jpg"
+                    className="tryon-download-btn"
+                  >
+                    ⬇ Salvar foto
+                  </a>
+                </div>
+              </div>
+            )}
+
+          </div>
+        </div>
+      )}
     </>
   )
 }
