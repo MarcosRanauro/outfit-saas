@@ -265,8 +265,13 @@ export async function POST(request: Request) {
 
   const rateCheck = await checkRateLimit(user.id, 'mia_chat')
   if (!rateCheck.allowed) {
+    const isExpired = rateCheck.plan === 'expired'
     return NextResponse.json(
-      { error: `Você atingiu o limite de mensagens do plano Free. Faça upgrade para o Pro para continuar! 🚀` },
+      {
+        error: isExpired
+          ? 'Seu período de teste de 15 dias encerrou. Assine o Mia Pro para continuar! 🚀'
+          : `Limite atingido (${rateCheck.used}/${rateCheck.limit}). Faça upgrade para o Pro.`,
+      },
       { status: 429 }
     )
   }

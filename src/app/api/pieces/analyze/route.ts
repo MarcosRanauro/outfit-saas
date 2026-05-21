@@ -33,8 +33,13 @@ export async function POST(request: Request) {
 
   const rateCheck = await checkRateLimit(user.id, 'pieces_analyze')
   if (!rateCheck.allowed) {
+    const isExpired = rateCheck.plan === 'expired'
     return NextResponse.json(
-      { error: `Limite de análises atingido (${rateCheck.used}/${rateCheck.limit}). Faça upgrade para o plano Pro.` },
+      {
+        error: isExpired
+          ? 'Seu período de teste de 15 dias encerrou. Assine o Mia Pro para continuar! 🚀'
+          : `Limite de análises atingido (${rateCheck.used}/${rateCheck.limit}). Faça upgrade para o plano Pro.`,
+      },
       { status: 429 }
     )
   }
