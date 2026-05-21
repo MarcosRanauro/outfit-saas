@@ -17,6 +17,13 @@ type Profile = {
   style: string | null
   avatar_url: string | null
   plan: string
+  trial_ends_at: string | null
+}
+
+function getTrialDaysLeft(trialEndsAt: string | null): number {
+  if (!trialEndsAt) return 0
+  const diff = new Date(trialEndsAt).getTime() - Date.now()
+  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
 }
 
 export default function PerfilPage() {
@@ -287,40 +294,54 @@ export default function PerfilPage() {
 
         {/* Plano */}
         <div className="perfil-section-title">Plano</div>
-        <div className="plan-card">
-          <div className="plan-left">
-            <div className="plan-icon">✦</div>
-            <div>
-              <div className="plan-name">
-                {profile?.plan === "pro" ? "Plano Pro" : "Plano Free"}
+
+        {profile?.plan === 'pro' ? (
+          <>
+            <div className="plan-card">
+              <div className="plan-left">
+                <div className="plan-icon">✦</div>
+                <div>
+                  <div className="plan-name">Plano Pro</div>
+                  <div className="plan-desc">Acesso ilimitado</div>
+                </div>
               </div>
-              <div className="plan-desc">
-                {profile?.plan === "pro"
-                  ? "Acesso ilimitado"
-                  : "10 msgs com a Mia · 3 análises · 3 wishlists/mês"}
-              </div>
+              <div className="plan-badge">Pro</div>
             </div>
-          </div>
-          <div className="plan-badge">
-            {profile?.plan === "pro" ? "Pro" : "Free"}
-          </div>
-        </div>
-
-        {profile?.plan === 'free' && (
-          <button className="upgrade-btn" onClick={handleUpgrade}>
-            ⚡ Fazer upgrade para Pro — R$19/mês
-          </button>
-        )}
-
-        {profile?.plan === 'pro' && (
-          <button
-            className="upgrade-btn"
-            onClick={handleManageSubscription}
-            style={{ background: 'rgba(92,200,141,0.1)', borderColor: 'rgba(92,200,141,0.4)', color: 'rgba(92,200,141,0.9)' }}
-          >
-            ✓ Plano Pro ativo — Gerenciar assinatura
-          </button>
-        )}
+            <button
+              className="upgrade-btn"
+              onClick={handleManageSubscription}
+              style={{ background: 'rgba(92,200,141,0.1)', borderColor: 'rgba(92,200,141,0.4)', color: 'rgba(92,200,141,0.9)' }}
+            >
+              ✓ Plano Pro ativo — Gerenciar assinatura
+            </button>
+          </>
+        ) : (() => {
+          const daysLeft = getTrialDaysLeft(profile?.trial_ends_at ?? null)
+          return (
+            <>
+              {daysLeft > 0 ? (
+                <div className="trial-banner">
+                  <div className="trial-banner-info">
+                    <div className="trial-banner-title">✦ Período de teste ativo</div>
+                    <div className="trial-banner-sub">
+                      {daysLeft} dia{daysLeft !== 1 ? 's' : ''} restante{daysLeft !== 1 ? 's' : ''} —
+                      acesso completo a todas as funcionalidades
+                    </div>
+                  </div>
+                  <div className="trial-days-badge">{daysLeft}d</div>
+                </div>
+              ) : (
+                <div className="trial-expired-banner">
+                  <div className="trial-banner-title">⚠️ Período de teste encerrado</div>
+                  <div className="trial-banner-sub">Assine o Pro para continuar usando a Mia</div>
+                </div>
+              )}
+              <button className="upgrade-btn" onClick={handleUpgrade}>
+                ⚡ Assinar Pro — R$19/mês
+              </button>
+            </>
+          )
+        })()}
 
         {/* Logout */}
         <button className="logout-btn" onClick={handleLogout}>

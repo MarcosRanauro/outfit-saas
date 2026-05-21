@@ -20,22 +20,35 @@ type ActionType = keyof typeof LIMITS.free
 export async function checkRateLimit(
   userId: string,
   action: ActionType
-): Promise<{ allowed: boolean; plan: string; limit: number; used: number }> {
+): Promise<{ allowed: boolean; plan: string; limit: number; used: number; trialEndsAt?: string | null }> {
   const supabase = await createClient()
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('plan, usage_mia_generations, usage_outfit_generations, usage_pieces_analyzed, usage_wishlist_generations, usage_reset_at')
+    .select('plan, usage_mia_generations, usage_outfit_generations, usage_pieces_analyzed, usage_wishlist_generations, usage_reset_at, trial_ends_at')
     .eq('id', userId)
     .single()
 
   if (!profile) return { allowed: false, plan: 'free', limit: 0, used: 0 }
 
   const plan = (profile.plan || 'free') as 'free' | 'pro'
-  const limit = LIMITS[plan][action]
+
+  const now = new Date()
+  const trialEndsAt = profile.trial_ends_at ? new Date(profile.trial_ends_at) : null
+  const isTrialActive = trialEndsAt !== null && trialEndsAt > now
+  const isPro = plan === 'pro'
+
+  if (isPro || isTrialActive) {
+    return {
+      allowed: true,
+      plan: isPro ? 'pro' : 'trial',
+      limit: 999,
+      used: 0,
+      trialEndsAt: profile.trial_ends_at,
+    }
+  }
 
   const resetAt = new Date(profile.usage_reset_at || new Date())
-  const now = new Date()
   const daysSinceReset = (now.getTime() - resetAt.getTime()) / (1000 * 60 * 60 * 24)
 
   if (daysSinceReset >= 30) {
@@ -51,20 +64,12 @@ export async function checkRateLimit(
       .eq('id', userId)
   }
 
-  const usageMap: Record<ActionType, number> = {
-    mia_chat: profile.usage_mia_generations || 0,
-    outfit_generate: profile.usage_outfit_generations || 0,
-    pieces_analyze: profile.usage_pieces_analyzed || 0,
-    wishlist_generate: profile.usage_wishlist_generations || 0,
-  }
-
-  const used = usageMap[action]
-
   return {
-    allowed: plan === 'pro' || used < limit,
-    plan,
-    limit,
-    used,
+    allowed: false,
+    plan: 'expired',
+    limit: 0,
+    used: 0,
+    trialEndsAt: profile.trial_ends_at,
   }
 }
 

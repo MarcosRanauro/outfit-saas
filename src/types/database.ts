@@ -17,6 +17,7 @@ export type Profile = {
   usage_pieces_analyzed: number | null
   usage_wishlist_generations: number | null
   usage_reset_at: string | null
+  trial_ends_at: string | null
   created_at: string
   updated_at: string
 }

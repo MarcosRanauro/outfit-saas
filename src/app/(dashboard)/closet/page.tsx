@@ -187,7 +187,7 @@ export default function ClosetPage() {
 
     const [piecesResult, profileResult, outfitsResult] = await Promise.all([
       supabase.from('pieces').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-      supabase.from('profiles').select('plan, name, height, weight, style, closet_tour_completed').eq('id', user.id).single(),
+      supabase.from('profiles').select('plan, name, height, weight, style, closet_tour_completed, trial_ends_at').eq('id', user.id).single(),
       supabase.from('outfits').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
     ])
 
@@ -200,7 +200,11 @@ export default function ClosetPage() {
 
     if (profileResult.data) {
       const p = profileResult.data
-      setUserPlan(p.plan || 'free')
+      const dbPlan = p.plan || 'free'
+      const trialEndsAt = p.trial_ends_at ? new Date(p.trial_ends_at) : null
+      const isTrialActive = trialEndsAt !== null && trialEndsAt > new Date()
+      const effectivePlan = dbPlan === 'pro' ? 'pro' : (isTrialActive ? 'trial' : 'expired')
+      setUserPlan(effectivePlan)
       const incomplete = !p.height || !p.weight || !p.style
       if (incomplete) {
         setShowNameField(!p.name)
@@ -345,7 +349,7 @@ export default function ClosetPage() {
     if (!name || !category) return
     setSaving(true)
 
-    if (userPlan === 'free' && pieces.length >= 10) {
+    if (userPlan === 'expired') {
       setShowUpgradeBanner(true)
       setSaving(false)
       resetModal()

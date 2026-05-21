@@ -67,7 +67,7 @@ export default function LandingPage() {
           <a href="#funcionalidades">Funcionalidades</a>
           <a href="#planos">Planos</a>
           <Link href="/login">Entrar</Link>
-          <Link href="/cadastro" className="lp-nav-cta">Começar grátis</Link>
+          <Link href="/cadastro" className="lp-nav-cta">15 dias grátis</Link>
         </div>
       </nav>
 
@@ -80,7 +80,7 @@ export default function LandingPage() {
           Receba looks perfeitos para cada ocasião — em segundos.
         </p>
         <div className="lp-hero-btns">
-          <Link href="/cadastro" className="lp-btn-primary">Começar grátis</Link>
+          <Link href="/cadastro" className="lp-btn-primary">15 dias grátis</Link>
           <a href="#funcionalidades" className="lp-btn-secondary">Ver como funciona</a>
         </div>
 
@@ -236,32 +236,15 @@ export default function LandingPage() {
       <section className="lp-pricing" id="planos">
         <div className="lp-section-label">✦ Planos</div>
         <h2 className="lp-section-title">Simples e <em>transparente</em></h2>
-        <div className="lp-pricing-grid">
-          <div className="lp-pricing-card">
-            <div className="lp-pricing-badge">Gratuito</div>
-            <div className="lp-pricing-name">Free</div>
-            <div className="lp-pricing-price">
-              <span className="lp-amount">R$0</span>
-              <span className="lp-period">/mês</span>
-            </div>
-            <ul className="lp-pricing-features">
-              <li>✓ 10 mensagens com a Mia/mês</li>
-              <li>✓ 3 análises de peças com IA/mês</li>
-              <li>✓ 3 sugestões de wishlist/mês</li>
-              <li>✓ Closet e Lookbook</li>
-            </ul>
-            <Link href="/cadastro" className="lp-pricing-btn lp-btn-outline">
-              Começar grátis
-            </Link>
-          </div>
-
+        <div className="lp-pricing-grid" style={{ maxWidth: '400px', margin: '0 auto' }}>
           <div className="lp-pricing-card lp-pricing-featured">
-            <div className="lp-pricing-badge">Mais popular</div>
+            <div className="lp-pricing-badge">Comece grátis</div>
             <div className="lp-pricing-name">Pro</div>
             <div className="lp-pricing-price">
               <span className="lp-amount">R$19</span>
               <span className="lp-period">/mês</span>
             </div>
+            <div className="lp-trial-note">após 15 dias de teste gratuito</div>
             <ul className="lp-pricing-features">
               <li>✓ Mensagens ilimitadas com a Mia</li>
               <li>✓ Outfits ilimitados</li>
@@ -270,8 +253,11 @@ export default function LandingPage() {
               <li>✓ Cancele quando quiser</li>
             </ul>
             <Link href="/cadastro" className="lp-pricing-btn lp-btn-gold">
-              Assinar Pro
+              Começar 15 dias grátis
             </Link>
+            <div className="lp-trial-note" style={{ marginTop: '12px' }}>
+              ✦ 15 dias grátis · Sem cartão de crédito · Cancele quando quiser
+            </div>
           </div>
         </div>
       </section>
