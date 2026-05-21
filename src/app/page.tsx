@@ -13,15 +13,7 @@ export default function HomePage() {
 
       if (user) {
         router.replace('/closet')
-        return
-      }
-
-      const hasVisited = localStorage.getItem('mia_has_visited')
-
-      if (hasVisited) {
-        router.replace('/login')
       } else {
-        localStorage.setItem('mia_has_visited', 'true')
         router.replace('/landing')
       }
     }
