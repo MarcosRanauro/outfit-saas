@@ -80,7 +80,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('mia_theme')||'light';document.documentElement.setAttribute('data-auth-theme',t);}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className={`${inter.variable} ${bebas.variable}`}>
         {children}
         <GoogleAnalytics gaId="G-BE79RBHKKT" />
