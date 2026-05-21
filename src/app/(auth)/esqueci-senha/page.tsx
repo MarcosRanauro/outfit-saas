@@ -2,94 +2,100 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import Image from 'next/image'
 import '../../auth.css'
 
 export default function EsqueciSenhaPage() {
   const supabase = createClient()
 
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window === 'undefined') return 'light'
+    return (localStorage.getItem('mia_theme') as 'light' | 'dark') || 'light'
+  })
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
 
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light'
+    setTheme(newTheme)
+    localStorage.setItem('mia_theme', newTheme)
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
-
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/reset-password`,
     })
-
     if (error) {
       setError('Erro ao enviar o e-mail. Verifique o endereço e tente novamente.')
       setLoading(false)
       return
     }
-
     setSent(true)
     setLoading(false)
   }
 
   return (
-    <main className="login-wrap">
-      <div className="bg-grid" />
-      <div className="bg-glow" />
+    <div className="auth-page" data-theme={theme}>
 
-      <div className="card">
-        <div className="card-top-line" />
+      {/* Fundo geométrico */}
+      <div className="auth-bg">
+        <div className="auth-bg-orb auth-bg-orb-1" />
+        <div className="auth-bg-orb auth-bg-orb-2" />
+        <div className="auth-bg-orb auth-bg-orb-3" />
+        <svg className="auth-bg-lines" viewBox="0 0 800 800">
+          <defs>
+            <linearGradient id="gold-grad-esqueci" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="rgba(180,140,60,0.3)" />
+              <stop offset="100%" stopColor="rgba(180,140,60,0.05)" />
+            </linearGradient>
+          </defs>
+          <line x1="0" y1="200" x2="800" y2="600" stroke="url(#gold-grad-esqueci)" strokeWidth="0.5" />
+          <line x1="0" y1="400" x2="800" y2="800" stroke="url(#gold-grad-esqueci)" strokeWidth="0.5" />
+          <line x1="200" y1="0" x2="600" y2="800" stroke="url(#gold-grad-esqueci)" strokeWidth="0.5" />
+          <line x1="400" y1="0" x2="800" y2="400" stroke="url(#gold-grad-esqueci)" strokeWidth="0.5" />
+          <circle cx="400" cy="400" r="200" fill="none" stroke="url(#gold-grad-esqueci)" strokeWidth="0.5" />
+          <circle cx="400" cy="400" r="300" fill="none" stroke="url(#gold-grad-esqueci)" strokeWidth="0.3" />
+          <circle cx="400" cy="400" r="380" fill="none" stroke="url(#gold-grad-esqueci)" strokeWidth="0.2" />
+          <polygon points="400,100 700,400 400,700 100,400" fill="none" stroke="url(#gold-grad-esqueci)" strokeWidth="0.5" />
+        </svg>
+      </div>
+
+      {/* Card */}
+      <div className="auth-card">
+
+        <button className="auth-theme-toggle" onClick={toggleTheme} title="Alternar tema">
+          {theme === 'light' ? '🌙' : '☀️'}
+        </button>
+
+        <div className="auth-logo">
+          <div className="auth-logo-diamond">✦</div>
+          <span className="auth-logo-text">Mia <span>Outfit AI</span></span>
+        </div>
 
         {sent ? (
           <>
-            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-              <div style={{ fontSize: '36px', marginBottom: '12px' }}>✉️</div>
-              <div style={{
-                fontFamily: 'Georgia, serif',
-                fontSize: '18px',
-                color: '#f0f0f0',
-                letterSpacing: '2px',
-                textTransform: 'uppercase',
-                marginBottom: '8px'
-              }}>
-                E-mail enviado!
-              </div>
-              <div style={{
-                fontSize: '12px',
-                color: 'rgba(255,255,255,0.35)',
-                lineHeight: '1.7'
-              }}>
+            <div className="auth-sent">
+              <div className="auth-sent-icon">✉️</div>
+              <div className="auth-sent-title">E-mail enviado!</div>
+              <div className="auth-sent-text">
                 Enviamos um link de redefinição para{' '}
-                <span style={{ color: 'rgba(180,140,60,0.7)' }}>{email}</span>
+                <span className="auth-sent-email">{email}</span>
                 <br /><br />
                 Verifique sua caixa de entrada e a pasta de spam.
               </div>
             </div>
-            <a href="/login" className="btn-primary" style={{
-              display: 'block',
-              textAlign: 'center',
-              textDecoration: 'none'
-            }}>
+            <a href="/login" className="btn-primary" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>
               Voltar para o login
             </a>
           </>
         ) : (
           <>
-            <div className="auth-brand-logo">
-              <Image
-                src="/logos-mia-ai/mia-outfit-ai.png"
-                alt="Mia Outfit AI"
-                width={1536}
-                height={1024}
-                className="auth-brand-logo-img"
-                priority
-                sizes="(max-width: 480px) min(280px, 70vw), 320px"
-              />
-            </div>
-
-            <p style={{ marginTop: '8px', marginBottom: '20px', fontSize: '11px', color: 'rgba(255,255,255,0.3)', lineHeight: '1.6', textAlign: 'center' }}>
-              Digite seu e-mail e enviaremos um link para redefinir sua senha.
-            </p>
+            <h1 className="auth-title">Recuperar senha</h1>
+            <p className="auth-subtitle">Enviaremos um link para seu e-mail</p>
 
             <form onSubmit={handleSubmit}>
               <div className="field">
@@ -102,14 +108,8 @@ export default function EsqueciSenhaPage() {
                   required
                 />
               </div>
-
               {error && <p className="error-msg">{error}</p>}
-
-              <button
-                type="submit"
-                className="btn-primary"
-                disabled={loading}
-              >
+              <button type="submit" className="btn-primary" disabled={loading}>
                 {loading ? 'Enviando...' : 'Enviar link'}
               </button>
             </form>
@@ -121,24 +121,13 @@ export default function EsqueciSenhaPage() {
           </>
         )}
 
-        <div style={{
-          marginTop: '20px',
-          paddingTop: '16px',
-          borderTop: '0.5px solid rgba(255,255,255,0.06)',
-          display: 'flex',
-          justifyContent: 'center',
-          gap: '16px',
-          fontSize: '11px'
-        }}>
-          <a href="/termos" style={{ color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
-            Termos de Uso
-          </a>
-          <span style={{ color: 'rgba(255,255,255,0.1)' }}>·</span>
-          <a href="/privacidade" style={{ color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
-            Privacidade
-          </a>
+        <div className="auth-links">
+          <a href="/termos">Termos de Uso</a>
+          <span className="auth-links-sep">·</span>
+          <a href="/privacidade">Privacidade</a>
         </div>
+
       </div>
-    </main>
+    </div>
   )
 }
