@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import '../../auth.css'
@@ -18,10 +18,8 @@ export default function CadastroPage() {
   const router = useRouter()
   const supabase = createClient()
 
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    if (typeof window === 'undefined') return 'light'
-    return (localStorage.getItem('mia_theme') as 'light' | 'dark') || 'light'
-  })
+  const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  const [mounted, setMounted] = useState(false)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -34,7 +32,14 @@ export default function CadastroPage() {
     const newTheme = theme === 'light' ? 'dark' : 'light'
     setTheme(newTheme)
     localStorage.setItem('mia_theme', newTheme)
+    document.documentElement.setAttribute('data-auth-theme', newTheme)
   }
+
+  useEffect(() => {
+    const saved = localStorage.getItem('mia_theme') as 'light' | 'dark' | null
+    if (saved) setTheme(saved)
+    setMounted(true)
+  }, [])
 
   async function handleCadastro(e: React.FormEvent) {
     e.preventDefault()
@@ -72,37 +77,18 @@ export default function CadastroPage() {
   }
 
   return (
-    <div className="auth-page" data-theme={theme}>
+    <div className="auth-page" data-theme={mounted ? theme : 'light'}>
 
-      {/* Fundo geométrico */}
-      <div className="auth-bg">
-        <div className="auth-bg-orb auth-bg-orb-1" />
-        <div className="auth-bg-orb auth-bg-orb-2" />
-        <div className="auth-bg-orb auth-bg-orb-3" />
-        <svg className="auth-bg-lines" viewBox="0 0 800 800">
-          <defs>
-            <linearGradient id="gold-grad-cadastro" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="rgba(180,140,60,0.3)" />
-              <stop offset="100%" stopColor="rgba(180,140,60,0.05)" />
-            </linearGradient>
-          </defs>
-          <line x1="0" y1="200" x2="800" y2="600" stroke="url(#gold-grad-cadastro)" strokeWidth="0.5" />
-          <line x1="0" y1="400" x2="800" y2="800" stroke="url(#gold-grad-cadastro)" strokeWidth="0.5" />
-          <line x1="200" y1="0" x2="600" y2="800" stroke="url(#gold-grad-cadastro)" strokeWidth="0.5" />
-          <line x1="400" y1="0" x2="800" y2="400" stroke="url(#gold-grad-cadastro)" strokeWidth="0.5" />
-          <circle cx="400" cy="400" r="200" fill="none" stroke="url(#gold-grad-cadastro)" strokeWidth="0.5" />
-          <circle cx="400" cy="400" r="300" fill="none" stroke="url(#gold-grad-cadastro)" strokeWidth="0.3" />
-          <circle cx="400" cy="400" r="380" fill="none" stroke="url(#gold-grad-cadastro)" strokeWidth="0.2" />
-          <polygon points="400,100 700,400 400,700 100,400" fill="none" stroke="url(#gold-grad-cadastro)" strokeWidth="0.5" />
-        </svg>
-      </div>
+      <div className="auth-bg" />
 
       {/* Card */}
       <div className="auth-card">
 
-        <button className="auth-theme-toggle" onClick={toggleTheme} title="Alternar tema">
-          {theme === 'light' ? '🌙' : '☀️'}
-        </button>
+        {mounted && (
+          <button className="auth-theme-toggle" onClick={toggleTheme} title="Alternar tema">
+            {theme === 'light' ? '🌙' : '☀️'}
+          </button>
+        )}
 
         <div className="auth-logo">
           <div className="auth-logo-diamond">✦</div>
