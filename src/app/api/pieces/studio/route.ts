@@ -39,13 +39,14 @@ export async function POST(request: Request) {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
     const angles = [
-      'Front view, mannequin facing directly forward, all front details and logos clearly visible.',
-      'Three-quarter front-left view, mannequin rotated 45 degrees to the left, showing front and left side simultaneously.',
-      'Back view, mannequin facing directly backward, all back details clearly visible.',
-      'Three-quarter back-right view, mannequin rotated 45 degrees to the right showing the back and right side simultaneously.',
+      'Front view, the item facing directly forward, all front details clearly visible.',
+      'Three-quarter front-left view, the item rotated 45 degrees to the left, showing front and left side simultaneously.',
+      'Back view, the item facing directly backward, all back details clearly visible.',
     ]
 
-    const basePrompt = `This is the exact same clothing item shown in the reference image. Do not change any design, logos, colors, patterns or details. Place it on a plain white mannequin against a pure white background. Studio lighting, sharp details, full item visible, fashion e-commerce style photography. No shadows, no props, no added text.`
+    function buildPrompt(name: string, category: string, color: string, colorSecondary: string | null, brand: string | null, description: string | null): string {
+      return `This is a ${category} clothing/fashion item called "${name}"${brand ? ` by ${brand}` : ''}. ${description || ''}. Color: ${color}${colorSecondary ? ' and ' + colorSecondary : ''}. This is NOT a shirt or t-shirt unless explicitly stated — respect the exact item type: ${category}. Place it on a plain white mannequin against a pure white background. Studio lighting, sharp details, full item visible, fashion e-commerce style photography. No shadows, no props, no added text.`
+    }
 
     const imageResponse = await fetch(photo_url)
     const imageArrayBuffer = await imageResponse.arrayBuffer()
@@ -57,7 +58,7 @@ export async function POST(request: Request) {
         openai.images.edit({
           model: 'gpt-image-1',
           image: imageFile,
-          prompt: `${basePrompt} ${angle}`,
+          prompt: `${buildPrompt(name, category, color, color_secondary, brand, description)} ${angle}`,
           n: 1,
           size: '1024x1024',
           quality: 'low',
