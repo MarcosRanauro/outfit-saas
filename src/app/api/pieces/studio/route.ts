@@ -39,6 +39,7 @@ export async function POST(request: Request) {
           prompt: `${basePrompt} ${angle}`,
           n: 1,
           size: '1024x1024',
+          quality: 'low',
         })
       )
     )
