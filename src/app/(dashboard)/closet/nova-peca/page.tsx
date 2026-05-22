@@ -1,32 +1,19 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import '../../../closet.css'
+import './nova-peca.css'
 
 const PIECE_CATEGORIES = [
-  'Camiseta / Blusa',
-  'Camisa',
-  'Moletom',
-  'Calça',
-  'Short / Bermuda',
-  'Saia',
-  'Vestido',
-  'Macacão',
-  'Tênis',
-  'Sapato / Oxford',
-  'Bota',
-  'Sandália / Chinelo',
-  'Casaco / Jaqueta',
-  'Acessório',
-  'Relógio',
-  'Bolsa',
-  'Chapéu / Boné',
+  'Camiseta / Blusa', 'Camisa', 'Moletom', 'Calça', 'Short / Bermuda',
+  'Saia', 'Vestido', 'Macacão', 'Tênis', 'Sapato / Oxford', 'Bota',
+  'Sandália / Chinelo', 'Casaco / Jaqueta', 'Acessório', 'Relógio', 'Bolsa', 'Chapéu / Boné',
 ]
 
 const FIT_OPTIONS = ['Oversized', 'Regular', 'Slim', 'Cropped', 'A-line']
 const SEASON_OPTIONS = ['Todas', 'Verão', 'Inverno', 'Meia estação']
+const STYLE_OPTIONS = ['Casual', 'Elegante', 'Esportivo', 'Streetwear', 'Boho', 'Clássico']
 
 async function compressForUpload(file: File): Promise<Blob> {
   return new Promise((resolve) => {
@@ -80,24 +67,20 @@ export default function NovaPecaPage() {
   const [name, setName] = useState('')
   const [category, setCategory] = useState('Camiseta / Blusa')
   const [color, setColor] = useState('')
+  const [colorSecondary, setColorSecondary] = useState('')
   const [brand, setBrand] = useState('')
   const [fit, setFit] = useState('')
   const [season, setSeason] = useState('')
-
-  const cameraInputRef = useRef<HTMLInputElement>(null)
-  const galleryInputRef = useRef<HTMLInputElement>(null)
+  const [styleType, setStyleType] = useState('')
+  const [description, setDescription] = useState('')
+  const [notes, setNotes] = useState('')
 
   useEffect(() => {
     const saved = localStorage.getItem('mia_theme') as 'light' | 'dark' | null
-    const t = saved || 'light'
-    document.documentElement.setAttribute('data-theme', t)
+    document.documentElement.setAttribute('data-theme', saved || 'light')
   }, [])
 
-  async function handlePhoto(file: File) {
-    setPhotoFile(file)
-    setPhotoPreview(URL.createObjectURL(file))
-    setAiSuggestion(null)
-
+  async function analyzeFile(file: File) {
     setAnalyzing(true)
     try {
       const { base64, mimeType } = await compressForAnalysis(file)
@@ -112,16 +95,26 @@ export default function NovaPecaPage() {
         if (s.name) setName(s.name)
         if (s.category) setCategory(s.category)
         if (s.color) setColor(s.color)
+        if (s.color_secondary) setColorSecondary(s.color_secondary)
         if (s.brand) setBrand(s.brand)
         if (s.fit) setFit(s.fit)
         if (s.season) setSeason(s.season)
+        if (s.style_type) setStyleType(s.style_type)
+        if (s.description) setDescription(s.description)
         setAiSuggestion(s)
       }
     } catch {
-      // analysis is optional — user can fill manually
+      // análise é opcional — usuário pode preencher manualmente
     } finally {
       setAnalyzing(false)
     }
+  }
+
+  function handlePhotoFile(file: File) {
+    setPhotoFile(file)
+    setPhotoPreview(URL.createObjectURL(file))
+    setAiSuggestion(null)
+    analyzeFile(file)
   }
 
   async function handleSave() {
@@ -150,11 +143,14 @@ export default function NovaPecaPage() {
         name,
         category,
         color: color || null,
+        color_secondary: colorSecondary || null,
         brand: brand || null,
         photo_url,
         fit: fit || null,
-        style_type: null,
+        style_type: styleType || null,
         season: season || null,
+        description: description || null,
+        notes: notes || null,
       })
 
       if (error) throw error
@@ -169,186 +165,211 @@ export default function NovaPecaPage() {
   const canSave = !!name && !!category && !saving && !analyzing
 
   return (
-    <div className="nova-peca-page">
+    <div className="np-page">
 
       {/* ─── HEADER ─── */}
-      <div className="nova-peca-header">
-        <button className="nova-peca-back" onClick={() => router.back()}>
-          ← Voltar
-        </button>
-        <span className="nova-peca-title">Nova Peça</span>
-        <button
-          className="nova-peca-save-btn"
-          onClick={handleSave}
-          disabled={!canSave}
-        >
+      <div className="np-header">
+        <button className="np-back" onClick={() => router.back()}>← Voltar</button>
+        <span className="np-title">Nova Peça</span>
+        <button className="np-save-header" onClick={handleSave} disabled={!canSave}>
           {saving ? 'Salvando…' : 'Salvar'}
         </button>
       </div>
 
-      {/* ─── FOTO ─── */}
-      <div className="nova-peca-photo-area">
-        {photoPreview ? (
-          <div className="nova-peca-photo-preview">
+      <div className="np-container">
+
+        {/* ─── FOTO ─── */}
+        {!photoPreview ? (
+          <div className="np-photo-empty">
+            <span className="np-photo-empty-icon">🖼️</span>
+            <p className="np-photo-empty-text">Toque para adicionar foto</p>
+            <div className="np-photo-empty-btns">
+              <label className="np-photo-btn">
+                📷 Câmera
+                <input
+                  type="file" accept="image/*" capture="environment"
+                  style={{ display: 'none' }}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handlePhotoFile(f) }}
+                />
+              </label>
+              <label className="np-photo-btn">
+                🖼️ Galeria
+                <input
+                  type="file" accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handlePhotoFile(f) }}
+                />
+              </label>
+            </div>
+          </div>
+        ) : (
+          <div className="np-photo-preview">
             <img src={photoPreview} alt="Preview" />
             {analyzing && (
-              <div className="nova-peca-analyzing">
-                <span className="analyze-spinner" style={{ display: 'inline-block', marginRight: '8px' }} />
+              <div className="np-analyzing-overlay">
+                <span className="np-spinner" />
                 Mia está analisando...
               </div>
             )}
-            <label className="nova-peca-change-photo" style={{ cursor: 'pointer' }}>
+            <label className="np-change-photo" style={{ cursor: 'pointer' }}>
               Trocar foto
               <input
-                type="file"
-                accept="image/*"
+                type="file" accept="image/*"
                 style={{ display: 'none' }}
-                onChange={e => { const f = e.target.files?.[0]; if (f) handlePhoto(f) }}
-              />
-            </label>
-          </div>
-        ) : (
-          <div className="nova-peca-photo-options">
-            <label className="nova-peca-photo-btn" style={{ cursor: 'pointer' }}>
-              <span className="nova-peca-photo-icon">📷</span>
-              <span>Câmera</span>
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                style={{ display: 'none' }}
-                onChange={e => { const f = e.target.files?.[0]; if (f) handlePhoto(f) }}
-              />
-            </label>
-            <div className="nova-peca-photo-divider" />
-            <label className="nova-peca-photo-btn" style={{ cursor: 'pointer' }}>
-              <span className="nova-peca-photo-icon">🖼️</span>
-              <span>Galeria</span>
-              <input
-                ref={galleryInputRef}
-                type="file"
-                accept="image/*"
-                style={{ display: 'none' }}
-                onChange={e => { const f = e.target.files?.[0]; if (f) handlePhoto(f) }}
+                onChange={e => { const f = e.target.files?.[0]; if (f) handlePhotoFile(f) }}
               />
             </label>
           </div>
         )}
-      </div>
 
-      {/* ─── FORMULÁRIO ─── */}
-      <div className="nova-peca-form">
+        {/* ─── FORMULÁRIO ─── */}
+        <div className="np-form">
 
-        {aiSuggestion && (
-          <div className="mia-badge">
-            <span className="mia-badge-icon">✦</span>
-            <span className="mia-badge-text">Mia preencheu os campos automaticamente com base na foto.</span>
-          </div>
-        )}
+          {aiSuggestion && (
+            <div className="np-mia-badge">
+              <span>✦</span>
+              <span>Mia preencheu os campos automaticamente com base na foto.</span>
+            </div>
+          )}
 
-        {/* Nome */}
-        <div className="nova-peca-field">
-          <label className="nova-peca-label">
-            Nome
-            {aiSuggestion?.name && <span className="nova-peca-mia-badge">MIA</span>}
-          </label>
-          <input
-            className="nova-peca-input"
-            type="text"
-            placeholder="Ex: Camiseta branca básica"
-            value={name}
-            onChange={e => setName(e.target.value)}
-          />
-        </div>
-
-        {/* Categoria */}
-        <div className="nova-peca-field">
-          <label className="nova-peca-label">
-            Categoria
-            {aiSuggestion?.category && <span className="nova-peca-mia-badge">MIA</span>}
-          </label>
-          <select
-            className="nova-peca-input"
-            value={category}
-            onChange={e => setCategory(e.target.value)}
-          >
-            {PIECE_CATEGORIES.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Cor + Marca */}
-        <div className="nova-peca-row">
-          <div className="nova-peca-field">
-            <label className="nova-peca-label">
-              Cor
-              {aiSuggestion?.color && <span className="nova-peca-mia-badge">MIA</span>}
+          {/* Nome */}
+          <div className="np-field">
+            <label className="np-label">
+              Nome {aiSuggestion?.name && <span className="np-mia-tag">MIA</span>}
             </label>
             <input
-              className="nova-peca-input"
-              type="text"
-              placeholder="Ex: Branco"
-              value={color}
-              onChange={e => setColor(e.target.value)}
+              className="np-input" type="text" placeholder="Ex: Camiseta branca básica"
+              value={name} onChange={e => setName(e.target.value)}
             />
           </div>
-          <div className="nova-peca-field">
-            <label className="nova-peca-label">
-              Marca
-              {aiSuggestion?.brand && <span className="nova-peca-mia-badge">MIA</span>}
+
+          {/* Categoria */}
+          <div className="np-field">
+            <label className="np-label">
+              Categoria {aiSuggestion?.category && <span className="np-mia-tag">MIA</span>}
+            </label>
+            <select className="np-input" value={category} onChange={e => setCategory(e.target.value)}>
+              {PIECE_CATEGORIES.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Cor + Cor Secundária */}
+          <div className="np-row">
+            <div className="np-field">
+              <label className="np-label">
+                Cor {aiSuggestion?.color && <span className="np-mia-tag">MIA</span>}
+              </label>
+              <input
+                className="np-input" type="text" placeholder="Ex: Branco"
+                value={color} onChange={e => setColor(e.target.value)}
+              />
+            </div>
+            <div className="np-field">
+              <label className="np-label">
+                Cor Secundária {aiSuggestion?.color_secondary && <span className="np-mia-tag">MIA</span>}
+              </label>
+              <input
+                className="np-input" type="text" placeholder="Ex: Azul"
+                value={colorSecondary} onChange={e => setColorSecondary(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Marca */}
+          <div className="np-field">
+            <label className="np-label">
+              Marca {aiSuggestion?.brand && <span className="np-mia-tag">MIA</span>}
             </label>
             <input
-              className="nova-peca-input"
-              type="text"
-              placeholder="Ex: Zara"
-              value={brand}
-              onChange={e => setBrand(e.target.value)}
+              className="np-input" type="text" placeholder="Ex: Zara"
+              value={brand} onChange={e => setBrand(e.target.value)}
             />
           </div>
-        </div>
 
-        {/* Fit */}
-        <div className="nova-peca-field">
-          <label className="nova-peca-label">
-            Fit
-            {aiSuggestion?.fit && <span className="nova-peca-mia-badge">MIA</span>}
-          </label>
-          <div className="modal-chips-row">
-            {FIT_OPTIONS.map(opt => (
-              <button
-                key={opt}
-                type="button"
-                className={`modal-chip ${fit === opt ? 'active' : ''}`}
-                onClick={() => setFit(prev => prev === opt ? '' : opt)}
-              >
-                {opt}
-              </button>
-            ))}
+          {/* Fit */}
+          <div className="np-field">
+            <label className="np-label">
+              Fit {aiSuggestion?.fit && <span className="np-mia-tag">MIA</span>}
+            </label>
+            <div className="np-chips">
+              {FIT_OPTIONS.map(opt => (
+                <button
+                  key={opt} type="button"
+                  className={`np-chip ${fit === opt ? 'active' : ''}`}
+                  onClick={() => setFit(prev => prev === opt ? '' : opt)}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Estação */}
-        <div className="nova-peca-field">
-          <label className="nova-peca-label">
-            Estação
-            {aiSuggestion?.season && <span className="nova-peca-mia-badge">MIA</span>}
-          </label>
-          <div className="modal-chips-row">
-            {SEASON_OPTIONS.map(opt => (
-              <button
-                key={opt}
-                type="button"
-                className={`modal-chip ${season === opt ? 'active' : ''}`}
-                onClick={() => setSeason(prev => prev === opt ? '' : opt)}
-              >
-                {opt}
-              </button>
-            ))}
+          {/* Estação */}
+          <div className="np-field">
+            <label className="np-label">
+              Estação {aiSuggestion?.season && <span className="np-mia-tag">MIA</span>}
+            </label>
+            <div className="np-chips">
+              {SEASON_OPTIONS.map(opt => (
+                <button
+                  key={opt} type="button"
+                  className={`np-chip ${season === opt ? 'active' : ''}`}
+                  onClick={() => setSeason(prev => prev === opt ? '' : opt)}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
+          {/* Estilo da Peça */}
+          <div className="np-field">
+            <label className="np-label">
+              Estilo da Peça {aiSuggestion?.style_type && <span className="np-mia-tag">MIA</span>}
+            </label>
+            <div className="np-chips">
+              {STYLE_OPTIONS.map(opt => (
+                <button
+                  key={opt} type="button"
+                  className={`np-chip ${styleType === opt ? 'active' : ''}`}
+                  onClick={() => setStyleType(prev => prev === opt ? '' : opt)}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Descrição */}
+          <div className="np-field">
+            <label className="np-label">
+              Descrição {aiSuggestion?.description && <span className="np-mia-tag">MIA</span>}
+            </label>
+            <textarea
+              className="np-textarea" rows={3}
+              placeholder="Ex: Camiseta oversized branca com textura lisa e caimento relaxado."
+              value={description} onChange={e => setDescription(e.target.value)}
+            />
+          </div>
+
+          {/* Notas */}
+          <div className="np-field">
+            <label className="np-label">Notas</label>
+            <textarea
+              className="np-textarea" rows={2}
+              placeholder="Anotações pessoais sobre a peça..."
+              value={notes} onChange={e => setNotes(e.target.value)}
+            />
+          </div>
+
+          {/* Salvar */}
+          <button className="np-save-full" onClick={handleSave} disabled={!canSave}>
+            {saving ? 'Salvando…' : 'Salvar Peça'}
+          </button>
+
+        </div>
       </div>
     </div>
   )

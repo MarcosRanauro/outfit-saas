@@ -15,10 +15,12 @@ const ANALYZE_PROMPT = `Analise esta peça de roupa e retorne APENAS um JSON vá
   "name": "nome descritivo da peça (ex: Camiseta Oversized Branca)",
   "category": "uma das categorias permitidas",
   "color": "cor principal em português",
+  "color_secondary": "segunda cor predominante se houver estampa ou detalhes coloridos, null se for lisa",
   "brand": "marca se visível na peça, null se não visível",
   "fit": "um de: Oversized, Regular, Slim, Cropped, A-line",
-  "style_type": "um de: Casual, Social, Esportivo, Streetwear, Minimalista",
-  "season": "um de: Todas, Verão, Inverno, Meia estação"
+  "style_type": "um de: Casual, Elegante, Esportivo, Streetwear, Boho, Clássico",
+  "season": "um de: Todas, Verão, Inverno, Meia estação",
+  "description": "descrição objetiva em português, 1-2 frases, focada em características visuais e estilo"
 }
 
 Categorias permitidas: Camiseta / Blusa, Camisa, Moletom, Calça, Short / Bermuda, Saia, Vestido, Macacão, Tênis, Sapato / Oxford, Bota, Sandália / Chinelo, Casaco / Jaqueta, Acessório, Relógio, Bolsa, Chapéu / Boné
@@ -57,7 +59,7 @@ export async function POST(request: Request) {
 
     const message = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 500,
+      max_tokens: 700,
       system: "Você é Mia, stylist profissional. Analise a foto de uma peça de roupa e extraia as informações solicitadas.",
       messages: [{
         role: "user",
