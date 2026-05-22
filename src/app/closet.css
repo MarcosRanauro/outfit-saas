@@ -52,36 +52,58 @@
 }
 
 .closet-col-btn {
-  width: 28px;
-  height: 28px;
-  background: transparent;
-  border: none;
-  font-size: 11px;
-  color: var(--dash-text-faint);
+  width: 44px;
+  height: 44px;
+  background: var(--dash-surface);
+  border: 0.5px solid var(--dash-border-subtle);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
+  font-size: 18px;
+  color: var(--dash-text-dim);
+  transition: background 0.2s, border-color 0.2s;
   font-family: var(--font-inter), sans-serif;
+}
+
+.closet-col-btn:hover {
+  background: var(--dash-gold-faint);
+  border-color: var(--dash-border);
 }
 
 .closet-col-btn.active {
   background: var(--dash-gold-faint);
+  border-color: var(--dash-border);
   color: var(--dash-gold);
 }
 
 /* ─── COLS DROPDOWN ───────────────────────────── */
 
 .closet-cols-btn {
-  height: 38px;
+  min-width: 44px;
+  height: 44px;
   padding: 0 12px;
   background: var(--dash-surface);
   border: 0.5px solid var(--dash-border-subtle);
-  border-radius: 10px;
-  font-size: 13px;
+  border-radius: 12px;
+  font-size: 18px;
   color: var(--dash-text-dim);
   cursor: pointer;
   white-space: nowrap;
   font-family: var(--font-inter), sans-serif;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.closet-cols-btn:hover {
+  background: var(--dash-gold-faint);
+  border-color: var(--dash-border);
+  color: var(--dash-gold);
 }
 
 .closet-cols-menu {
@@ -121,16 +143,22 @@
 }
 
 .dash-theme-toggle {
-  width: 32px;
-  height: 32px;
-  background: var(--dash-card);
+  width: 44px;
+  height: 44px;
+  background: var(--dash-surface);
   border: 0.5px solid var(--dash-border-subtle);
-  border-radius: 8px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 18px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.dash-theme-toggle:hover {
+  background: var(--dash-gold-faint);
+  border-color: var(--dash-border);
 }
 
 /* ─── SEARCH ROW ──────────────────────────────── */
@@ -245,24 +273,26 @@
 
 .closet-grid {
   display: grid;
-  gap: 8px;
-  padding: 0 16px 16px;
+  gap: 10px;
+  padding: 0 12px 16px;
 }
 
 /* ─── CARDS ───────────────────────────────────── */
 
 .closet-piece-card {
   position: relative;
-  border-radius: 10px;
+  border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
-  aspect-ratio: 3/4;
+  aspect-ratio: 1/1;
   background: var(--dash-card);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.35);
 }
 
 .closet-piece-photo {
   position: absolute;
   inset: 0;
+  overflow: hidden;
 }
 
 .closet-piece-photo img {
@@ -270,6 +300,11 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.35s ease;
+}
+
+.closet-piece-card:hover .closet-piece-photo img {
+  transform: scale(1.06);
 }
 
 .closet-piece-no-photo {
@@ -287,7 +322,7 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 24px 10px 10px;
+  padding: 20px 8px 8px;
   background: linear-gradient(transparent, rgba(0,0,0,0.65));
   display: flex;
   flex-direction: column;
@@ -303,7 +338,7 @@
 }
 
 .closet-piece-name {
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 500;
   color: #fff;
   font-family: var(--font-inter), sans-serif;
@@ -356,7 +391,7 @@
 @media (min-width: 768px) {
   .closet-search-row { padding: 10px 16px; }
   .closet-filter-chips { padding: 0 16px 12px; }
-  .closet-grid { padding: 0 16px 80px; }
+  .closet-grid { padding: 0 12px 80px; }
 }
 
 /* ─── MODO LISTA ─────────────────────────────── */

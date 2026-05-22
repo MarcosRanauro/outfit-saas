@@ -170,6 +170,14 @@ export default function ClosetPage() {
   }, [])
 
   useEffect(() => {
+    const saved = localStorage.getItem('closet_cols')
+    if (saved) {
+      const parsed = parseInt(saved, 10)
+      if ([1, 2, 3, 4, 5].includes(parsed)) setCols(parsed)
+    }
+  }, [])
+
+  useEffect(() => {
     loadData()
     try {
       const savedAnchor = sessionStorage.getItem('anchor_piece')
@@ -530,7 +538,6 @@ export default function ClosetPage() {
           <button
             ref={suggestBtnRef}
             className="closet-col-btn"
-            style={{ width: 'auto', padding: '0 10px', fontSize: '13px' }}
             onClick={handleGenerateWishlist}
             disabled={wishlistGenerating || pieces.length < 3}
             title={pieces.length < 3 ? 'Adicione pelo menos 3 peças' : 'Sugerir peças'}
@@ -540,7 +547,6 @@ export default function ClosetPage() {
           <button
             ref={wishlistBtnRef}
             className="closet-col-btn"
-            style={{ width: 'auto', padding: '0 10px', fontSize: '16px' }}
             onClick={() => { loadWishlistItems(); setWishlistSavedOpen(true) }}
             title="Minha wishlist"
           >
@@ -603,7 +609,7 @@ export default function ClosetPage() {
                   <button
                     key={opt.value}
                     className={`closet-cols-option ${cols === opt.value ? 'active' : ''}`}
-                    onClick={() => { setCols(opt.value); setShowColsMenu(false) }}
+                    onClick={() => { setCols(opt.value); localStorage.setItem('closet_cols', String(opt.value)); setShowColsMenu(false) }}
                   >
                     <span>{opt.label}</span>
                     {cols === opt.value && <span>✓</span>}
