@@ -84,7 +84,7 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('mia_theme')||'light';document.documentElement.setAttribute('data-auth-theme',t);}catch(e){}})();`,
+            __html: `(function(){try{var theme=localStorage.getItem('mia_theme')||'light';document.documentElement.setAttribute('data-theme',theme);document.documentElement.setAttribute('data-auth-theme',theme);}catch(e){}})();`,
           }}
         />
       </head>

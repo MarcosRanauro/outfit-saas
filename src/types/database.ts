@@ -29,11 +29,14 @@ export type Piece = {
   name: string
   category: string
   color: string | null
+  color_secondary: string | null
   brand: string | null
   photo_url: string | null
   fit: string | null
   style_type: string | null
   season: string | null
+  description: string | null
+  notes: string | null
   created_at: string
 }
 

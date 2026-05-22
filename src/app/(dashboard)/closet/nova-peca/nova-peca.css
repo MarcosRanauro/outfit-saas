@@ -1,0 +1,566 @@
+/* ─── PAGE ────────────────────────────────────── */
+
+.np-page {
+  min-height: 100vh;
+  background: var(--dash-bg);
+  padding-bottom: 60px;
+}
+
+/* ─── HEADER ──────────────────────────────────── */
+
+.np-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--dash-surface);
+  border-bottom: 0.5px solid var(--dash-border-subtle);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.np-back {
+  background: transparent;
+  border: none;
+  color: var(--dash-text-dim);
+  font-size: 14px;
+  cursor: pointer;
+  font-family: var(--font-inter), sans-serif;
+  padding: 0;
+}
+
+.np-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--dash-text);
+  font-family: var(--font-inter), sans-serif;
+  letter-spacing: 0.5px;
+}
+
+.np-save-header {
+  background: var(--dash-gold);
+  border: none;
+  border-radius: 8px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  font-family: var(--font-inter), sans-serif;
+  transition: opacity 0.2s;
+}
+
+.np-save-header:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ─── CONTAINER ───────────────────────────────── */
+
+.np-container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 16px 60px;
+}
+
+/* ─── FOTO — ESTADO VAZIO ─────────────────────── */
+
+.np-photo-empty {
+  width: 100%;
+  aspect-ratio: 4/3;
+  margin-top: 20px;
+  background: var(--dash-card);
+  border: 1.5px dashed var(--dash-border-subtle);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.np-photo-empty-icon {
+  font-size: 44px;
+  opacity: 0.35;
+}
+
+.np-photo-empty-text {
+  font-size: 14px;
+  color: var(--dash-text-faint);
+  font-family: var(--font-inter), sans-serif;
+  margin: 0;
+}
+
+.np-photo-empty-btns {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.np-photo-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 20px;
+  background: var(--dash-surface);
+  border: 0.5px solid var(--dash-border-subtle);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--dash-text-dim);
+  cursor: pointer;
+  font-family: var(--font-inter), sans-serif;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.np-photo-btn:hover {
+  background: var(--dash-gold-faint);
+  border-color: var(--dash-border);
+}
+
+/* ─── FOTO — PREVIEW ──────────────────────────── */
+
+.np-photo-preview {
+  width: 100%;
+  height: 380px;
+  margin-top: 20px;
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #f5f5f0;
+}
+
+.np-photo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.np-analyzing-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 14px;
+  color: rgba(180,140,60,0.9);
+  font-family: var(--font-inter), sans-serif;
+}
+
+.np-change-photo {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0,0,0,0.55);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: #fff;
+  cursor: pointer;
+  font-family: var(--font-inter), sans-serif;
+  backdrop-filter: blur(4px);
+}
+
+/* ─── GALERIA ─────────────────────────────────── */
+
+.np-gallery {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 2px;
+}
+
+.np-gallery::-webkit-scrollbar { display: none; }
+
+.np-gallery-thumb {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background: var(--dash-card);
+  padding: 0;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.np-gallery-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.np-gallery-thumb.active {
+  border-color: var(--dash-gold);
+}
+
+.np-gallery-add {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  border: 1.5px dashed rgba(255,255,255,0.2);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: var(--dash-text-faint);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.np-gallery-add:hover {
+  border-color: var(--dash-border);
+  color: var(--dash-text-dim);
+}
+
+/* ─── BOTÃO ANALISAR ──────────────────────────── */
+
+.np-analyze-btn {
+  width: 100%;
+  margin-top: 12px;
+  padding: 13px;
+  background: var(--dash-gold-faint);
+  border: 1px solid var(--dash-border);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dash-gold);
+  cursor: pointer;
+  font-family: var(--font-inter), sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s;
+  letter-spacing: 0.5px;
+}
+
+.np-analyze-btn:hover { background: rgba(180,140,60,0.15); }
+.np-analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ─── FORMULÁRIO ──────────────────────────────── */
+
+.np-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.np-mia-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(180,140,60,0.06);
+  border: 0.5px solid rgba(180,140,60,0.2);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: rgba(180,140,60,0.8);
+  font-family: var(--font-inter), sans-serif;
+}
+
+.np-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.np-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.np-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--dash-text-dim);
+  letter-spacing: 0.3px;
+  font-family: var(--font-inter), sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.np-mia-tag {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--dash-gold);
+  background: var(--dash-gold-faint);
+  border: 0.5px solid var(--dash-border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  letter-spacing: 0.5px;
+}
+
+.np-input {
+  background: var(--dash-surface);
+  border: 0.5px solid var(--dash-border-subtle);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 16px;
+  color: var(--dash-text);
+  font-family: var(--font-inter), sans-serif;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+  appearance: none;
+}
+
+.np-input:focus { border-color: var(--dash-border); }
+.np-input::placeholder { color: var(--dash-text-faint); }
+
+.np-textarea {
+  background: var(--dash-surface);
+  border: 0.5px solid var(--dash-border-subtle);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 16px;
+  color: var(--dash-text);
+  font-family: var(--font-inter), sans-serif;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  transition: border-color 0.2s;
+  line-height: 1.5;
+}
+
+.np-textarea:focus { border-color: var(--dash-border); }
+.np-textarea::placeholder { color: var(--dash-text-faint); }
+
+/* ─── CHIPS ───────────────────────────────────── */
+
+.np-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.np-chip {
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: var(--font-inter), sans-serif;
+  border: 0.5px solid var(--dash-border-subtle);
+  color: var(--dash-text-dim);
+  background: var(--dash-surface);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.np-chip.active {
+  background: var(--dash-gold-faint);
+  border-color: var(--dash-border);
+  color: var(--dash-gold);
+  font-weight: 600;
+}
+
+/* ─── BOTÃO SALVAR FULL-WIDTH ─────────────────── */
+
+.np-save-full {
+  width: 100%;
+  padding: 15px;
+  background: var(--dash-gold);
+  border: none;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  font-family: var(--font-inter), sans-serif;
+  letter-spacing: 0.5px;
+  transition: opacity 0.2s;
+  margin-top: 4px;
+}
+
+.np-save-full:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ─── BOTÃO FOTO DE ESTÚDIO ───────────────────── */
+
+.np-studio-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 13px;
+  background: transparent;
+  border: 1px solid var(--dash-border);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dash-gold);
+  cursor: pointer;
+  font-family: var(--font-inter), sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s, border-color 0.2s;
+  letter-spacing: 0.5px;
+}
+
+.np-studio-btn:hover { background: var(--dash-gold-faint); border-color: var(--dash-gold); }
+.np-studio-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ─── MODAL DE CONFIRMAÇÃO ─────────────────────── */
+
+.np-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+  padding: 0 0 20px;
+}
+
+.np-modal {
+  background: var(--dash-surface);
+  border: 0.5px solid var(--dash-border);
+  border-radius: 20px;
+  padding: 24px 20px;
+  width: calc(100% - 32px);
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.np-modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--dash-text);
+  font-family: var(--font-inter), sans-serif;
+  margin: 0;
+}
+
+.np-modal-text {
+  font-size: 13px;
+  color: var(--dash-text-dim);
+  font-family: var(--font-inter), sans-serif;
+  margin: 0;
+  line-height: 1.55;
+}
+
+.np-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.np-modal-cancel {
+  flex: 1;
+  padding: 12px;
+  background: var(--dash-card);
+  border: 0.5px solid var(--dash-border-subtle);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dash-text-dim);
+  cursor: pointer;
+  font-family: var(--font-inter), sans-serif;
+  transition: background 0.15s;
+}
+
+.np-modal-cancel:hover { background: var(--dash-border-subtle); }
+
+.np-modal-confirm {
+  flex: 1;
+  padding: 12px;
+  background: var(--dash-gold);
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  font-family: var(--font-inter), sans-serif;
+  transition: opacity 0.15s;
+}
+
+.np-modal-confirm:hover { opacity: 0.88; }
+
+/* ─── ÁREA DE ESTÚDIO ──────────────────────────── */
+
+.np-studio-area {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.np-studio-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 28px 0;
+  font-size: 13px;
+  color: rgba(180,140,60,0.8);
+  font-family: var(--font-inter), sans-serif;
+}
+
+.np-studio-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--dash-text-faint);
+  letter-spacing: 0.3px;
+  font-family: var(--font-inter), sans-serif;
+  text-align: center;
+}
+
+.np-studio-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.np-studio-thumb {
+  aspect-ratio: 1/1;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  cursor: pointer;
+  background: var(--dash-card);
+  transition: border-color 0.15s, transform 0.15s;
+  padding: 0;
+}
+
+.np-studio-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.np-studio-thumb.active {
+  border-color: var(--dash-gold);
+}
+
+.np-studio-thumb:hover {
+  transform: scale(1.02);
+}
+
+/* ─── SPINNER ─────────────────────────────────── */
+
+.np-spinner {
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid rgba(180,140,60,0.3);
+  border-top-color: rgba(180,140,60,0.9);
+  border-radius: 50%;
+  animation: np-spin 0.8s linear infinite;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+@keyframes np-spin { to { transform: rotate(360deg); } }
