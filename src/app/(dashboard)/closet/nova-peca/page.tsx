@@ -15,13 +15,6 @@ const FIT_OPTIONS = ['Oversized', 'Regular', 'Slim', 'Cropped', 'A-line']
 const SEASON_OPTIONS = ['Todas', 'Verão', 'Inverno', 'Meia estação']
 const STYLE_OPTIONS = ['Casual', 'Elegante', 'Esportivo', 'Streetwear', 'Boho', 'Clássico']
 
-const toBase64 = (file: File): Promise<string> => new Promise((resolve, reject) => {
-  const reader = new FileReader()
-  reader.onload = () => resolve((reader.result as string).split(',')[1])
-  reader.onerror = reject
-  reader.readAsDataURL(file)
-})
-
 async function compressForUpload(file: File): Promise<Blob> {
   return new Promise((resolve) => {
     const canvas = document.createElement('canvas')
@@ -140,11 +133,18 @@ export default function NovaPecaPage() {
     setStudioModalOpen(false)
     setStudioLoading(true)
     try {
-      const photo_base64 = photos[0] ? await toBase64(photos[0]) : null
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user || !photos[0]) return
+
+      const filename = `studio-input/${user.id}/${Date.now()}_original.jpg`
+      await supabase.storage.from('pieces').upload(filename, photos[0], { upsert: true })
+      const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(filename)
+      const photo_url = urlData.publicUrl
+
       const res = await fetch('/api/pieces/studio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, category, color, color_secondary: colorSecondary || null, brand: brand || null, description: description || null, photo_base64 }),
+        body: JSON.stringify({ name, category, color, color_secondary: colorSecondary || null, brand: brand || null, description: description || null, photo_url }),
       })
       const data = await res.json()
       if (res.ok && data.images?.length) {

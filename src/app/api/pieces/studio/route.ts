@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     console.log('1. Auth OK')
 
-    const { name, category, color, color_secondary, brand, description, photo_base64 } = await request.json()
+    const { name, category, color, color_secondary, brand, description, photo_url } = await request.json()
 
     const { default: OpenAI } = await import('openai')
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -19,7 +19,9 @@ export async function POST(request: Request) {
 
     console.log('2. OpenAI edit iniciado')
 
-    const imageBuffer = Buffer.from(photo_base64, 'base64')
+    const imageResponse = await fetch(photo_url)
+    const imageArrayBuffer = await imageResponse.arrayBuffer()
+    const imageBuffer = Buffer.from(imageArrayBuffer)
     const imageFile = new File([imageBuffer], 'piece.jpg', { type: 'image/jpeg' })
 
     const results = await Promise.all(
