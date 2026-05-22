@@ -15,7 +15,14 @@ export async function POST(request: Request) {
     const { default: OpenAI } = await import('openai')
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
-    const prompt = `This is the exact same clothing item shown in the reference image. Do not change any design, logos, colors, patterns or details. Place it on a plain white mannequin against a pure white background. Studio lighting, sharp details, full item visible, fashion e-commerce style photography. No shadows, no props, no added text.`
+    const angles = [
+      'Front view, the item facing directly forward, all front details visible.',
+      'Left side view, the item rotated 90 degrees to the left, side profile visible.',
+      'Back view, the item facing directly backward, all back details visible.',
+      'Right side view, the item rotated 90 degrees to the right, side profile visible.',
+    ]
+
+    const basePrompt = `This is the exact same clothing item shown in the reference image. Do not change any design, logos, colors, patterns or details. Place it on a plain white mannequin against a pure white background. Studio lighting, sharp details, full item visible, fashion e-commerce style photography. No shadows, no props, no added text.`
 
     console.log('2. OpenAI edit iniciado')
 
@@ -25,11 +32,11 @@ export async function POST(request: Request) {
     const imageFile = new File([imageBuffer], 'piece.jpg', { type: 'image/jpeg' })
 
     const results = await Promise.all(
-      Array.from({ length: 4 }).map(() =>
+      angles.map((angle) =>
         openai.images.edit({
           model: 'gpt-image-1',
           image: imageFile,
-          prompt,
+          prompt: `${basePrompt} ${angle}`,
           n: 1,
           size: '1024x1024',
         })
