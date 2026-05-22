@@ -60,9 +60,14 @@ export default function NovaPecaPage() {
 
   const [saving, setSaving] = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
-  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photos, setPhotos] = useState<File[]>([])
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0)
   const [aiSuggestion, setAiSuggestion] = useState<Record<string, string> | null>(null)
+
+  const [studioImages, setStudioImages] = useState<string[]>([])
+  const [studioLoading, setStudioLoading] = useState(false)
+  const [studioModalOpen, setStudioModalOpen] = useState(false)
+  const [selectedStudioIndex, setSelectedStudioIndex] = useState<number | null>(null)
 
   const [name, setName] = useState('')
   const [category, setCategory] = useState('Camiseta / Blusa')
@@ -111,10 +116,37 @@ export default function NovaPecaPage() {
   }
 
   function handlePhotoFile(file: File) {
-    setPhotoFile(file)
-    setPhotoPreview(URL.createObjectURL(file))
+    setPhotos([file])
+    setSelectedPhotoIndex(0)
     setAiSuggestion(null)
     analyzeFile(file)
+  }
+
+  function handleAddPhoto(file: File) {
+    setPhotos(prev => {
+      if (prev.length >= 6) return prev
+      return [...prev, file]
+    })
+  }
+
+  async function handleGenerateStudio() {
+    setStudioModalOpen(false)
+    setStudioLoading(true)
+    try {
+      const res = await fetch('/api/pieces/studio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, category, color, color_secondary: colorSecondary || null, brand: brand || null, description: description || null }),
+      })
+      const data = await res.json()
+      if (res.ok && data.images?.length) {
+        setStudioImages(data.images)
+      }
+    } catch {
+      // geração é opcional
+    } finally {
+      setStudioLoading(false)
+    }
   }
 
   async function handleSave() {
@@ -125,15 +157,35 @@ export default function NovaPecaPage() {
       if (!user) return
 
       let photo_url = null
-      if (photoFile) {
+
+      if (selectedStudioIndex !== null && studioImages[selectedStudioIndex]) {
+        // Studio image selected as cover — download and re-upload to Supabase Storage
+        const studioUrl = studioImages[selectedStudioIndex]
+        const blob = await fetch(studioUrl).then(r => r.blob())
         const path = `${user.id}/${Date.now()}.jpg`
-        const compressed = await compressForUpload(photoFile)
         const { error: uploadError } = await supabase.storage
           .from('pieces')
-          .upload(path, compressed, { contentType: 'image/jpeg' })
+          .upload(path, blob, { contentType: 'image/jpeg' })
         if (!uploadError) {
           const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(path)
           photo_url = urlData.publicUrl
+        }
+      } else if (photos.length > 0) {
+        const primaryFile = photos[selectedPhotoIndex] ?? photos[0]
+        const primaryPath = `${user.id}/${Date.now()}.jpg`
+        const primaryCompressed = await compressForUpload(primaryFile)
+        const { error: uploadError } = await supabase.storage
+          .from('pieces')
+          .upload(primaryPath, primaryCompressed, { contentType: 'image/jpeg' })
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(primaryPath)
+          photo_url = urlData.publicUrl
+        }
+        for (let i = 0; i < photos.length; i++) {
+          if (i === selectedPhotoIndex) continue
+          const extraPath = `${user.id}/${Date.now()}-${i}.jpg`
+          const extraCompressed = await compressForUpload(photos[i])
+          await supabase.storage.from('pieces').upload(extraPath, extraCompressed, { contentType: 'image/jpeg' })
         }
       }
 
@@ -163,6 +215,11 @@ export default function NovaPecaPage() {
   }
 
   const canSave = !!name && !!category && !saving && !analyzing
+  const mainPreview = selectedStudioIndex !== null
+    ? studioImages[selectedStudioIndex]
+    : photos.length > 0
+      ? URL.createObjectURL(photos[selectedPhotoIndex] ?? photos[0])
+      : null
 
   return (
     <div className="np-page">
@@ -179,7 +236,7 @@ export default function NovaPecaPage() {
       <div className="np-container">
 
         {/* ─── FOTO ─── */}
-        {!photoPreview ? (
+        {!mainPreview ? (
           <div className="np-photo-empty">
             <span className="np-photo-empty-icon">🖼️</span>
             <p className="np-photo-empty-text">Toque para adicionar foto</p>
@@ -203,23 +260,101 @@ export default function NovaPecaPage() {
             </div>
           </div>
         ) : (
-          <div className="np-photo-preview">
-            <img src={photoPreview} alt="Preview" />
-            {analyzing && (
-              <div className="np-analyzing-overlay">
-                <span className="np-spinner" />
-                Mia está analisando...
+          <>
+            <div className="np-photo-preview">
+              <img src={mainPreview} alt="Preview" />
+              {analyzing && (
+                <div className="np-analyzing-overlay">
+                  <span className="np-spinner" />
+                  Mia está analisando...
+                </div>
+              )}
+              <label className="np-change-photo" style={{ cursor: 'pointer' }}>
+                Trocar foto
+                <input
+                  type="file" accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handlePhotoFile(f) }}
+                />
+              </label>
+            </div>
+
+            {!analyzing && (photos.length > 0 || studioImages.length > 0) && (
+              <div className="np-gallery">
+                {photos.map((photo, i) => (
+                  <button
+                    key={`photo-${i}`}
+                    type="button"
+                    className={`np-gallery-thumb ${selectedStudioIndex === null && selectedPhotoIndex === i ? 'active' : ''}`}
+                    onClick={() => { setSelectedPhotoIndex(i); setSelectedStudioIndex(null) }}
+                  >
+                    <img src={URL.createObjectURL(photo)} alt={`Foto ${i + 1}`} />
+                  </button>
+                ))}
+                {studioImages.map((url, i) => (
+                  <button
+                    key={`studio-${i}`}
+                    type="button"
+                    className={`np-gallery-thumb ${selectedStudioIndex === i ? 'active' : ''}`}
+                    onClick={() => setSelectedStudioIndex(prev => prev === i ? null : i)}
+                  >
+                    <img src={url} alt={`Estúdio ${i + 1}`} />
+                  </button>
+                ))}
+                {photos.length < 6 && (
+                  <label className="np-gallery-add">
+                    +
+                    <input
+                      type="file" accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={e => { const f = e.target.files?.[0]; if (f) handleAddPhoto(f) }}
+                    />
+                  </label>
+                )}
               </div>
             )}
-            <label className="np-change-photo" style={{ cursor: 'pointer' }}>
-              Trocar foto
-              <input
-                type="file" accept="image/*"
-                style={{ display: 'none' }}
-                onChange={e => { const f = e.target.files?.[0]; if (f) handlePhotoFile(f) }}
-              />
-            </label>
-          </div>
+          </>
+        )}
+
+        {/* ─── FOTO DE ESTÚDIO ─── */}
+        {!analyzing && aiSuggestion && (
+          <>
+            <button
+              className="np-studio-btn"
+              onClick={() => setStudioModalOpen(true)}
+              disabled={studioLoading}
+            >
+              <span>✦</span>
+              {studioLoading ? 'Gerando fotos…' : 'Criar foto de estúdio'}
+            </button>
+
+            {(studioLoading || studioImages.length > 0) && (
+              <div className="np-studio-area">
+                {studioLoading ? (
+                  <div className="np-studio-loading">
+                    <span className="np-spinner" />
+                    Gerando fotos de estúdio...
+                  </div>
+                ) : (
+                  <>
+                    <p className="np-studio-label">Toque em uma foto para usar como capa</p>
+                    <div className="np-studio-grid">
+                      {studioImages.map((url, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          className={`np-studio-thumb ${selectedStudioIndex === i ? 'active' : ''}`}
+                          onClick={() => setSelectedStudioIndex(prev => prev === i ? null : i)}
+                        >
+                          <img src={url} alt={`Estúdio ${i + 1}`} />
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </>
         )}
 
         {/* ─── FORMULÁRIO ─── */}
@@ -371,6 +506,26 @@ export default function NovaPecaPage() {
 
         </div>
       </div>
+
+      {/* ─── MODAL DE CONFIRMAÇÃO ─── */}
+      {studioModalOpen && (
+        <div className="np-modal-backdrop" onClick={() => setStudioModalOpen(false)}>
+          <div className="np-modal" onClick={e => e.stopPropagation()}>
+            <p className="np-modal-title">Foto de estúdio com IA</p>
+            <p className="np-modal-text">
+              A Mia vai gerar 4 fotos profissionais da sua peça. Isso pode levar alguns segundos.
+            </p>
+            <div className="np-modal-actions">
+              <button className="np-modal-cancel" onClick={() => setStudioModalOpen(false)}>
+                Cancelar
+              </button>
+              <button className="np-modal-confirm" onClick={handleGenerateStudio}>
+                Gerar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -161,6 +161,65 @@
   backdrop-filter: blur(4px);
 }
 
+/* ─── GALERIA ─────────────────────────────────── */
+
+.np-gallery {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 2px;
+}
+
+.np-gallery::-webkit-scrollbar { display: none; }
+
+.np-gallery-thumb {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background: var(--dash-card);
+  padding: 0;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.np-gallery-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.np-gallery-thumb.active {
+  border-color: var(--dash-gold);
+}
+
+.np-gallery-add {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  border: 1.5px dashed rgba(255,255,255,0.2);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: var(--dash-text-faint);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.np-gallery-add:hover {
+  border-color: var(--dash-border);
+  color: var(--dash-text-dim);
+}
+
 /* ─── BOTÃO ANALISAR ──────────────────────────── */
 
 .np-analyze-btn {
@@ -325,6 +384,171 @@
 }
 
 .np-save-full:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ─── BOTÃO FOTO DE ESTÚDIO ───────────────────── */
+
+.np-studio-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 13px;
+  background: transparent;
+  border: 1px solid var(--dash-border);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dash-gold);
+  cursor: pointer;
+  font-family: var(--font-inter), sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s, border-color 0.2s;
+  letter-spacing: 0.5px;
+}
+
+.np-studio-btn:hover { background: var(--dash-gold-faint); border-color: var(--dash-gold); }
+.np-studio-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ─── MODAL DE CONFIRMAÇÃO ─────────────────────── */
+
+.np-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+  padding: 0 0 20px;
+}
+
+.np-modal {
+  background: var(--dash-surface);
+  border: 0.5px solid var(--dash-border);
+  border-radius: 20px;
+  padding: 24px 20px;
+  width: calc(100% - 32px);
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.np-modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--dash-text);
+  font-family: var(--font-inter), sans-serif;
+  margin: 0;
+}
+
+.np-modal-text {
+  font-size: 13px;
+  color: var(--dash-text-dim);
+  font-family: var(--font-inter), sans-serif;
+  margin: 0;
+  line-height: 1.55;
+}
+
+.np-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.np-modal-cancel {
+  flex: 1;
+  padding: 12px;
+  background: var(--dash-card);
+  border: 0.5px solid var(--dash-border-subtle);
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dash-text-dim);
+  cursor: pointer;
+  font-family: var(--font-inter), sans-serif;
+  transition: background 0.15s;
+}
+
+.np-modal-cancel:hover { background: var(--dash-border-subtle); }
+
+.np-modal-confirm {
+  flex: 1;
+  padding: 12px;
+  background: var(--dash-gold);
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  font-family: var(--font-inter), sans-serif;
+  transition: opacity 0.15s;
+}
+
+.np-modal-confirm:hover { opacity: 0.88; }
+
+/* ─── ÁREA DE ESTÚDIO ──────────────────────────── */
+
+.np-studio-area {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.np-studio-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 28px 0;
+  font-size: 13px;
+  color: rgba(180,140,60,0.8);
+  font-family: var(--font-inter), sans-serif;
+}
+
+.np-studio-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--dash-text-faint);
+  letter-spacing: 0.3px;
+  font-family: var(--font-inter), sans-serif;
+  text-align: center;
+}
+
+.np-studio-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.np-studio-thumb {
+  aspect-ratio: 1/1;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  cursor: pointer;
+  background: var(--dash-card);
+  transition: border-color 0.15s, transform 0.15s;
+  padding: 0;
+}
+
+.np-studio-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.np-studio-thumb.active {
+  border-color: var(--dash-gold);
+}
+
+.np-studio-thumb:hover {
+  transform: scale(1.02);
+}
 
 /* ─── SPINNER ─────────────────────────────────── */
 
