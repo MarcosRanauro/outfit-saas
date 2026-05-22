@@ -1,16 +1,56 @@
+/* ─── TEMA CLARO (padrão) ─────────────────────── */
+
+:root,
+[data-theme="light"] {
+  --dash-bg: #f0f0f8;
+  --dash-card: #faf8f4;
+  --dash-surface: #ffffff;
+  --dash-text: #1a1a2e;
+  --dash-text-dim: rgba(26,26,46,0.5);
+  --dash-text-faint: rgba(26,26,46,0.3);
+  --dash-gold: #B48C3C;
+  --dash-gold-dim: rgba(180,140,60,0.6);
+  --dash-gold-faint: rgba(180,140,60,0.08);
+  --dash-border: rgba(180,140,60,0.15);
+  --dash-border-subtle: rgba(26,26,46,0.14);
+  --dash-nav: #d8d8e8;
+}
+
+/* ─── TEMA ESCURO ─────────────────────────────── */
+
+[data-theme="dark"] {
+  --dash-bg: #111618;
+  --dash-card: #182022;
+  --dash-surface: #1e2a2c;
+  --dash-text: #e0e8ea;
+  --dash-text-dim: rgba(224,232,234,0.5);
+  --dash-text-faint: rgba(224,232,234,0.25);
+  --dash-gold: rgba(180,140,60,0.9);
+  --dash-gold-dim: rgba(180,140,60,0.5);
+  --dash-gold-faint: rgba(180,140,60,0.06);
+  --dash-border: rgba(80,140,150,0.12);
+  --dash-border-subtle: rgba(224,232,234,0.06);
+  --dash-nav: #182022;
+}
+
+/* ─── DASHBOARD WRAP ──────────────────────────── */
+
 .dashboard-wrap {
-  min-height: 100vh;
-  min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: #080808;
+  min-height: 100vh;
+  background: var(--dash-bg);
+  transition: background 0.3s ease;
 }
 
 .dashboard-content {
   flex: 1;
   overflow-y: auto;
-  padding-bottom: 64px;
+  padding-bottom: 80px;
+  background: var(--dash-bg);
 }
+
+/* ─── BANNER ──────────────────────────────────── */
 
 .dashboard-top-banner {
   position: relative;
@@ -21,15 +61,11 @@
 }
 
 @media (min-width: 480px) {
-  .dashboard-top-banner {
-    height: 156px;
-  }
+  .dashboard-top-banner { height: 156px; }
 }
 
 @media (min-width: 768px) {
-  .dashboard-top-banner {
-    height: 380px;
-  }
+  .dashboard-top-banner { height: 380px; }
 }
 
 .dashboard-top-banner-img {
@@ -37,21 +73,23 @@
   object-position: center;
 }
 
+/* ─── BOTTOM NAV ──────────────────────────────── */
+
 .bottom-nav {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 64px;
-  background: #0f0f0f;
-  border-top: 0.5px solid rgba(255,255,255,0.06);
+  background: var(--dash-nav);
+  border-top: 0.5px solid var(--dash-border-subtle);
   display: flex;
-  align-items: center;
   justify-content: space-around;
-  padding: 0 8px;
-  z-index: 100;
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+  z-index: 50;
+  transition: background 0.3s ease;
 }
 
+/* Classe legada — mantida para compatibilidade com BottomNav.tsx */
 .nav-item {
   display: flex;
   flex-direction: column;
@@ -67,4 +105,34 @@
   font-size: 9px;
   letter-spacing: 1px;
   text-transform: uppercase;
+}
+
+/* Nova classe (para futura atualização do BottomNav) */
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 16px;
+  text-decoration: none;
+  color: var(--dash-text-faint);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  transition: color 0.2s;
+}
+
+[data-theme="light"] .bottom-nav {
+  border-top: 1px solid rgba(26,26,46,0.2);
+}
+
+[data-theme="light"] .bottom-nav-item {
+  color: rgba(26,26,46,0.55);
+}
+
+[data-theme="light"] .bottom-nav-item.active {
+  color: #B48C3C;
+}
+
+.bottom-nav-item.active {
+  color: var(--dash-gold);
 }
