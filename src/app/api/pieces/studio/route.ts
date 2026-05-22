@@ -16,10 +16,10 @@ export async function POST(request: Request) {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
     const angles = [
-      'Front view, the item facing directly forward, all front details visible.',
-      'Left side view, the item rotated 90 degrees to the left, side profile visible.',
-      'Back view, the item facing directly backward, all back details visible.',
-      'Right side view, the item rotated 90 degrees to the right, side profile visible.',
+      'Front view, mannequin facing directly forward, all front details and logos clearly visible.',
+      'Three-quarter front-left view, mannequin rotated 45 degrees to the left, showing front and left side simultaneously.',
+      'Back view, mannequin facing directly backward, all back details clearly visible.',
+      'Three-quarter back-right view, mannequin rotated 45 degrees to the right showing the back and right side simultaneously.',
     ]
 
     const basePrompt = `This is the exact same clothing item shown in the reference image. Do not change any design, logos, colors, patterns or details. Place it on a plain white mannequin against a pure white background. Studio lighting, sharp details, full item visible, fashion e-commerce style photography. No shadows, no props, no added text.`
