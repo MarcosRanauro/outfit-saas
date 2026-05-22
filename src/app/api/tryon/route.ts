@@ -35,8 +35,6 @@ export async function POST(request: Request) {
       )
     }
 
-    console.log('[tryon] API Key prefix:', process.env.FASHN_API_KEY?.substring(0, 8))
-
     const response = await fetch('https://api.fashn.ai/v1/run', {
       method: 'POST',
       headers: {

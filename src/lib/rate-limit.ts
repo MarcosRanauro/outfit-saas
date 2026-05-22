@@ -6,12 +6,14 @@ const LIMITS = {
     outfit_generate: 5,
     pieces_analyze: 3,
     wishlist_generate: 3,
+    studio_generate: 10,
   },
   pro: {
     mia_chat: 999,
     outfit_generate: 999,
     pieces_analyze: 999,
     wishlist_generate: 999,
+    studio_generate: 999,
   },
 }
 
@@ -25,7 +27,7 @@ export async function checkRateLimit(
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('plan, usage_mia_generations, usage_outfit_generations, usage_pieces_analyzed, usage_wishlist_generations, usage_reset_at, trial_ends_at')
+    .select('plan, usage_mia_generations, usage_outfit_generations, usage_pieces_analyzed, usage_wishlist_generations, usage_studio_generations, usage_reset_at, trial_ends_at')
     .eq('id', userId)
     .single()
 
@@ -59,6 +61,7 @@ export async function checkRateLimit(
         usage_outfit_generations: 0,
         usage_pieces_analyzed: 0,
         usage_wishlist_generations: 0,
+        usage_studio_generations: 0,
         usage_reset_at: now.toISOString(),
       })
       .eq('id', userId)
@@ -84,6 +87,7 @@ export async function incrementUsage(
     outfit_generate: 'usage_outfit_generations',
     pieces_analyze: 'usage_pieces_analyzed',
     wishlist_generate: 'usage_wishlist_generations',
+    studio_generate: 'usage_studio_generations',
   }
 
   const column = columnMap[action]
