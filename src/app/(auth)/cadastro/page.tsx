@@ -99,17 +99,7 @@ export default function CadastroPage() {
         <p className="auth-subtitle">Comece seu teste gratuito de 15 dias</p>
 
         {showConfirmEmail && (
-          <div style={{
-            background: 'rgba(92,200,141,0.08)',
-            border: '0.5px solid rgba(92,200,141,0.3)',
-            borderRadius: '8px',
-            padding: '14px',
-            marginBottom: '16px',
-            fontSize: '13px',
-            color: 'rgba(92,200,141,0.8)',
-            textAlign: 'center',
-            lineHeight: '1.6',
-          }}>
+          <div className="auth-confirm-email">
             ✓ Conta criada! Verifique seu e-mail para confirmar o cadastro.
           </div>
         )}
@@ -163,7 +153,7 @@ export default function CadastroPage() {
           </button>
         </form>
 
-        <div className="footer-link" style={{ marginTop: '20px' }}>
+        <div className="footer-link auth-footer-link--top">
           Já tem conta?{' '}
           <a href="/login">Entrar</a>
         </div>

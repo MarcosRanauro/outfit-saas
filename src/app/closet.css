@@ -1212,3 +1212,120 @@
 
 .nova-peca-input:focus { border-color: var(--dash-border); }
 .nova-peca-input::placeholder { color: var(--dash-text-faint); }
+
+/* ─── COLS WRAP ──────────────────────────────── */
+
+.closet-cols-wrap { position: relative; }
+
+/* ─── UPGRADE BANNER ─────────────────────────── */
+
+.closet-upgrade-banner {
+  margin: 0 16px 12px;
+  background: var(--dash-gold-faint);
+  border: 0.5px solid var(--dash-border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.closet-upgrade-banner-info {
+  flex: 1;
+  min-width: 200px;
+}
+
+.closet-upgrade-banner-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dash-gold);
+  margin-bottom: 4px;
+}
+
+.closet-upgrade-banner-sub {
+  font-size: 12px;
+  color: var(--dash-text-dim);
+  line-height: 1.5;
+}
+
+.closet-upgrade-banner-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.closet-upgrade-banner-close {
+  background: transparent;
+  border: 0.5px solid var(--dash-border-subtle);
+  border-radius: 7px;
+  padding: 8px 14px;
+  font-size: 12px;
+  color: var(--dash-text-dim);
+  cursor: pointer;
+  font-family: var(--font-inter), sans-serif;
+}
+
+.closet-upgrade-btn {
+  background: var(--dash-gold);
+  border-radius: 7px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ─── GRID PLACEHOLDER ───────────────────────── */
+
+.closet-grid-placeholder {
+  grid-column: 1 / -1;
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--dash-text-faint);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ─── UPLOAD AREA MODIFIERS ──────────────────── */
+
+.upload-area--small { height: 120px; }
+
+/* ─── MODAL SWAP PHOTO ───────────────────────── */
+
+.modal-swap-photo {
+  display: block;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.modal-swap-photo .modal-btn {
+  text-align: center;
+  background: transparent;
+  border-color: rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.5);
+}
+
+/* ─── UPLOAD LABEL ───────────────────────────── */
+
+.upload-label { display: block; cursor: pointer; }
+
+/* ─── MODAL BTN MODIFIERS ────────────────────── */
+
+.modal-btn--danger {
+  background: rgba(224,92,92,0.08);
+  border-color: rgba(224,92,92,0.3);
+  color: rgba(224,92,92,0.8);
+}
+
+/* ─── ONBOARDING BTN GHOST ───────────────────── */
+
+.onboarding-btn--ghost {
+  background: transparent;
+  border-color: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.3);
+  margin-top: 6px;
+}

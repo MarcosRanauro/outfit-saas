@@ -2,7 +2,7 @@
 
 **Data:** 2026-05-22  
 **Branch auditada:** `feat/studio-cost-optimization` (baseada em `main`)  
-**Atualizado:** 2026-05-22 — itens críticos 1–4 corrigidos na branch `fix/security-audit`  
+**Atualizado:** 2026-05-22 — itens críticos 1–4 corrigidos na branch `fix/security-audit`; CSS inline migrado na branch `fix/css-inline`  
 **Auditor:** Claude Sonnet 4.6
 
 ---
@@ -92,7 +92,11 @@ Persistido em `localStorage` (`mia_theme`). `data-theme` e `data-auth-theme` sin
 
 ---
 
-## 2. CSS Inline (style={{}})
+## 2. CSS Inline (style={{}}) — ✅ Migrado na branch `fix/css-inline`
+
+> Todos os ~45 `style={{}}` mapeados abaixo foram convertidos para classes CSS nos arquivos `.css` de cada módulo. Apenas os marcados como "Manter" foram preservados (dinâmicos em runtime).
+
+
 
 ### `src/app/(auth)/login/page.tsx`
 

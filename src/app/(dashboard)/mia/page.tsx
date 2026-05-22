@@ -287,8 +287,8 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
         <div className="mia-anchor-card">
           <div className="mia-anchor-photo">
             {anchorPiece.photo_url
-              ? <img src={anchorPiece.photo_url} alt={anchorPiece.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              : <span style={{ fontSize: 18, opacity: 0.3 }}>👕</span>
+              ? <img src={anchorPiece.photo_url} alt={anchorPiece.name} className="mia-anchor-img" />
+              : <span className="mia-anchor-placeholder">👕</span>
             }
           </div>
           <div className="mia-anchor-info">
@@ -384,27 +384,15 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
                   const wishlistKey = `${msgIndex}-w-${itemIndex}`
                   const isWishlistSaved = savedWishlistIds.has(wishlistKey)
                   return (
-                    <div key={itemIndex} className="mia-outfit-card" style={{ marginTop: itemIndex === 0 ? '8px' : '6px' }}>
-                      <div className="mia-outfit-body" style={{ padding: '10px' }}>
-                        <div style={{
-                          fontSize: '8px',
-                          letterSpacing: '2px',
-                          textTransform: 'uppercase',
-                          color: 'rgba(180,140,60,0.6)',
-                          marginBottom: '4px'
-                        }}>
+                    <div key={itemIndex} className={`mia-outfit-card mia-wishlist-card${itemIndex === 0 ? ' mia-wishlist-card--first' : ''}`}>
+                      <div className="mia-outfit-body mia-wishlist-body">
+                        <div className="mia-wishlist-priority">
                           {item.priority === 'high' ? '⭐ Essencial' :
                            item.priority === 'medium' ? '👍 Recomendado' : '✨ Nice to have'}
                         </div>
                         <div className="mia-outfit-name">{item.name}</div>
                         <div className="mia-outfit-sub">{item.category} · {item.color}</div>
-                        <div style={{
-                          fontSize: '11px',
-                          color: 'rgba(255,255,255,0.4)',
-                          lineHeight: '1.5',
-                          marginTop: '6px',
-                          marginBottom: '8px'
-                        }}>
+                        <div className="mia-wishlist-reason">
                           {item.reason}
                         </div>
                         <button

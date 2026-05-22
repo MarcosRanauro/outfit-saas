@@ -735,3 +735,37 @@
   align-items: center;
   justify-content: center;
 }
+
+/* ─── CARD TAGS ROW ──────────────────────────── */
+
+.lookbook-card-tags {
+  display: flex;
+  gap: 4px;
+}
+
+/* ─── PIECE PLACEHOLDERS ─────────────────────── */
+
+.lookbook-piece-placeholder {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: rgba(180,140,60,0.08);
+  border: 1px dashed rgba(180,140,60,0.2);
+}
+
+.lookbook-piece-placeholder--sm {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  background: rgba(180,140,60,0.08);
+  border: 1px dashed rgba(180,140,60,0.2);
+}
+
+/* ─── TRYON SELECT HINT ──────────────────────── */
+
+.tryon-select-hint {
+  text-align: center;
+  font-size: 13px;
+  color: rgba(255,255,255,0.25);
+  padding: 20px;
+}

@@ -190,7 +190,7 @@ export default function PerfilPage() {
 
   if (loading) {
     return (
-      <div style={{ padding: '40px 20px', textAlign: 'center', color: 'rgba(255,255,255,0.25)' }}>
+      <div className="perfil-loading">
         Carregando...
       </div>
     )
@@ -247,7 +247,7 @@ export default function PerfilPage() {
         <div className="field-group">
           <div className="field-row" onClick={() => openEdit("name")}>
             <span className="field-row-label">Nome</span>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <div className="field-row-value-wrap">
               <span
                 className={`field-row-value ${!profile?.name ? "empty" : ""}`}
               >
@@ -258,7 +258,7 @@ export default function PerfilPage() {
           </div>
           <div className="field-row" onClick={() => openEdit("height")}>
             <span className="field-row-label">Altura</span>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <div className="field-row-value-wrap">
               <span
                 className={`field-row-value ${!profile?.height ? "empty" : ""}`}
               >
@@ -269,7 +269,7 @@ export default function PerfilPage() {
           </div>
           <div className="field-row" onClick={() => openEdit("weight")}>
             <span className="field-row-label">Peso</span>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <div className="field-row-value-wrap">
               <span
                 className={`field-row-value ${!profile?.weight ? "empty" : ""}`}
               >
@@ -280,10 +280,9 @@ export default function PerfilPage() {
           </div>
           <div className="field-row" onClick={() => openEdit("style")}>
             <span className="field-row-label">Estilo</span>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <div className="field-row-value-wrap">
               <span
-                className={`field-row-value ${!profile?.style ? "empty" : ""}`}
-                style={{ fontSize: "11px" }}
+                className={`field-row-value field-row-value--small ${!profile?.style ? "empty" : ""}`}
               >
                 {profile?.style || "Adicionar"}
               </span>
@@ -308,9 +307,8 @@ export default function PerfilPage() {
               <div className="plan-badge">Pro</div>
             </div>
             <button
-              className="upgrade-btn"
+              className="upgrade-btn upgrade-btn--active"
               onClick={handleManageSubscription}
-              style={{ background: 'rgba(92,200,141,0.1)', borderColor: 'rgba(92,200,141,0.4)', color: 'rgba(92,200,141,0.9)' }}
             >
               ✓ Plano Pro ativo — Gerenciar assinatura
             </button>
@@ -348,19 +346,11 @@ export default function PerfilPage() {
           Sair da conta
         </button>
 
-        <div style={{
-          marginTop: '32px',
-          paddingTop: '20px',
-          borderTop: '0.5px solid rgba(255,255,255,0.06)',
-          display: 'flex',
-          justifyContent: 'center',
-          gap: '20px',
-          flexWrap: 'wrap',
-        }}>
-          <a href="/sobre" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>Sobre o Mia Outfit AI</a>
-          <a href="/faq" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>FAQ</a>
-          <a href="/termos" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>Termos</a>
-          <a href="/privacidade" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>Privacidade</a>
+        <div className="perfil-footer-links">
+          <a href="/sobre" className="perfil-footer-link">Sobre o Mia Outfit AI</a>
+          <a href="/faq" className="perfil-footer-link">FAQ</a>
+          <a href="/termos" className="perfil-footer-link">Termos</a>
+          <a href="/privacidade" className="perfil-footer-link">Privacidade</a>
         </div>
       </div>
 

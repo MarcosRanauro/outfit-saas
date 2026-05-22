@@ -170,37 +170,27 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="footer-link" style={{ marginTop: '20px' }}>
+        <div className="footer-link auth-footer-link--top">
           Não tem conta?{' '}
           <a href="/cadastro">Criar conta</a>
         </div>
-        <div className="footer-link" style={{ marginTop: '8px' }}>
+        <div className="footer-link auth-footer-link--sub">
           <a href="/esqueci-senha">Esqueci minha senha</a>
         </div>
 
         {installPrompt && !isInstalled && (
-          <div style={{ textAlign: 'center', marginTop: '12px' }}>
+          <div className="install-btn-wrap">
             <button onClick={handleInstall} className="install-btn">
               📲 Instalar app no celular
             </button>
           </div>
         )}
         {showIOSInstructions && (
-          <div style={{
-            textAlign: 'center',
-            marginTop: '12px',
-            padding: '10px 16px',
-            background: 'rgba(180,140,60,0.06)',
-            border: '0.5px solid rgba(180,140,60,0.25)',
-            borderRadius: '8px',
-            fontSize: '12px',
-            color: 'rgba(180,140,60,0.7)',
-            lineHeight: 1.5,
-          }}>
+          <div className="ios-install-hint">
             📲 Para instalar: toque em{' '}
-            <strong style={{ color: 'rgba(180,140,60,0.9)' }}>Compartilhar</strong>
+            <strong>Compartilhar</strong>
             {' '}→{' '}
-            <strong style={{ color: 'rgba(180,140,60,0.9)' }}>Adicionar à Tela de Início</strong>
+            <strong>Adicionar à Tela de Início</strong>
           </div>
         )}
 

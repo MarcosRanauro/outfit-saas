@@ -385,6 +385,45 @@
   border-color: rgba(180,140,60,0.5);
 }
 
+/* ─── FOOTER LINK MODIFIERS ──────────────────── */
+
+.footer-link.auth-footer-link--top { margin-top: 20px; }
+.footer-link.auth-footer-link--sub { margin-top: 8px; }
+
+/* ─── INSTALL BUTTON WRAPPER ─────────────────── */
+
+.install-btn-wrap { text-align: center; margin-top: 12px; }
+
+/* ─── IOS INSTALL HINT ───────────────────────── */
+
+.ios-install-hint {
+  text-align: center;
+  margin-top: 12px;
+  padding: 10px 16px;
+  background: rgba(180,140,60,0.06);
+  border: 0.5px solid rgba(180,140,60,0.25);
+  border-radius: 8px;
+  font-size: 12px;
+  color: rgba(180,140,60,0.7);
+  line-height: 1.5;
+}
+
+.ios-install-hint strong { color: rgba(180,140,60,0.9); }
+
+/* ─── EMAIL CONFIRM BANNER ───────────────────── */
+
+.auth-confirm-email {
+  background: rgba(92,200,141,0.08);
+  border: 0.5px solid rgba(92,200,141,0.3);
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: rgba(92,200,141,0.8);
+  text-align: center;
+  line-height: 1.6;
+}
+
 /* ─── MOBILE ──────────────────────────────────── */
 
 @media (max-width: 480px) {

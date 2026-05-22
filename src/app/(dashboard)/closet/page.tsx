@@ -585,7 +585,7 @@ export default function ClosetPage() {
           )}
         </button>
 
-        <div style={{ position: 'relative' }}>
+        <div className="closet-cols-wrap">
           <button
             className="closet-cols-btn"
             onClick={() => setShowColsMenu(p => !p)}
@@ -636,14 +636,14 @@ export default function ClosetPage() {
 
       {/* ─── BANNER UPGRADE ─── */}
       {showUpgradeBanner && (
-        <div style={{ margin: '0 16px 12px', background: 'var(--dash-gold-faint)', border: '0.5px solid var(--dash-border)', borderRadius: '12px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' as const }}>
-          <div style={{ flex: 1, minWidth: '200px' }}>
-            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--dash-gold)', marginBottom: '4px' }}>🔒 Teste expirado</div>
-            <div style={{ fontSize: '12px', color: 'var(--dash-text-dim)', lineHeight: 1.5 }}>Seu período de teste encerrou. Faça upgrade para continuar.</div>
+        <div className="closet-upgrade-banner">
+          <div className="closet-upgrade-banner-info">
+            <div className="closet-upgrade-banner-title">🔒 Teste expirado</div>
+            <div className="closet-upgrade-banner-sub">Seu período de teste encerrou. Faça upgrade para continuar.</div>
           </div>
-          <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-            <button onClick={() => setShowUpgradeBanner(false)} style={{ background: 'transparent', border: '0.5px solid var(--dash-border-subtle)', borderRadius: '7px', padding: '8px 14px', fontSize: '12px', color: 'var(--dash-text-dim)', cursor: 'pointer' }}>Fechar</button>
-            <a href="/perfil" style={{ background: 'var(--dash-gold)', borderRadius: '7px', padding: '8px 16px', fontSize: '12px', fontWeight: 600, color: '#fff', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>⚡ Upgrade Pro</a>
+          <div className="closet-upgrade-banner-actions">
+            <button onClick={() => setShowUpgradeBanner(false)} className="closet-upgrade-banner-close">Fechar</button>
+            <a href="/perfil" className="closet-upgrade-btn">⚡ Upgrade Pro</a>
           </div>
         </div>
       )}
@@ -654,11 +654,11 @@ export default function ClosetPage() {
         style={cols > 1 ? { gridTemplateColumns: `repeat(${cols}, 1fr)` } : undefined}
       >
         {loading ? (
-          <div style={{ gridColumn: '1 / -1', padding: '60px 20px', textAlign: 'center', color: 'var(--dash-text-faint)', fontSize: '13px' }}>
+          <div className="closet-grid-placeholder">
             Carregando...
           </div>
         ) : filteredPieces.length === 0 ? (
-          <div style={{ gridColumn: '1 / -1', padding: '60px 20px', textAlign: 'center', color: 'var(--dash-text-faint)', fontSize: '13px', lineHeight: 1.6 }}>
+          <div className="closet-grid-placeholder">
             {search || activeGroup !== 'Todos' || activeFilterCount > 0
               ? 'Nenhuma peça encontrada.'
               : 'Seu closet está vazio.\nToque em + para adicionar.'}
@@ -715,8 +715,8 @@ export default function ClosetPage() {
                 {selectedPiece.photo_url ? (
                   <img src={selectedPiece.photo_url} alt={selectedPiece.name} />
                 ) : (
-                  <label style={{ cursor: 'pointer', display: 'block' }}>
-                    <div className="upload-area" style={{ height: '120px' }}>{uploadingPhoto ? 'Enviando...' : '+ Adicionar foto'}</div>
+                  <label className="upload-label">
+                    <div className="upload-area upload-area--small">{uploadingPhoto ? 'Enviando...' : '+ Adicionar foto'}</div>
                     <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAddPhoto} />
                   </label>
                 )}
@@ -740,8 +740,8 @@ export default function ClosetPage() {
                 )}
               </div>
               {selectedPiece.photo_url && (
-                <label style={{ display: 'block', cursor: 'pointer', marginBottom: '10px' }}>
-                  <div className="modal-btn" style={{ textAlign: 'center', background: 'transparent', borderColor: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.5)' }}>
+                <label className="modal-swap-photo">
+                  <div className="modal-btn">
                     {uploadingPhoto ? 'Enviando...' : 'Trocar foto'}
                   </div>
                   <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAddPhoto} />
@@ -762,9 +762,8 @@ export default function ClosetPage() {
                 Usar como peça âncora
               </button>
               <button
-                className="modal-btn"
+                className="modal-btn modal-btn--danger"
                 onClick={handleDelete}
-                style={{ background: 'rgba(224,92,92,0.08)', borderColor: 'rgba(224,92,92,0.3)', color: 'rgba(224,92,92,0.8)' }}
               >
                 Excluir Peça
               </button>
@@ -783,7 +782,7 @@ export default function ClosetPage() {
           <div className="modal-title">Nova Peça</div>
           <div className="modal-field">
             <span className="modal-label">Foto</span>
-            <label style={{ display: 'block', cursor: 'pointer' }}>
+            <label className="upload-label">
               {photoPreview
                 ? <img src={photoPreview} className="upload-preview" alt="preview" />
                 : <div className="upload-area">Toque para adicionar foto</div>}
@@ -993,7 +992,7 @@ export default function ClosetPage() {
                 <input className="onboarding-input" placeholder="Ex: Vintage, Gótico..." value={obCustomStyle} onChange={e => setObCustomStyle(e.target.value)} />
               </div>
               <button className="onboarding-btn" onClick={handleOnboardingSave} disabled={obSaving || !step2Valid}>{obSaving ? 'Salvando...' : 'Concluir'}</button>
-              <button className="onboarding-btn" onClick={() => setObStep(1)} style={{ background: 'transparent', borderColor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.3)', marginTop: '6px' }}>Voltar</button>
+              <button className="onboarding-btn onboarding-btn--ghost" onClick={() => setObStep(1)}>Voltar</button>
             </>
           )}
 

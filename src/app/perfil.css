@@ -631,3 +631,49 @@
   padding: 16px 20px;
   margin-bottom: 12px;
 }
+
+/* ─── PERFIL LOADING ─────────────────────────── */
+
+.perfil-loading {
+  padding: 40px 20px;
+  text-align: center;
+  color: rgba(255,255,255,0.25);
+}
+
+/* ─── FIELD ROW VALUE WRAP ───────────────────── */
+
+.field-row-value-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ─── FIELD ROW VALUE MODIFIERS ──────────────── */
+
+.field-row-value--small { font-size: 11px; }
+
+/* ─── UPGRADE BTN ACTIVE (Pro plan) ─────────── */
+
+.upgrade-btn--active {
+  background: rgba(92,200,141,0.1);
+  border-color: rgba(92,200,141,0.4);
+  color: rgba(92,200,141,0.9);
+}
+
+/* ─── PERFIL FOOTER LINKS ────────────────────── */
+
+.perfil-footer-links {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 0.5px solid rgba(255,255,255,0.06);
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.perfil-footer-link {
+  font-size: 12px;
+  color: rgba(255,255,255,0.2);
+  text-decoration: none;
+}

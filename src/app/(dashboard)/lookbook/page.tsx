@@ -300,7 +300,7 @@ export default function LookbookPage() {
                     <div className="lookbook-card-name">{outfit.name}</div>
                     <div className="lookbook-card-sub">{outfit.subtitle}</div>
                     <div className="lookbook-card-bottom">
-                      <div style={{ display: 'flex', gap: '4px' }}>
+                      <div className="lookbook-card-tags">
                         {outfit.style_tags?.slice(0, 2).map(tag => (
                           <span key={tag} className={`tag ${tagClass(tag)}`}>{tag}</span>
                         ))}
@@ -349,7 +349,7 @@ export default function LookbookPage() {
                       {piece.photo_url ? (
                         <img src={piece.photo_url!} alt={piece.name} />
                       ) : (
-                        <div style={{ width: '24px', height: '24px', borderRadius: '4px', background: 'rgba(180,140,60,0.08)', border: '1px dashed rgba(180,140,60,0.2)' }} />
+                        <div className="lookbook-piece-placeholder" />
                       )}
                     </div>
                   ))}
@@ -372,7 +372,7 @@ export default function LookbookPage() {
                       {piece.photo_url ? (
                         <img src={piece.photo_url} alt={piece.name} />
                       ) : (
-                        <div style={{ width: '16px', height: '16px', borderRadius: '3px', background: 'rgba(180,140,60,0.08)', border: '1px dashed rgba(180,140,60,0.2)' }} />
+                        <div className="lookbook-piece-placeholder--sm" />
                       )}
                     </div>
                     <div>
@@ -481,12 +481,7 @@ export default function LookbookPage() {
                 )}
 
                 {!selectedPiece && (
-                  <p style={{
-                    textAlign: 'center',
-                    fontSize: '13px',
-                    color: 'rgba(255,255,255,0.25)',
-                    padding: '20px',
-                  }}>
+                  <p className="tryon-select-hint">
                     Selecione uma peça acima para continuar
                   </p>
                 )}
