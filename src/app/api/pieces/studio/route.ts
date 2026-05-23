@@ -44,15 +44,33 @@ export async function POST(request: Request) {
     const { default: OpenAI } = await import('openai')
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
-    const angles = [
-      'Front view, the item facing directly forward, all front details clearly visible.',
-      'Three-quarter front-left view, the item rotated 45 degrees to the left, showing front and left side simultaneously.',
-      'Back view, the item facing directly backward, all back details clearly visible.',
-    ]
+    function buildPrompt(name: string, category: string, color: string, colorSecondary: string | null, brand: string | null, enrichedDescription: string): string {
+      const isFootwear = ['tênis', 'sapato', 'bota', 'sandália', 'calçado', 'sneaker', 'shoe'].some(
+        w => category.toLowerCase().includes(w) || name.toLowerCase().includes(w)
+      )
 
-    function buildPrompt(name: string, category: string, color: string, colorSecondary: string | null, brand: string | null, description: string | null): string {
-      return `This is a ${category} clothing/fashion item called "${name}"${brand ? ` by ${brand}` : ''}. ${description || ''}. Color: ${color}${colorSecondary ? ' and ' + colorSecondary : ''}. This is NOT a shirt or t-shirt unless explicitly stated — respect the exact item type: ${category}. Place it on a plain white mannequin against a pure white background. Studio lighting, sharp details, full item visible, fashion e-commerce style photography. No shadows, no props, no added text.`
+      const itemContext = isFootwear
+        ? `a ${color} ${brand || ''} ${name} sneaker/shoe`
+        : `a ${color} ${brand || ''} ${name} (${category})`
+
+      return `Professional e-commerce product photo of ${itemContext}. ${enrichedDescription}.
+
+CRITICAL REQUIREMENTS:
+- Pure white background (#FFFFFF), no shadows, no gradients
+- The COMPLETE item must be fully visible, nothing cut off
+- High contrast between item and background
+- Sharp focus on entire product
+- Professional fashion photography lighting
+- No mannequin body parts visible except what holds the item
+- No text overlays, no watermarks
+- Photorealistic quality`
     }
+
+    const angles = [
+      'Show the COMPLETE item from the FRONT. Full item visible from top to bottom, centered.',
+      'Show the COMPLETE item from a 45-degree angle on the left side. Full item visible.',
+      'Show the COMPLETE item from the BACK. Full item visible from top to bottom, centered.',
+    ]
 
     let enrichedDescription = description
     try {
@@ -82,7 +100,7 @@ export async function POST(request: Request) {
         openai.images.edit({
           model: 'gpt-image-1',
           image: imageFile,
-          prompt: `${buildPrompt(name, category, color, color_secondary, brand, enrichedDescription)} ${angle}`,
+          prompt: `${buildPrompt(name, category, color, color_secondary ?? null, brand ?? null, enrichedDescription ?? '')} ${angle}`,
           n: 1,
           size: '1024x1024',
           quality: 'low',
