@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react'
 import Cropper from 'react-easy-crop'
 import { createClient } from '@/lib/supabase/client'
+import { toBase64, moderateImage } from '@/lib/image'
 
 type Props = {
   onSave: (url: string) => void
@@ -66,9 +67,15 @@ export default function AvatarCrop({ onSave, onClose, userId }: Props) {
     setCroppedAreaPixels(croppedPixels)
   }, [])
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+    const base64 = await toBase64(file)
+    const approved = await moderateImage(base64)
+    if (!approved) {
+      alert('Esta imagem não é permitida.')
+      return
+    }
     const reader = new FileReader()
     reader.onload = () => setImageSrc(reader.result as string)
     reader.readAsDataURL(file)

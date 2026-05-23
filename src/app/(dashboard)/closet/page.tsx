@@ -16,6 +16,7 @@ interface AiSuggestion {
   season?: string
   description?: string
 }
+import { toBase64, moderateImage } from '@/lib/image'
 import '../../closet.css'
 import '../../perfil.css'
 import '../../wishlist.css'
@@ -334,9 +335,15 @@ export default function ClosetPage() {
   const step1Valid = !!obHeight && !!obWeight && (!showNameField || !!obName.trim())
   const step2Valid = obSelectedStyles.length > 0 || !!obCustomStyle.trim()
 
-  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+    const base64 = await toBase64(file)
+    const approved = await moderateImage(base64)
+    if (!approved) {
+      alert('Esta imagem não é permitida. Por favor, envie uma foto de roupa ou acessório.')
+      return
+    }
     setPhoto(file)
     setPhotoPreview(URL.createObjectURL(file))
   }
@@ -454,6 +461,12 @@ export default function ClosetPage() {
   async function handleAddPhoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file || !selectedPiece) return
+    const base64 = await toBase64(file)
+    const approved = await moderateImage(base64)
+    if (!approved) {
+      alert('Esta imagem não é permitida. Por favor, envie uma foto de roupa ou acessório.')
+      return
+    }
     setUploadingPhoto(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()

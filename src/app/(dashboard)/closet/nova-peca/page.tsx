@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { toBase64, moderateImage } from '@/lib/image'
 import './nova-peca.css'
 
 const PIECE_CATEGORIES = [
@@ -126,14 +127,9 @@ export default function NovaPecaPage() {
 
     let blocked = false
     try {
-      const { base64 } = await compressForAnalysis(file)
-      const res = await fetch('/api/pieces/moderate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photo_base64: base64 }),
-      })
-      const data = await res.json()
-      if (data.flagged) {
+      const base64 = await toBase64(file)
+      const approved = await moderateImage(base64)
+      if (!approved) {
         blocked = true
         setModerationError('Esta imagem não é permitida. Por favor, envie uma foto de roupa ou acessório.')
       }
@@ -153,7 +149,13 @@ export default function NovaPecaPage() {
     analyzeFile(file)
   }
 
-  function handleAddPhoto(file: File) {
+  async function handleAddPhoto(file: File) {
+    const base64 = await toBase64(file)
+    const approved = await moderateImage(base64)
+    if (!approved) {
+      alert('Esta imagem não é permitida. Por favor, envie uma foto de roupa ou acessório.')
+      return
+    }
     setPhotos(prev => {
       if (prev.length >= 6) return prev
       return [...prev, file]
