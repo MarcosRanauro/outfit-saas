@@ -122,57 +122,97 @@ export async function POST(request: Request) {
     // }
     // ─── FIM GPT-IMAGE-1 ───
 
-    // ─── PHOTOROOM ───
-    const targetUrls = photo_urls.slice(0, 3)
-    const ts = Date.now()
-
-    const urls = (
-      await Promise.all(
-        targetUrls.map(async (url: string, i: number) => {
-          const imageRes = await fetch(url)
-          const imageBuffer = await imageRes.arrayBuffer()
-
-          const formData = new FormData()
-          formData.append('image_file', new Blob([imageBuffer], { type: 'image/jpeg' }), 'piece.jpg')
-
-          const photoroomRes = await fetch('https://sdk.photoroom.com/v1/segment', {
-            method: 'POST',
-            headers: { 'x-api-key': process.env.PHOTOROOM_API_KEY || '' },
-            body: formData,
-          })
-
-          if (!photoroomRes.ok) {
-            console.error('Photoroom error', i, photoroomRes.status, await photoroomRes.text())
-            return null
-          }
-
-          const pngArrayBuffer = await photoroomRes.arrayBuffer()
-          const pngBuffer = Buffer.from(pngArrayBuffer)
-
-          // Flatten transparent background to white and resize to 1024x1024
-          const sharp = (await import('sharp')).default
-          const processedBuffer = await sharp(pngBuffer)
-            .flatten({ background: { r: 255, g: 255, b: 255 } })
-            .resize(1024, 1024, { fit: 'contain', background: { r: 255, g: 255, b: 255 } })
-            .png()
-            .toBuffer()
-
-          const filename = `studio/${user.id}/${ts}_${i}.png`
-          const { error } = await supabase.storage
-            .from('pieces')
-            .upload(filename, processedBuffer, { contentType: 'image/png', upsert: true })
-
-          if (error) {
-            console.error('Upload error', i, error)
-            return null
-          }
-
-          const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(filename)
-          return urlData.publicUrl
-        })
-      )
-    ).filter((u): u is string => u !== null)
+    // ─── PHOTOROOM (comentado — descomentar para reverter) ───
+    // const targetUrls = photo_urls.slice(0, 3)
+    // const ts = Date.now()
+    //
+    // const urls = (
+    //   await Promise.all(
+    //     targetUrls.map(async (url: string, i: number) => {
+    //       const imageRes = await fetch(url)
+    //       const imageBuffer = await imageRes.arrayBuffer()
+    //
+    //       const formData = new FormData()
+    //       formData.append('image_file', new Blob([imageBuffer], { type: 'image/jpeg' }), 'piece.jpg')
+    //
+    //       const photoroomRes = await fetch('https://sdk.photoroom.com/v1/segment', {
+    //         method: 'POST',
+    //         headers: { 'x-api-key': process.env.PHOTOROOM_API_KEY || '' },
+    //         body: formData,
+    //       })
+    //
+    //       if (!photoroomRes.ok) {
+    //         console.error('Photoroom error', i, photoroomRes.status, await photoroomRes.text())
+    //         return null
+    //       }
+    //
+    //       const pngArrayBuffer = await photoroomRes.arrayBuffer()
+    //       const pngBuffer = Buffer.from(pngArrayBuffer)
+    //
+    //       const sharp = (await import('sharp')).default
+    //       const processedBuffer = await sharp(pngBuffer)
+    //         .flatten({ background: { r: 255, g: 255, b: 255 } })
+    //         .resize(1024, 1024, { fit: 'contain', background: { r: 255, g: 255, b: 255 } })
+    //         .png()
+    //         .toBuffer()
+    //
+    //       const filename = `studio/${user.id}/${ts}_${i}.png`
+    //       const { error } = await supabase.storage
+    //         .from('pieces')
+    //         .upload(filename, processedBuffer, { contentType: 'image/png', upsert: true })
+    //
+    //       if (error) {
+    //         console.error('Upload error', i, error)
+    //         return null
+    //       }
+    //
+    //       const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(filename)
+    //       return urlData.publicUrl
+    //     })
+    //   )
+    // ).filter((u): u is string => u !== null)
     // ─── FIM PHOTOROOM ───
+
+    // ─── FAL.AI BRIA RMBG ───
+    const { fal } = await import('@fal-ai/client')
+    fal.config({ credentials: process.env.FAL_API_KEY })
+
+    const results = await Promise.all(
+      photo_urls.slice(0, 3).map(async (photoUrl: string, i: number) => {
+        const result = await fal.subscribe('fal-ai/bria/background/remove', {
+          input: { image_url: photoUrl },
+        })
+
+        const imageUrl = (result.data as { image?: { url?: string } })?.image?.url
+        if (!imageUrl) return null
+
+        const imageResponse = await fetch(imageUrl)
+        const imageBuffer = Buffer.from(await imageResponse.arrayBuffer())
+
+        const { default: sharp } = await import('sharp')
+        const processedBuffer = await sharp(imageBuffer)
+          .flatten({ background: { r: 255, g: 255, b: 255 } })
+          .resize(1024, 1024, { fit: 'contain', background: { r: 255, g: 255, b: 255 } })
+          .png()
+          .toBuffer()
+
+        const filename = `studio/${user.id}/${Date.now()}_${i}.png`
+        const { error } = await supabase.storage
+          .from('pieces')
+          .upload(filename, processedBuffer, { contentType: 'image/png', upsert: true })
+
+        if (error) {
+          console.error('Upload error', i, error)
+          return null
+        }
+
+        const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(filename)
+        return urlData.publicUrl
+      })
+    )
+
+    const urls = results.filter(Boolean) as string[]
+    // ─── FIM FAL.AI BRIA RMBG ───
 
     if (urls.length === 0) {
       return NextResponse.json({ error: 'Nenhuma imagem gerada' }, { status: 500 })
