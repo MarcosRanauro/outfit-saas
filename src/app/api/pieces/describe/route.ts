@@ -15,10 +15,12 @@ export async function POST(request: Request) {
     }
 
     console.log('[describe] Fotos recebidas:', photo_urls.length)
-    console.log('[describe] URLs:', photo_urls.map((u: string) => u.split('/').pop()))
+
+    const limitedUrls = photo_urls.slice(0, 3)
+    console.log('[describe] Fotos enviadas para Anthropic:', limitedUrls.length)
 
     const ALLOWED_STORAGE_HOST = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '')
-    for (const url of photo_urls) {
+    for (const url of limitedUrls) {
       try {
         const parsed = new URL(url)
         if (!ALLOWED_STORAGE_HOST || parsed.hostname !== ALLOWED_STORAGE_HOST) {
@@ -30,7 +32,7 @@ export async function POST(request: Request) {
     }
 
     const imageContents: Anthropic.ImageBlockParam[] = []
-    for (const url of photo_urls) {
+    for (const url of limitedUrls) {
       const res = await fetch(url)
       const arrayBuffer = await res.arrayBuffer()
       const b64 = Buffer.from(arrayBuffer).toString('base64')
