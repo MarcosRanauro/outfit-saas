@@ -1,0 +1,106 @@
+# Decisões Técnicas — Mia Outfit AI
+
+Registro das principais decisões de arquitetura e tecnologia tomadas durante o desenvolvimento.
+Formato baseado em [Architecture Decision Records (ADR)](https://adr.github.io/).
+
+---
+
+## [2026-04-27] — Supabase como banco de dados e storage
+
+**Contexto:** O projeto precisava de banco relacional, autenticação, storage de arquivos e políticas de segurança por linha (RLS) em uma solução única, sem gerenciar infraestrutura.
+
+**Opções consideradas:**
+- Firebase (Firestore + Auth + Storage)
+- PlanetScale + Auth.js + S3
+- Supabase (PostgreSQL + Auth + Storage)
+
+**Decisão:** Supabase com projeto na região São Paulo (`sa-east-1`).
+
+**Motivo:** PostgreSQL é mais adequado para dados relacionais (peças, outfits, perfis) do que Firestore. RLS nativo elimina a necessidade de validar `user_id` manualmente em cada query. Auth embutido com suporte a Google OAuth sem configuração extra. Storage com políticas públicas por bucket cobre o caso de fotos de peças sem signed URLs. Plano gratuito generoso para a fase inicial.
+
+**Consequências:** Toda query server-side usa `createClient()` de `lib/supabase/server.ts` com o cookie da sessão; toda query client-side usa `lib/supabase/client.ts`. A `SUPABASE_SERVICE_ROLE_KEY` é usada apenas no webhook do Stripe (operações fora do contexto de usuário). Migrar de Supabase seria custoso — decisão de longo prazo.
+
+---
+
+## [2026-04-27] — Vercel como plataforma de deploy
+
+**Contexto:** O projeto é um Next.js App Router com Server Components, Server Actions e API Routes. A escolha de hospedagem afeta diretamente DX, cold starts e compatibilidade com o runtime do Next.js.
+
+**Opções consideradas:**
+- Netlify (suporte parcial ao App Router na época)
+- Railway (mais controle, mais configuração)
+- Vercel (plataforma oficial do Next.js)
+
+**Decisão:** Vercel com domínio customizado `miaoutfitai.com.br`.
+
+**Motivo:** Integração nativa com Next.js — zero configuração para API Routes, Server Components e middleware. Preview deployments automáticos em cada PR. Edge Network CDN. `maxDuration` por rota para rotas de IA com tempo de resposta longo (60s). Variáveis de ambiente gerenciadas na dashboard da Vercel sem necessidade de secrets extras.
+
+**Consequências:** Funções serverless com cold start ocasional. Limite de 60s de execução por função — rotas de IA (studio, tryon) declararam `export const maxDuration = 60`. Deploy automático a cada push em `main`.
+
+---
+
+## [2026-05-22] — Remove.bg em vez de gpt-image-1 para foto de estúdio
+
+**Contexto:** A feature "foto de estúdio" foi inicialmente implementada com `gpt-image-1` (geração criativa) mas produzia resultados inconsistentes: o modelo ignorava a categoria da peça, gerava itens completamente diferentes e não mantinha fidelidade ao produto original.
+
+**Opções consideradas:**
+1. `gpt-image-1` com prompts mais detalhados (tentado — resultados inconsistentes)
+2. Fal.ai BRIA RMBG (testado — boa remoção de fundo, mas requer créditos e latência maior)
+3. Photoroom `/v1/segment` (testado — marca d'água no plano gratuito)
+4. Remove.bg com `bg_color: ffffff` (escolhido)
+
+**Decisão:** Remove.bg com parâmetros `size: auto`, `bg_color: ffffff`, `format: png`; `sharp` para resize 1024×1024 `fit: contain`.
+
+**Motivo:** Remove.bg aplica fundo branco diretamente na API, elimina a necessidade de `flatten` via `sharp`. Fidelidade 100% ao produto original (não gera nada, apenas remove o fundo). Custo ~$0.013/imagem — comparável ao gpt-image-1 low quality. API simples via multipart/form-data, sem SDK extra. Os blocos anteriores (gpt-image-1, Photoroom, Fal.ai) foram mantidos comentados no código para reversão rápida.
+
+**Consequências:** O resultado não é uma "foto de estúdio gerada por IA" mas sim a foto original com fundo branco — fidelidade máxima ao produto. Requer `REMOVE_BG_API_KEY`. Créditos gratuitos limitados (50/mês no plano gratuito; plano pago por volume).
+
+---
+
+## [2026-04-27] — Anthropic Claude (claude-sonnet-4-6) para Mia e análise de peças
+
+**Contexto:** O produto central é uma assistente de moda com personalidade (Mia). A qualidade das respostas, capacidade de seguir system prompts complexos e entendimento de contexto extenso são críticos.
+
+**Opções consideradas:**
+- GPT-4o (OpenAI)
+- Gemini Pro (Google)
+- Claude Sonnet (Anthropic)
+
+**Decisão:** `claude-sonnet-4-6` fixo em todas as rotas de IA (`mia/chat`, `pieces/analyze`, `outfit/generate`, `wishlist/generate`, `pieces/describe`).
+
+**Motivo:** Claude segue instruções complexas de persona e guardrails com mais consistência que GPT-4o nos testes iniciais. Suporte nativo a blocos de imagem (`ImageBlockParam`) para visão computacional sem configuração extra. Context window de 200k tokens suficiente para closets grandes. Preço competitivo com o GPT-4o para o volume esperado.
+
+**Consequências:** Toda a Mia depende da Anthropic API — queda do serviço bloqueia o chat e a análise. O modelo está fixo no código (`"claude-sonnet-4-6"`) — atualizar requer revisão de todos os `model:` espalhados pelas rotas. `ANTHROPIC_API_KEY` é a chave de maior valor do projeto.
+
+---
+
+## [2026-05-07] — Rate limiting por plano via tabela `profiles`
+
+**Contexto:** Com a Mia chamando APIs pagas (Anthropic, OpenAI, Remove.bg) a cada interação, era necessário limitar o uso por usuário para controlar custos sem depender de serviços externos de rate limiting.
+
+**Opções consideradas:**
+- Upstash Redis com sliding window
+- Middleware de rate limit externo (ex: Unkey)
+- Colunas de contadores na tabela `profiles` com reset mensal
+
+**Decisão:** Colunas `usage_*` na tabela `profiles` (`usage_mia_generations`, `usage_outfit_generations`, `usage_pieces_analyzed`, `usage_wishlist_generations`, `usage_studio_generations`) com reset automático a cada 30 dias via `usage_reset_at`.
+
+**Motivo:** Zero dependência externa. A tabela `profiles` já existe e é lida em todas as rotas autenticadas. Supabase RLS garante que cada usuário só acessa seus próprios contadores. Lógica simples de `checkRateLimit` e `incrementUsage` centralizada em `src/lib/rate-limit.ts`.
+
+**Consequências:** Reset é feito na primeira chamada após 30 dias (lazy reset), não em cron job — comportamento aceitável para o produto. Usuários pro têm limite de 999 (efetivamente ilimitado). Usuários em trial ativo têm acesso ilimitado durante o período. Usuários com trial expirado são bloqueados independente dos contadores. Adicionar nova ação de IA requer migration `ALTER TABLE profiles ADD COLUMN IF NOT EXISTS usage_X INTEGER DEFAULT 0`.
+
+---
+
+## [2026-05-01] — Storage público em vez de signed URLs
+
+**Contexto:** Fotos de peças são acessadas frequentemente em listas, cards, modais e enviadas para APIs de IA. Signed URLs têm TTL e precisam ser regeneradas, adicionando latência e complexidade.
+
+**Opções consideradas:**
+- Signed URLs com TTL de 1 hora (regenerar no frontend)
+- Storage público com paths baseados em `user_id`
+
+**Decisão:** Storage público com paths `pieces/{user_id}/{filename}` e `avatars/{user_id}/avatar.jpg`.
+
+**Motivo:** Fotos de moda não são dados sensíveis — o usuário quer que as fotos apareçam rapidamente em qualquer contexto (closet, lookbook, Mia, estúdio). A "segurança" do path por `user_id` é obscurity, não autenticação real, mas é suficiente para o modelo de produto. Elimina a necessidade de proxies ou refresh de URLs no frontend.
+
+**Consequências:** Qualquer pessoa com a URL direta pode acessar a foto. RLS protege o banco de dados mas não o storage. Aceito como trade-off — o produto não lida com fotos íntimas ou dados médicos.
