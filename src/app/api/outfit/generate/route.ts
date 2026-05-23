@@ -186,7 +186,7 @@ export async function POST(request: Request) {
   const usedIdsSet = new Set(usedPieceIds || [])
   const anchorCat = anchorPiece?.category?.toLowerCase()
 
-  let piecesWithPhoto = pieces.filter(p => {
+  const piecesWithPhoto = pieces.filter(p => {
     if (!p.photo_url) return false
     if (usedIdsSet.has(p.id)) return false
     if (anchorPiece && p.category?.toLowerCase() === anchorCat && p.id !== anchorPiece.id) return false
@@ -324,7 +324,7 @@ Regras técnicas:
     const clean = responseContent.text.replace(/```json|```/g, "").trim();
     const parsed = JSON.parse(clean);
 
-    const outfitsWithPieces = parsed.outfits.map((outfit: any) => ({
+    const outfitsWithPieces = (parsed.outfits as Array<Record<string, unknown> & { piece_ids: string[] }>).map((outfit) => ({
       ...outfit,
       pieces: pieces.filter((p) => outfit.piece_ids.includes(p.id)),
     }));

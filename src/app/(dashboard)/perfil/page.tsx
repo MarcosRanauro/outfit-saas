@@ -50,6 +50,7 @@ export default function PerfilPage() {
   const [editCustomStyle, setEditCustomStyle] = useState('')
   const [saving, setSaving] = useState(false)
   const [cropOpen, setCropOpen] = useState(false)
+  const [avatarVersion] = useState(() => Date.now())
 
   async function loadData() {
     const { data: { user } } = await supabase.auth.getUser()
@@ -120,7 +121,7 @@ export default function PerfilPage() {
     if (!profile) return
     setSaving(true)
 
-    let updateData: ProfileUpdate = {}
+    const updateData: ProfileUpdate = {}
 
     if (editModal === 'name') updateData.name = editValue
     if (editModal === 'height') updateData.height = parseInt(editValue) || null
@@ -225,7 +226,7 @@ export default function PerfilPage() {
           <div className="avatar-wrap">
             <div className="avatar">
               {profile?.avatar_url ? (
-                <img src={`${profile.avatar_url}?v=${Date.now()}`} alt="avatar" />
+                <img src={`${profile.avatar_url}?v=${avatarVersion}`} alt="avatar" />
               ) : (
                 <span className="avatar-icon">👤</span>
               )}

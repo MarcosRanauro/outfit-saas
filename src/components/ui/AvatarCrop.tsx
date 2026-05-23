@@ -63,7 +63,7 @@ export default function AvatarCrop({ onSave, onClose, userId }: Props) {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<CroppedArea | null>(null)
   const [saving, setSaving] = useState(false)
 
-  const onCropComplete = useCallback((_: any, croppedPixels: CroppedArea) => {
+  const onCropComplete = useCallback((_: CroppedArea, croppedPixels: CroppedArea) => {
     setCroppedAreaPixels(croppedPixels)
   }, [])
 
