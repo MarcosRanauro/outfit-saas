@@ -340,30 +340,21 @@ export default function NovaPecaPage() {
               {studioLoading ? 'Gerando fotos…' : 'Criar foto de estúdio'}
             </button>
 
-            {(studioLoading || studioImages.length > 0) && (
+            {studioImages.length > 0 && (
               <div className="np-studio-area">
-                {studioLoading ? (
-                  <div className="np-studio-loading">
-                    <span className="np-spinner" />
-                    Gerando fotos de estúdio...
-                  </div>
-                ) : (
-                  <>
-                    <p className="np-studio-label">Toque em uma foto para usar como capa</p>
-                    <div className="np-studio-grid">
-                      {studioImages.map((url, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          className={`np-studio-thumb ${selectedStudioIndex === i ? 'active' : ''}`}
-                          onClick={() => setSelectedStudioIndex(prev => prev === i ? null : i)}
-                        >
-                          <img src={url} alt={`Estúdio ${i + 1}`} />
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
+                <p className="np-studio-label">Toque em uma foto para usar como capa</p>
+                <div className="np-studio-grid">
+                  {studioImages.map((url, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      className={`np-studio-thumb ${selectedStudioIndex === i ? 'active' : ''}`}
+                      onClick={() => setSelectedStudioIndex(prev => prev === i ? null : i)}
+                    >
+                      <img src={url} alt={`Estúdio ${i + 1}`} />
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </>
@@ -525,7 +516,10 @@ export default function NovaPecaPage() {
           <div className="np-modal" onClick={e => e.stopPropagation()}>
             <p className="np-modal-title">Foto de estúdio com IA</p>
             <p className="np-modal-text">
-              A Mia vai gerar 4 fotos profissionais da sua peça. Isso pode levar alguns segundos.
+              A Mia vai gerar fotos profissionais da sua peça com fundo branco.
+            </p>
+            <p className="np-modal-tip">
+              💡 Dica: para melhores resultados, apoie a peça em uma superfície lisa e tire fotos de frente, lateral e costas.
             </p>
             <div className="np-modal-actions">
               <button className="np-modal-cancel" onClick={() => setStudioModalOpen(false)}>
@@ -535,6 +529,19 @@ export default function NovaPecaPage() {
                 Gerar
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── MODAL DE LOADING ─── */}
+      {studioLoading && (
+        <div className="np-loading-backdrop">
+          <div className="np-loading-modal">
+            <span className="np-loading-spinner" />
+            <p className="np-loading-title">Criando fotos de estúdio...</p>
+            <p className="np-loading-sub">
+              A Mia está processando suas fotos. Isso pode levar alguns segundos.
+            </p>
           </div>
         </div>
       )}
