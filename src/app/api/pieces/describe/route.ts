@@ -14,6 +14,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'photo_urls obrigatório' }, { status: 400 })
     }
 
+    console.log('[describe] Fotos recebidas:', photo_urls.length)
+    console.log('[describe] URLs:', photo_urls.map((u: string) => u.split('/').pop()))
+
     const ALLOWED_STORAGE_HOST = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '')
     for (const url of photo_urls) {
       try {
@@ -60,6 +63,7 @@ export async function POST(request: Request) {
     })
 
     const description = response.content[0]?.type === 'text' ? response.content[0].text : ''
+    console.log('[describe] Descrição gerada:', description)
     return NextResponse.json({ description })
 
   } catch (error: unknown) {
