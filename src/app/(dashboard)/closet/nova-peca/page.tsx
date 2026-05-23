@@ -136,15 +136,19 @@ export default function NovaPecaPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user || !photos[0]) return
 
-      const filename = `studio-input/${user.id}/${Date.now()}_original.jpg`
-      await supabase.storage.from('pieces').upload(filename, photos[0], { upsert: true })
-      const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(filename)
-      const photo_url = urlData.publicUrl
+      const ts = Date.now()
+      const photo_urls: string[] = []
+      for (let i = 0; i < photos.length; i++) {
+        const filename = `studio-input/${user.id}/${ts}_${i}.jpg`
+        await supabase.storage.from('pieces').upload(filename, photos[i], { upsert: true })
+        const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(filename)
+        photo_urls.push(urlData.publicUrl)
+      }
 
       const res = await fetch('/api/pieces/studio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, category, color, color_secondary: colorSecondary || null, brand: brand || null, description: description || null, photo_url }),
+        body: JSON.stringify({ name, category, color, color_secondary: colorSecondary || null, brand: brand || null, description: description || null, photo_urls }),
       })
       const data = await res.json()
       if (res.ok && data.images?.length) {

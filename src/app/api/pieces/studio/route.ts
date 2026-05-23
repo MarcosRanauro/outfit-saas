@@ -23,16 +23,22 @@ export async function POST(request: Request) {
       )
     }
 
-    const { name, category, color, color_secondary, brand, description, photo_url } = await request.json()
+    const { name, category, color, color_secondary, brand, description, photo_urls } = await request.json()
+
+    if (!Array.isArray(photo_urls) || photo_urls.length === 0) {
+      return NextResponse.json({ error: 'photo_urls obrigatório' }, { status: 400 })
+    }
 
     const ALLOWED_STORAGE_HOST = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '')
-    try {
-      const parsedUrl = new URL(photo_url)
-      if (!ALLOWED_STORAGE_HOST || parsedUrl.hostname !== ALLOWED_STORAGE_HOST) {
+    for (const url of photo_urls) {
+      try {
+        const parsed = new URL(url)
+        if (!ALLOWED_STORAGE_HOST || parsed.hostname !== ALLOWED_STORAGE_HOST) {
+          return NextResponse.json({ error: 'URL de imagem inválida' }, { status: 400 })
+        }
+      } catch {
         return NextResponse.json({ error: 'URL de imagem inválida' }, { status: 400 })
       }
-    } catch {
-      return NextResponse.json({ error: 'URL de imagem inválida' }, { status: 400 })
     }
 
     const { default: OpenAI } = await import('openai')
@@ -48,7 +54,25 @@ export async function POST(request: Request) {
       return `This is a ${category} clothing/fashion item called "${name}"${brand ? ` by ${brand}` : ''}. ${description || ''}. Color: ${color}${colorSecondary ? ' and ' + colorSecondary : ''}. This is NOT a shirt or t-shirt unless explicitly stated — respect the exact item type: ${category}. Place it on a plain white mannequin against a pure white background. Studio lighting, sharp details, full item visible, fashion e-commerce style photography. No shadows, no props, no added text.`
     }
 
-    const imageResponse = await fetch(photo_url)
+    let enrichedDescription = description
+    try {
+      const describeRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/pieces/describe`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Cookie': request.headers.get('cookie') || '',
+        },
+        body: JSON.stringify({ photo_urls, name, category }),
+      })
+      if (describeRes.ok) {
+        const describeData = await describeRes.json()
+        if (describeData.description) enrichedDescription = describeData.description
+      }
+    } catch {
+      // fallback to original description
+    }
+
+    const imageResponse = await fetch(photo_urls[0])
     const imageArrayBuffer = await imageResponse.arrayBuffer()
     const imageBuffer = Buffer.from(imageArrayBuffer)
     const imageFile = new File([imageBuffer], 'piece.jpg', { type: 'image/jpeg' })
@@ -58,7 +82,7 @@ export async function POST(request: Request) {
         openai.images.edit({
           model: 'gpt-image-1',
           image: imageFile,
-          prompt: `${buildPrompt(name, category, color, color_secondary, brand, description)} ${angle}`,
+          prompt: `${buildPrompt(name, category, color, color_secondary, brand, enrichedDescription)} ${angle}`,
           n: 1,
           size: '1024x1024',
           quality: 'low',
