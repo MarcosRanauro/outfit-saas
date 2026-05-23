@@ -60,6 +60,9 @@ export default function NovaPecaPage() {
 
   const [saving, setSaving] = useState(false)
   const [analyzing, setAnalyzing] = useState(false)
+  const [moderating, setModerating] = useState(false)
+  const [moderationError, setModerationError] = useState<string | null>(null)
+  const [pendingPreview, setPendingPreview] = useState<string | null>(null)
   const [photos, setPhotos] = useState<File[]>([])
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0)
   const [aiSuggestion, setAiSuggestion] = useState<Record<string, string> | null>(null)
@@ -115,7 +118,35 @@ export default function NovaPecaPage() {
     }
   }
 
-  function handlePhotoFile(file: File) {
+  async function handlePhotoFile(file: File) {
+    setModerationError(null)
+    const tempUrl = URL.createObjectURL(file)
+    setPendingPreview(tempUrl)
+    setModerating(true)
+
+    let blocked = false
+    try {
+      const { base64 } = await compressForAnalysis(file)
+      const res = await fetch('/api/pieces/moderate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photo_base64: base64 }),
+      })
+      const data = await res.json()
+      if (data.flagged) {
+        blocked = true
+        setModerationError('Esta imagem não é permitida. Por favor, envie uma foto de roupa ou acessório.')
+      }
+    } catch {
+      // se moderação falhar, permite continuar
+    } finally {
+      setModerating(false)
+      setPendingPreview(null)
+      URL.revokeObjectURL(tempUrl)
+    }
+
+    if (blocked) return
+
     setPhotos([file])
     setSelectedPhotoIndex(0)
     setAiSuggestion(null)
@@ -226,12 +257,12 @@ export default function NovaPecaPage() {
     }
   }
 
-  const canSave = !!name && !!category && !saving && !analyzing
+  const canSave = !!name && !!category && !saving && !analyzing && !moderating
   const mainPreview = selectedStudioIndex !== null
     ? studioImages[selectedStudioIndex]
     : photos.length > 0
       ? URL.createObjectURL(photos[selectedPhotoIndex] ?? photos[0])
-      : null
+      : pendingPreview
 
   return (
     <div className="np-page">
@@ -252,6 +283,9 @@ export default function NovaPecaPage() {
           <div className="np-photo-empty">
             <span className="np-photo-empty-icon">🖼️</span>
             <p className="np-photo-empty-text">Toque para adicionar foto</p>
+            {moderationError && (
+              <p className="np-moderation-error">{moderationError}</p>
+            )}
             <div className="np-photo-empty-btns">
               <label className="np-photo-btn">
                 📷 Câmera
@@ -275,10 +309,10 @@ export default function NovaPecaPage() {
           <>
             <div className="np-photo-preview">
               <img src={mainPreview} alt="Preview" />
-              {analyzing && (
+              {(moderating || analyzing) && (
                 <div className="np-analyzing-overlay">
                   <span className="np-spinner" />
-                  Mia está analisando...
+                  {moderating ? 'Verificando imagem...' : 'Mia está analisando...'}
                 </div>
               )}
               <label className="np-change-photo" style={{ cursor: 'pointer' }}>

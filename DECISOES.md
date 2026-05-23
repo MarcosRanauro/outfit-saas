@@ -104,3 +104,21 @@ Formato baseado em [Architecture Decision Records (ADR)](https://adr.github.io/)
 **Motivo:** Fotos de moda não são dados sensíveis — o usuário quer que as fotos apareçam rapidamente em qualquer contexto (closet, lookbook, Mia, estúdio). A "segurança" do path por `user_id` é obscurity, não autenticação real, mas é suficiente para o modelo de produto. Elimina a necessidade de proxies ou refresh de URLs no frontend.
 
 **Consequências:** Qualquer pessoa com a URL direta pode acessar a foto. RLS protege o banco de dados mas não o storage. Aceito como trade-off — o produto não lida com fotos íntimas ou dados médicos.
+
+---
+
+## [2026-05-23] — Moderação de conteúdo com OpenAI Moderation API
+
+**Contexto:** O app aceita upload de fotos de usuários sem validação de conteúdo — risco de armazenamento de imagens impróprias (nudez, conteúdo sexual, violência) no Supabase Storage e envio para Anthropic API e Remove.bg.
+
+**Opções consideradas:**
+1. AWS Rekognition (paga, requer SDK extra e configuração IAM)
+2. Moderação manual (inviável — produto não tem time de moderação)
+3. Terms of Service apenas (sem proteção técnica)
+4. OpenAI Moderation API (`omni-moderation-latest`) com suporte a imagens
+
+**Decisão:** OpenAI Moderation API com `omni-moderation-latest` na rota `/api/pieces/moderate`, chamada em base64 antes de qualquer upload ou análise.
+
+**Motivo:** A API de moderação da OpenAI é gratuita para uso em APIs pagas. O modelo `omni-moderation-latest` aceita imagens em base64 (via `data:image/jpeg;base64,...`), sem necessidade de URL pública — compatível com o fluxo antes do upload. A `OPENAI_API_KEY` já estava no projeto (para reverter foto de estúdio com gpt-image-1). Latência estimada ~200ms — aceitável no fluxo de seleção de foto. Em caso de erro da API, a moderação falha-aberta (permite o upload) para não bloquear o usuário por instabilidade externa.
+
+**Consequências:** Toda foto selecionada pelo usuário passa por moderação antes de ser exibida como preview, antes da análise da Mia e antes de qualquer upload. Adiciona ~200ms ao fluxo de seleção. Requer `OPENAI_API_KEY` ativa — sem ela, a moderação falha-aberta silenciosamente. Fotos adicionais ("+") na galeria da Nova Peça não passam por moderação (somente a foto principal passa).
