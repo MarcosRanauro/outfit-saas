@@ -107,15 +107,31 @@ export default function ClosetPage() {
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null)
   const [detailOpen, setDetailOpen] = useState(false)
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
-  const [anchorPieceId, setAnchorPieceId] = useState<string | null>(null)
+  const [anchorPieceId, setAnchorPieceId] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null
+    try {
+      const saved = sessionStorage.getItem('anchor_piece')
+      return saved ? (JSON.parse(saved) as { id: string }).id : null
+    } catch {
+      return null
+    }
+  })
   const [showUpgradeBanner, setShowUpgradeBanner] = useState(false)
 
   // Layout
-  const [cols, setCols] = useState(2)
+  const [cols, setCols] = useState(() => {
+    if (typeof window === 'undefined') return 2
+    const saved = localStorage.getItem('closet_cols')
+    const parsed = parseInt(saved || '2', 10)
+    return [1, 2, 3, 4, 5].includes(parsed) ? parsed : 2
+  })
   const [showColsMenu, setShowColsMenu] = useState(false)
   const [search, setSearch] = useState('')
   const [activeGroup, setActiveGroup] = useState<GroupKey>('Todos')
-  const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window === 'undefined') return 'light'
+    return (localStorage.getItem('mia_theme') as 'light' | 'dark') ?? 'light'
+  })
   const [mounted, setMounted] = useState(false)
 
   // Filtros drawer
@@ -173,32 +189,47 @@ export default function ClosetPage() {
   const wishlistBtnRef = useRef<HTMLButtonElement>(null)
   const fabRef = useRef<HTMLButtonElement>(null)
 
-  // Read theme from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('mia_theme') as 'light' | 'dark' | null
-    const t = saved || 'light'
-    setTheme(t)
-    setMounted(true)
-    document.documentElement.setAttribute('data-theme', t)
-  }, [])
+  async function loadData() {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
 
-  useEffect(() => {
-    const saved = localStorage.getItem('closet_cols')
-    if (saved) {
-      const parsed = parseInt(saved, 10)
-      if ([1, 2, 3, 4, 5].includes(parsed)) setCols(parsed)
-    }
-  }, [])
+    const [piecesResult, profileResult] = await Promise.all([
+      supabase.from('pieces').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+      supabase.from('profiles').select('plan, name, height, weight, style, closet_tour_completed, trial_ends_at').eq('id', user.id).single(),
+    ])
 
-  useEffect(() => {
-    loadData()
-    try {
-      const savedAnchor = sessionStorage.getItem('anchor_piece')
-      if (savedAnchor) {
-        const anchor = JSON.parse(savedAnchor)
-        setAnchorPieceId(anchor.id)
+    if (piecesResult.data) setPieces(piecesResult.data)
+
+    if (profileResult.data) {
+      const p = profileResult.data
+      const dbPlan = p.plan || 'free'
+      const trialEndsAt = p.trial_ends_at ? new Date(p.trial_ends_at) : null
+      const isTrialActive = trialEndsAt !== null && trialEndsAt > new Date()
+      const effectivePlan = dbPlan === 'pro' ? 'pro' : (isTrialActive ? 'trial' : 'expired')
+      setUserPlan(effectivePlan)
+      const incomplete = !p.height || !p.weight || !p.style
+      if (incomplete) {
+        setShowNameField(!p.name)
+        setOnboardingOpen(true)
+      } else if (!p.closet_tour_completed) {
+        setTourOpen(true)
       }
-    } catch {}
+    }
+
+    setLoading(false)
+  }
+
+  // Apply theme to document root on mount
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true)
+    document.documentElement.setAttribute('data-theme', theme)
+  }, [theme])
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -272,36 +303,6 @@ export default function ClosetPage() {
   function openPieceDetail(piece: Piece) {
     setSelectedPiece(piece)
     setDetailOpen(true)
-  }
-
-  async function loadData() {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-
-    const [piecesResult, profileResult] = await Promise.all([
-      supabase.from('pieces').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-      supabase.from('profiles').select('plan, name, height, weight, style, closet_tour_completed, trial_ends_at').eq('id', user.id).single(),
-    ])
-
-    if (piecesResult.data) setPieces(piecesResult.data)
-
-    if (profileResult.data) {
-      const p = profileResult.data
-      const dbPlan = p.plan || 'free'
-      const trialEndsAt = p.trial_ends_at ? new Date(p.trial_ends_at) : null
-      const isTrialActive = trialEndsAt !== null && trialEndsAt > new Date()
-      const effectivePlan = dbPlan === 'pro' ? 'pro' : (isTrialActive ? 'trial' : 'expired')
-      setUserPlan(effectivePlan)
-      const incomplete = !p.height || !p.weight || !p.style
-      if (incomplete) {
-        setShowNameField(!p.name)
-        setOnboardingOpen(true)
-      } else if (!p.closet_tour_completed) {
-        setTourOpen(true)
-      }
-    }
-
-    setLoading(false)
   }
 
   function toggleStyle(style: string) {

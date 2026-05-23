@@ -5,11 +5,42 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import '../../mia.css'
 
+interface OutfitPiece {
+  id: string
+  name: string
+  photo_url?: string | null
+}
+
+interface OutfitCard {
+  name: string
+  subtitle?: string
+  style_tags?: string[]
+  period?: string
+  occasion?: string
+  why?: string
+  piece_ids?: string[]
+  pieces?: OutfitPiece[]
+}
+
+interface WishlistCard {
+  name: string
+  category: string
+  color: string
+  priority: 'high' | 'medium' | 'low'
+  reason?: string
+}
+
+interface AnchorPiece {
+  id: string
+  name: string
+  photo_url?: string | null
+}
+
 interface Message {
   role: 'mia' | 'user'
   content: string
-  outfits?: any[]
-  wishlist?: any[]
+  outfits?: OutfitCard[]
+  wishlist?: WishlistCard[]
   time: string
 }
 
@@ -47,7 +78,7 @@ export default function MiaPage() {
   const [savedOutfitIds, setSavedOutfitIds] = useState<Set<string>>(new Set())
   const [savedWishlistIds, setSavedWishlistIds] = useState<Set<string>>(new Set())
   const [expandedOutfits, setExpandedOutfits] = useState<Set<string>>(new Set())
-  const [anchorPiece, setAnchorPiece] = useState<any>(() => {
+  const [anchorPiece, setAnchorPiece] = useState<AnchorPiece | null>(() => {
     if (typeof window === 'undefined') return null
     try {
       const saved = sessionStorage.getItem('anchor_piece')
@@ -56,16 +87,6 @@ export default function MiaPage() {
       return null
     }
   })
-
-  // Carrega perfil e clima ao montar
-  useEffect(() => {
-    loadProfileAndWeather()
-  }, [])
-
-  // Scroll automático para última mensagem
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, loading])
 
   async function loadProfileAndWeather() {
     const { data: { user } } = await supabase.auth.getUser()
@@ -106,6 +127,18 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
       time: getTime(),
     }])
   }
+
+  // Carrega perfil e clima ao montar
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadProfileAndWeather()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Scroll automático para última mensagem
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, loading])
 
   async function fetchFutureWeather(date: string, hour: number): Promise<Weather | null> {
     if (!coords) return null
@@ -213,7 +246,7 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
     setLoading(false)
   }
 
-  async function handleSaveOutfit(outfit: any, msgIndex: number, outfitIndex: number) {
+  async function handleSaveOutfit(outfit: OutfitCard, msgIndex: number, outfitIndex: number) {
     const saveKey = `${msgIndex}-${outfitIndex}`
     if (savedOutfitIds.has(saveKey)) return
 
@@ -230,7 +263,7 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
         period: outfit.period || 'dia',
         occasion: outfit.occasion || 'Dia a Dia',
         why: outfit.why,
-        pieces: outfit.piece_ids || outfit.pieces?.map((p: any) => p.id) || [],
+        pieces: outfit.piece_ids || outfit.pieces?.map((p) => p.id) || [],
       })
 
       if (error) throw error
@@ -330,7 +363,7 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
                   return (
                     <div key={outfitIndex} className="mia-outfit-card">
                       <div className={`mia-outfit-photos${isExpanded ? ' expanded' : ''}`}>
-                        {visiblePieces.map((piece: any, pi: number) => (
+                        {visiblePieces.map((piece: OutfitPiece, pi: number) => (
                           <div key={pi} className="mia-outfit-photo">
                             {piece.photo_url ? (
                               <img src={piece.photo_url} alt={piece.name} />
@@ -360,7 +393,7 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
                         {outfit.subtitle && (
                           <div className="mia-outfit-sub">{outfit.subtitle}</div>
                         )}
-                        {outfit.style_tags?.length > 0 && (
+                        {outfit.style_tags && outfit.style_tags.length > 0 && (
                           <div className="mia-outfit-tags">
                             {outfit.style_tags.map((tag: string, ti: number) => (
                               <span key={ti} className="mia-outfit-tag">{tag}</span>
@@ -380,7 +413,7 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
                 })}
 
                 {/* Cards de wishlist dentro da mensagem */}
-                {msg.wishlist && msg.wishlist.map((item: any, itemIndex: number) => {
+                {msg.wishlist && msg.wishlist.map((item: WishlistCard, itemIndex: number) => {
                   const wishlistKey = `${msgIndex}-w-${itemIndex}`
                   const isWishlistSaved = savedWishlistIds.has(wishlistKey)
                   return (

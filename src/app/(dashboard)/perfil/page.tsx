@@ -51,22 +51,6 @@ export default function PerfilPage() {
   const [saving, setSaving] = useState(false)
   const [cropOpen, setCropOpen] = useState(false)
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    if (params.get('upgrade') === 'success') {
-      alert('🎉 Bem-vindo ao Mia Pro! Seu plano foi ativado.')
-      window.history.replaceState({}, '', '/perfil')
-      loadData()
-    }
-    if (params.get('upgrade') === 'cancelled') {
-      window.history.replaceState({}, '', '/perfil')
-    }
-  }, [])
-
   async function loadData() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
@@ -94,6 +78,26 @@ export default function PerfilPage() {
     setOutfitsCount(outfits || 0)
     setLoading(false)
   }
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('upgrade') === 'success') {
+      alert('🎉 Bem-vindo ao Mia Pro! Seu plano foi ativado.')
+      window.history.replaceState({}, '', '/perfil')
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      loadData()
+    }
+    if (params.get('upgrade') === 'cancelled') {
+      window.history.replaceState({}, '', '/perfil')
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function handleLogout() {
     await supabase.auth.signOut()

@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk"
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { checkRateLimit } from "@/lib/rate-limit"
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -10,6 +11,9 @@ export async function POST(request: Request) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: "Não autorizado" }, { status: 401 })
+
+  const { allowed } = await checkRateLimit(user.id, 'mia_chat')
+  if (!allowed) return NextResponse.json({ event_date: null, event_hour: null })
 
   try {
     const { message, history } = await request.json()
@@ -40,7 +44,7 @@ Exemplos:
 
 Retorne APENAS o JSON, sem texto adicional.`,
       messages: [
-        ...(history || []).slice(-4).map((m: any) => ({
+        ...(history || []).slice(-4).map((m: { role: string; content: string }) => ({
           role: m.role,
           content: m.content,
         })),

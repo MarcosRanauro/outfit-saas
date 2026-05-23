@@ -57,14 +57,6 @@ export default function LookbookPage() {
   const [tryOnResult, setTryOnResult] = useState<string | null>(null)
   const [tryOnError, setTryOnError] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  useEffect(() => {
-    setOccasion('Todos')
-  }, [period])
-
   async function loadData() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
@@ -96,6 +88,12 @@ export default function LookbookPage() {
 
     setLoading(false)
   }
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function handleDelete() {
     if (!selectedOutfit) return
@@ -226,13 +224,13 @@ export default function LookbookPage() {
       <div className="lookbook-period-row">
         <button
           className={`lookbook-period-btn ${period === 'dia' ? 'active' : ''}`}
-          onClick={() => setPeriod('dia')}
+          onClick={() => { setPeriod('dia'); setOccasion('Todos') }}
         >
           ☀️ Dia
         </button>
         <button
           className={`lookbook-period-btn ${period === 'noite' ? 'active' : ''}`}
-          onClick={() => setPeriod('noite')}
+          onClick={() => { setPeriod('noite'); setOccasion('Todos') }}
         >
           🌙 Noite
         </button>

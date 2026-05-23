@@ -23,7 +23,10 @@ export default function LoginPage() {
   const router = useRouter()
   const supabase = createClient()
 
-  const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window === 'undefined') return 'light'
+    return (localStorage.getItem('mia_theme') as 'light' | 'dark') ?? 'light'
+  })
   const [mounted, setMounted] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -51,8 +54,7 @@ export default function LoginPage() {
   }
 
   useEffect(() => {
-    const saved = localStorage.getItem('mia_theme') as 'light' | 'dark' | null
-    if (saved) setTheme(saved)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
   }, [])
 

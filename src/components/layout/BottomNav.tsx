@@ -6,12 +6,12 @@ import Link from 'next/link'
 
 export default function BottomNav() {
   const pathname = usePathname()
-  const [theme, setTheme] = useState('dark')
+  const [theme, setTheme] = useState(() => {
+    if (typeof window === 'undefined') return 'light'
+    return localStorage.getItem('mia_theme') || 'light'
+  })
 
   useEffect(() => {
-    const saved = localStorage.getItem('mia_theme') || 'light'
-    setTheme(saved)
-
     const observer = new MutationObserver(() => {
       const current = document.documentElement.getAttribute('data-theme') || 'light'
       setTheme(current)
