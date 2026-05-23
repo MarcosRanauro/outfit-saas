@@ -23,7 +23,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const { name, category, color, color_secondary, brand, description, photo_urls } = await request.json()
+    const { photo_urls } = await request.json()
 
     if (!Array.isArray(photo_urls) || photo_urls.length === 0) {
       return NextResponse.json({ error: 'photo_urls obrigatório' }, { status: 400 })
@@ -41,90 +41,138 @@ export async function POST(request: Request) {
       }
     }
 
-    const { default: OpenAI } = await import('openai')
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+    // ─── GPT-IMAGE-1 (comentado — descomentar para reverter) ───
+    // const { name, category, color, color_secondary, brand, description } = body
+    //
+    // const { default: OpenAI } = await import('openai')
+    // const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+    //
+    // function buildPrompt(name: string, category: string, color: string, colorSecondary: string | null, brand: string | null, enrichedDescription: string): string {
+    //   const isFootwear = ['tênis', 'sapato', 'bota', 'sandália', 'calçado', 'sneaker', 'shoe'].some(
+    //     w => category.toLowerCase().includes(w) || name.toLowerCase().includes(w)
+    //   )
+    //   const itemContext = isFootwear
+    //     ? `a ${color} ${brand || ''} ${name} sneaker/shoe`
+    //     : `a ${color} ${brand || ''} ${name} (${category})`
+    //   return `Professional e-commerce product photo of ${itemContext}. ${enrichedDescription}.
+    //
+    // CRITICAL REQUIREMENTS:
+    // - Pure white background (#FFFFFF), no shadows, no gradients
+    // - The COMPLETE item must be fully visible, nothing cut off
+    // - High contrast between item and background
+    // - Sharp focus on entire product
+    // - Professional fashion photography lighting
+    // - No mannequin body parts visible except what holds the item
+    // - No text overlays, no watermarks
+    // - Photorealistic quality`
+    // }
+    //
+    // const angles = [
+    //   'Show the COMPLETE item from the FRONT. Full item visible from top to bottom, centered.',
+    //   'Show the COMPLETE item from a 45-degree angle on the left side. Full item visible.',
+    //   'Show the COMPLETE item from the BACK. Full item visible from top to bottom, centered.',
+    // ]
+    //
+    // let enrichedDescription = description
+    // try {
+    //   const describeRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/pieces/describe`, {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json', 'Cookie': request.headers.get('cookie') || '' },
+    //     body: JSON.stringify({ photo_urls, name, category }),
+    //   })
+    //   if (describeRes.ok) {
+    //     const describeData = await describeRes.json()
+    //     if (describeData.description) enrichedDescription = describeData.description
+    //   }
+    // } catch { /* fallback to original description */ }
+    //
+    // const imageResponse = await fetch(photo_urls[0])
+    // const imageArrayBuffer = await imageResponse.arrayBuffer()
+    // const imageBuffer = Buffer.from(imageArrayBuffer)
+    // const imageFile = new File([imageBuffer], 'piece.jpg', { type: 'image/jpeg' })
+    //
+    // const results = await Promise.all(
+    //   angles.map((angle) =>
+    //     openai.images.edit({
+    //       model: 'gpt-image-1',
+    //       image: imageFile,
+    //       prompt: `${buildPrompt(name, category, color, color_secondary ?? null, brand ?? null, enrichedDescription ?? '')} ${angle}`,
+    //       n: 1,
+    //       size: '1024x1024',
+    //       quality: 'low',
+    //     })
+    //   )
+    // )
+    //
+    // const urls: string[] = []
+    // for (let i = 0; i < results.length; i++) {
+    //   const b64 = results[i].data?.[0]?.b64_json
+    //   if (!b64) continue
+    //   const buffer = Buffer.from(b64, 'base64')
+    //   const filename = `studio/${user.id}/${Date.now()}_${i}.png`
+    //   const { error } = await supabase.storage
+    //     .from('pieces')
+    //     .upload(filename, buffer, { contentType: 'image/png', upsert: true })
+    //   if (!error) {
+    //     const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(filename)
+    //     urls.push(urlData.publicUrl)
+    //   } else {
+    //     console.error('Upload error', i, error)
+    //   }
+    // }
+    // ─── FIM GPT-IMAGE-1 ───
 
-    function buildPrompt(name: string, category: string, color: string, colorSecondary: string | null, brand: string | null, enrichedDescription: string): string {
-      const isFootwear = ['tênis', 'sapato', 'bota', 'sandália', 'calçado', 'sneaker', 'shoe'].some(
-        w => category.toLowerCase().includes(w) || name.toLowerCase().includes(w)
-      )
+    // ─── PHOTOROOM ───
+    const targetUrls = photo_urls.slice(0, 3)
+    const ts = Date.now()
 
-      const itemContext = isFootwear
-        ? `a ${color} ${brand || ''} ${name} sneaker/shoe`
-        : `a ${color} ${brand || ''} ${name} (${category})`
+    const urls = (
+      await Promise.all(
+        targetUrls.map(async (url: string, i: number) => {
+          const imageRes = await fetch(url)
+          const imageBuffer = await imageRes.arrayBuffer()
 
-      return `Professional e-commerce product photo of ${itemContext}. ${enrichedDescription}.
+          const formData = new FormData()
+          formData.append('image_file', new Blob([imageBuffer], { type: 'image/jpeg' }), 'piece.jpg')
 
-CRITICAL REQUIREMENTS:
-- Pure white background (#FFFFFF), no shadows, no gradients
-- The COMPLETE item must be fully visible, nothing cut off
-- High contrast between item and background
-- Sharp focus on entire product
-- Professional fashion photography lighting
-- No mannequin body parts visible except what holds the item
-- No text overlays, no watermarks
-- Photorealistic quality`
-    }
+          const photoroomRes = await fetch('https://sdk.photoroom.com/v1/segment', {
+            method: 'POST',
+            headers: { 'x-api-key': process.env.PHOTOROOM_API_KEY || '' },
+            body: formData,
+          })
 
-    const angles = [
-      'Show the COMPLETE item from the FRONT. Full item visible from top to bottom, centered.',
-      'Show the COMPLETE item from a 45-degree angle on the left side. Full item visible.',
-      'Show the COMPLETE item from the BACK. Full item visible from top to bottom, centered.',
-    ]
+          if (!photoroomRes.ok) {
+            console.error('Photoroom error', i, photoroomRes.status, await photoroomRes.text())
+            return null
+          }
 
-    let enrichedDescription = description
-    try {
-      const describeRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/pieces/describe`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Cookie': request.headers.get('cookie') || '',
-        },
-        body: JSON.stringify({ photo_urls, name, category }),
-      })
-      if (describeRes.ok) {
-        const describeData = await describeRes.json()
-        if (describeData.description) enrichedDescription = describeData.description
-      }
-    } catch {
-      // fallback to original description
-    }
+          const pngArrayBuffer = await photoroomRes.arrayBuffer()
+          const pngBuffer = Buffer.from(pngArrayBuffer)
 
-    const imageResponse = await fetch(photo_urls[0])
-    const imageArrayBuffer = await imageResponse.arrayBuffer()
-    const imageBuffer = Buffer.from(imageArrayBuffer)
-    const imageFile = new File([imageBuffer], 'piece.jpg', { type: 'image/jpeg' })
+          // Flatten transparent background to white and resize to 1024x1024
+          const sharp = (await import('sharp')).default
+          const processedBuffer = await sharp(pngBuffer)
+            .flatten({ background: { r: 255, g: 255, b: 255 } })
+            .resize(1024, 1024, { fit: 'contain', background: { r: 255, g: 255, b: 255 } })
+            .png()
+            .toBuffer()
 
-    const results = await Promise.all(
-      angles.map((angle) =>
-        openai.images.edit({
-          model: 'gpt-image-1',
-          image: imageFile,
-          prompt: `${buildPrompt(name, category, color, color_secondary ?? null, brand ?? null, enrichedDescription ?? '')} ${angle}`,
-          n: 1,
-          size: '1024x1024',
-          quality: 'low',
+          const filename = `studio/${user.id}/${ts}_${i}.png`
+          const { error } = await supabase.storage
+            .from('pieces')
+            .upload(filename, processedBuffer, { contentType: 'image/png', upsert: true })
+
+          if (error) {
+            console.error('Upload error', i, error)
+            return null
+          }
+
+          const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(filename)
+          return urlData.publicUrl
         })
       )
-    )
-
-    const urls: string[] = []
-
-    for (let i = 0; i < results.length; i++) {
-      const b64 = results[i].data?.[0]?.b64_json
-      if (!b64) continue
-      const buffer = Buffer.from(b64, 'base64')
-      const filename = `studio/${user.id}/${Date.now()}_${i}.png`
-      const { error } = await supabase.storage
-        .from('pieces')
-        .upload(filename, buffer, { contentType: 'image/png', upsert: true })
-      if (!error) {
-        const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(filename)
-        urls.push(urlData.publicUrl)
-      } else {
-        console.error('Upload error', i, error)
-      }
-    }
+    ).filter((u): u is string => u !== null)
+    // ─── FIM PHOTOROOM ───
 
     if (urls.length === 0) {
       return NextResponse.json({ error: 'Nenhuma imagem gerada' }, { status: 500 })
