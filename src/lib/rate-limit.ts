@@ -50,6 +50,18 @@ export async function checkRateLimit(
     }
   }
 
+  if (!(plan in LIMITS)) {
+    return { allowed: false, plan: 'expired', limit: 0, used: 0, trialEndsAt: profile.trial_ends_at }
+  }
+
+  const columnMap: Record<ActionType, keyof typeof profile> = {
+    mia_chat: 'usage_mia_generations',
+    outfit_generate: 'usage_outfit_generations',
+    pieces_analyze: 'usage_pieces_analyzed',
+    wishlist_generate: 'usage_wishlist_generations',
+    studio_generate: 'usage_studio_generations',
+  }
+
   const resetAt = new Date(profile.usage_reset_at || new Date())
   const daysSinceReset = (now.getTime() - resetAt.getTime()) / (1000 * 60 * 60 * 24)
 
@@ -67,11 +79,16 @@ export async function checkRateLimit(
       .eq('id', userId)
   }
 
+  const column = columnMap[action]
+  const used = daysSinceReset >= 30 ? 0 : ((profile[column] as number) ?? 0)
+  const planLimits = LIMITS[plan as keyof typeof LIMITS]
+  const limit = planLimits[action]
+
   return {
-    allowed: false,
-    plan: 'expired',
-    limit: 0,
-    used: 0,
+    allowed: used < limit,
+    plan,
+    limit,
+    used,
     trialEndsAt: profile.trial_ends_at,
   }
 }

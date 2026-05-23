@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "audit:project": "bash scripts/audit-project.sh"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.0",
@@ -16,7 +17,7 @@
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.104.1",
     "lucide-react": "^1.9.0",
-    "next": "16.2.4",
+    "next": "^16.2.6",
     "openai": "^6.39.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",

@@ -15,13 +15,16 @@ export async function POST(request: Request) {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('plan')
+      .select('plan, trial_ends_at')
       .eq('id', user.id)
       .single()
 
-    if (profile?.plan !== 'pro') {
+    const isPro = profile?.plan === 'pro'
+    const isTrialActive = profile?.trial_ends_at ? new Date(profile.trial_ends_at) > new Date() : false
+
+    if (!isPro && !isTrialActive) {
       return NextResponse.json(
-        { error: 'Feature exclusiva do plano Pro' },
+        { error: 'Feature exclusiva do plano Pro ou trial ativo' },
         { status: 403 }
       )
     }
