@@ -50,9 +50,9 @@ export async function POST(request: Request) {
             .from('profiles')
             .update({
               plan: 'pro',
-              stripe_subscription_id: (invoice as any).subscription as string,
+              stripe_subscription_id: (invoice as unknown as { subscription: string }).subscription,
               plan_expires_at: new Date(
-                (invoice as any).lines?.data?.[0]?.period?.end * 1000 ||
+                (invoice.lines?.data?.[0]?.period?.end ?? 0) * 1000 ||
                 Date.now() + 30 * 24 * 60 * 60 * 1000
               ).toISOString(),
             })
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
       // Assinatura cancelada ou pagamento falhou
       case 'customer.subscription.deleted':
       case 'invoice.payment_failed': {
-        const obj = event.data.object as any
+        const obj = event.data.object as Stripe.Subscription | Stripe.Invoice
         const customerId = obj.customer as string
 
         const { data: profile } = await supabase

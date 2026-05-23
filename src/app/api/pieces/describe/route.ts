@@ -14,10 +14,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'photo_urls obrigatório' }, { status: 400 })
     }
 
-    console.log('[describe] Fotos recebidas:', photo_urls.length)
-
     const limitedUrls = photo_urls.slice(0, 3)
-    console.log('[describe] Fotos enviadas para Anthropic:', limitedUrls.length)
 
     const ALLOWED_STORAGE_HOST = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '')
     for (const url of limitedUrls) {
@@ -65,7 +62,6 @@ export async function POST(request: Request) {
     })
 
     const description = response.content[0]?.type === 'text' ? response.content[0].text : ''
-    console.log('[describe] Descrição gerada:', description)
     return NextResponse.json({ description })
 
   } catch (error: unknown) {

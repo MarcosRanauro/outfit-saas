@@ -3,6 +3,27 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { checkRateLimit, incrementUsage } from "@/lib/rate-limit";
 
+interface ChatMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+interface WeatherData {
+  temp: number
+  desc: string
+  humidity?: number
+  wind?: number
+}
+
+interface AnchorPiece {
+  id: string
+  name: string
+  category: string
+  color?: string | null
+  brand?: string | null
+  photo_url?: string | null
+}
+
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
@@ -276,7 +297,7 @@ export async function POST(request: Request) {
     )
   }
 
-  let message: string, history: any, weather: any, weatherContext: string | null, anchorPiece: any
+  let message: string, history: ChatMessage[], weather: WeatherData | null, weatherContext: string | null, anchorPiece: AnchorPiece | null
   try {
     const body = await request.json()
     message = body.message
@@ -304,7 +325,7 @@ export async function POST(request: Request) {
       .single();
 
     const categorizedPieces = (pieces || []).reduce(
-      (acc: Record<string, typeof pieces>, piece: any) => {
+      (acc: Record<string, typeof pieces>, piece) => {
         const cat = piece.category || "Outros";
         if (!acc[cat]) acc[cat] = [];
         acc[cat].push(piece);
@@ -313,8 +334,8 @@ export async function POST(request: Request) {
     );
 
     const closetContext = Object.entries(categorizedPieces)
-      .map(([category, items]: [string, any]) => {
-        const itemsList = items.map((p: any) =>
+      .map(([category, items]) => {
+        const itemsList = (items || []).map((p) =>
           `  · [ID: ${p.id}] ${p.name}${p.color ? ` — ${p.color}` : ""}${p.brand ? ` (${p.brand})` : ""}${p.fit ? ` | Fit: ${p.fit}` : ""}${p.style_type ? ` | Estilo: ${p.style_type}` : ""}${p.season ? ` | Estação: ${p.season}` : ""}`
         ).join("\n");
         return `${category.toUpperCase()}:\n${itemsList}`;
@@ -358,7 +379,7 @@ Mensagem do usuário: ${message}`
         role: "assistant",
         content: `Entendido! Tenho acesso ao closet de ${profile?.name || "você"} e ao contexto completo. Pode me perguntar qualquer coisa sobre moda e estilo!`,
       },
-      ...(history || []).map((msg: any) => ({
+      ...(history || []).map((msg) => ({
         role: msg.role,
         content: msg.content,
       })),
@@ -390,9 +411,9 @@ Mensagem do usuário: ${message}`
     if (outfitsMatch) {
       try {
         const parsed = JSON.parse(outfitsMatch[1].trim());
-        outfits = parsed.outfits.map((outfit: any) => ({
+        outfits = parsed.outfits.map((outfit: { piece_ids?: string[] } & Record<string, unknown>) => ({
           ...outfit,
-          pieces: (pieces || []).filter((p: any) =>
+          pieces: (pieces || []).filter((p) =>
             Array.isArray(outfit.piece_ids) && outfit.piece_ids.includes(p.id)
           ),
         }));

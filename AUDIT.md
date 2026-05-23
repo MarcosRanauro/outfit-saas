@@ -2,8 +2,31 @@
 
 **Data:** 2026-05-22  
 **Branch auditada:** `feat/studio-cost-optimization` (baseada em `main`)  
-**Atualizado:** 2026-05-22 — itens críticos 1–4 corrigidos na branch `fix/security-audit`; CSS inline migrado na branch `fix/css-inline`  
+**Atualizado:** 2026-05-23 — limpeza de código em `fix/code-cleanup`: logs debug removidos, tipos `any` corrigidos  
 **Auditor:** Claude Sonnet 4.6
+
+---
+
+## Mudanças pós-auditoria
+
+### Features implementadas desde a auditoria
+
+- **Foto de estúdio com Remove.bg** — remoção de fundo com fidelidade 100% à foto real; `bg_color: ffffff` aplicado diretamente pela API; `sharp` usado apenas para resize 1024×1024. Histórico de implementações comentado no código: gpt-image-1 → Photoroom → Fal.ai → Remove.bg (atual).
+- **Multi-foto com análise via Mia** — nova rota `/api/pieces/describe` envia até 3 fotos para `claude-sonnet-4-6` e retorna descrição técnica visual em inglês que enriquece o prompt de geração.
+- **Nova Peça redesenhada** — galeria de até 6 fotos, seleção de capa, análise automática, campos expandidos (`color_secondary`, `description`, `notes`), modal de confirmação centralizado, modal de loading com spinner, dica de foto.
+- **Persistência de colunas do closet** — seletor de 1–5 colunas salvo em `localStorage`, restaurado sem hydration mismatch via `useEffect`.
+- **Trial de 15 dias** — coluna `trial_ends_at` no banco, lógica de expiração no rate limit, banner no perfil com dias restantes.
+- **Virtual Try-On** — seleção múltipla sequencial de peças, polling com limite, integração FASHN.ai.
+
+### Itens resolvidos
+
+| Item | Status |
+|---|---|
+| SSRF em `/api/pieces/studio` | ✅ Corrigido — validação de hostname |
+| Rate limiting em `/api/pieces/studio` | ✅ Corrigido — `studio_generate` 10/mês free |
+| Logs de debug em produção | ✅ Corrigido — todos removidos |
+| CSS inline (`style={{}}`) | ✅ Migrado para classes CSS em `fix/css-inline` |
+| Tipos `any` em closet, perfil, mia/chat, webhook | ✅ Corrigido em `fix/code-cleanup` |
 
 ---
 
@@ -211,14 +234,16 @@ Persistido em `localStorage` (`mia_theme`). `data-theme` e `data-auth-theme` sin
 | `api/pieces/studio/route.ts` | 6 logs de diagnóstico removidos |
 | `api/tryon/route.ts` | `console.log('[tryon] API Key prefix:', ...)` removido |
 
-### Tipos fracos (`any`)
-| Arquivo | Linha | Variável |
+### ~~Tipos fracos (`any`)~~ ✅ Corrigido em `fix/code-cleanup`
+
+| Arquivo | Variável | Solução |
 |---|---|---|
-| `closet/page.tsx` | 137 | `aiSuggestion: any` |
-| `perfil/page.tsx` | 111 | `updateData: any` |
-| `api/mia/chat/route.ts` | 279 | `history: any`, `weather: any`, `anchorPiece: any` |
-| `api/mia/chat/route.ts` | 307, 317, 361, 393, 395 | casts `any` em manipulação de peças e outfits |
-| `api/stripe/webhook/route.ts` | 52–56 | `(invoice as any).subscription`, `(invoice as any).lines` |
+| `closet/page.tsx` | `aiSuggestion: any` | Interface `AiSuggestion` com todos os campos retornados por `/api/pieces/analyze` |
+| `perfil/page.tsx` | `updateData: any` | Interface `ProfileUpdate` com campos opcionais tipados |
+| `api/mia/chat/route.ts` | `history: any`, `weather: any`, `anchorPiece: any` | Interfaces `ChatMessage`, `WeatherData`, `AnchorPiece` |
+| `api/mia/chat/route.ts` | casts inline em `reduce` e `map` | Removidos — inferência suficiente |
+| `api/stripe/webhook/route.ts` | `(invoice as any).subscription` | `(invoice as unknown as { subscription: string }).subscription` |
+| `api/stripe/webhook/route.ts` | `event.data.object as any` | `Stripe.Subscription \| Stripe.Invoice` |
 
 ### Código morto / não utilizado
 - Constante `LIMITS` em `src/lib/rate-limit.ts` (linhas 3–16) — definida mas nunca lida na lógica de `checkRateLimit`. A função sempre bloqueia usuários free após o trial expirar, independente dos limites definidos.

@@ -7,6 +7,14 @@ import AvatarCrop from '@/components/ui/AvatarCrop'
 import DashboardTopBanner from '@/components/layout/DashboardTopBanner'
 import '../../perfil.css'
 
+interface ProfileUpdate {
+  name?: string
+  height?: number | null
+  weight?: number | null
+  style?: string | null
+  avatar_url?: string
+}
+
 const STYLES = ['Streetwear', 'Sportwear', 'Casual', 'Social', 'Minimalista']
 
 type Profile = {
@@ -108,7 +116,7 @@ export default function PerfilPage() {
     if (!profile) return
     setSaving(true)
 
-    let updateData: any = {}
+    let updateData: ProfileUpdate = {}
 
     if (editModal === 'name') updateData.name = editValue
     if (editModal === 'height') updateData.height = parseInt(editValue) || null

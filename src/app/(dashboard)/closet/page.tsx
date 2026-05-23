@@ -4,6 +4,18 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Piece, WishlistItem } from '@/types/database'
+
+interface AiSuggestion {
+  name?: string
+  category?: string
+  color?: string
+  color_secondary?: string
+  brand?: string
+  fit?: string
+  style_type?: string
+  season?: string
+  description?: string
+}
 import '../../closet.css'
 import '../../perfil.css'
 import '../../wishlist.css'
@@ -134,7 +146,7 @@ export default function ClosetPage() {
   const [photo, setPhoto] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [analyzing, setAnalyzing] = useState(false)
-  const [aiSuggestion, setAiSuggestion] = useState<any>(null)
+  const [aiSuggestion, setAiSuggestion] = useState<AiSuggestion | null>(null)
   const [fit, setFit] = useState('')
   const [styleType, setStyleType] = useState('')
   const [season, setSeason] = useState('')
