@@ -173,46 +173,92 @@ export async function POST(request: Request) {
     // ).filter((u): u is string => u !== null)
     // ─── FIM PHOTOROOM ───
 
-    // ─── FAL.AI BRIA RMBG ───
-    const { fal } = await import('@fal-ai/client')
-    fal.config({ credentials: process.env.FAL_API_KEY })
+    // ─── FAL.AI (comentado — descomentar para reverter) ───
+    // const { fal } = await import('@fal-ai/client')
+    // fal.config({ credentials: process.env.FAL_API_KEY })
+    //
+    // const results = await Promise.all(
+    //   photo_urls.slice(0, 3).map(async (photoUrl: string, i: number) => {
+    //     const result = await fal.subscribe('fal-ai/bria/background/remove', {
+    //       input: { image_url: photoUrl },
+    //     })
+    //
+    //     const imageUrl = (result.data as { image?: { url?: string } })?.image?.url
+    //     if (!imageUrl) return null
+    //
+    //     const imageResponse = await fetch(imageUrl)
+    //     const imageBuffer = Buffer.from(await imageResponse.arrayBuffer())
+    //
+    //     const { default: sharp } = await import('sharp')
+    //     const processedBuffer = await sharp(imageBuffer)
+    //       .flatten({ background: { r: 255, g: 255, b: 255 } })
+    //       .resize(1024, 1024, { fit: 'contain', background: { r: 255, g: 255, b: 255 } })
+    //       .png()
+    //       .toBuffer()
+    //
+    //     const filename = `studio/${user.id}/${Date.now()}_${i}.png`
+    //     const { error } = await supabase.storage
+    //       .from('pieces')
+    //       .upload(filename, processedBuffer, { contentType: 'image/png', upsert: true })
+    //
+    //     if (error) {
+    //       console.error('Upload error', i, error)
+    //       return null
+    //     }
+    //
+    //     const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(filename)
+    //     return urlData.publicUrl
+    //   })
+    // )
+    //
+    // const urls = results.filter(Boolean) as string[]
+    // ─── FIM FAL.AI ───
 
-    const results = await Promise.all(
-      photo_urls.slice(0, 3).map(async (photoUrl: string, i: number) => {
-        const result = await fal.subscribe('fal-ai/bria/background/remove', {
-          input: { image_url: photoUrl },
+    // ─── REMOVE.BG ───
+    const urls = (
+      await Promise.all(
+        photo_urls.slice(0, 3).map(async (photoUrl: string, i: number) => {
+          const formData = new FormData()
+          formData.append('image_url', photoUrl)
+          formData.append('size', 'auto')
+          formData.append('bg_color', 'ffffff')
+          formData.append('format', 'png')
+
+          const removeBgRes = await fetch('https://api.remove.bg/v1.0/removebg', {
+            method: 'POST',
+            headers: { 'X-Api-Key': process.env.REMOVE_BG_API_KEY || '' },
+            body: formData,
+          })
+
+          if (!removeBgRes.ok) {
+            console.error('Remove.bg error', i, removeBgRes.status, await removeBgRes.text())
+            return null
+          }
+
+          const pngBuffer = Buffer.from(await removeBgRes.arrayBuffer())
+
+          const { default: sharp } = await import('sharp')
+          const processedBuffer = await sharp(pngBuffer)
+            .resize(1024, 1024, { fit: 'contain', background: { r: 255, g: 255, b: 255 } })
+            .png()
+            .toBuffer()
+
+          const filename = `studio/${user.id}/${Date.now()}_${i}.png`
+          const { error } = await supabase.storage
+            .from('pieces')
+            .upload(filename, processedBuffer, { contentType: 'image/png', upsert: true })
+
+          if (error) {
+            console.error('Upload error', i, error)
+            return null
+          }
+
+          const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(filename)
+          return urlData.publicUrl
         })
-
-        const imageUrl = (result.data as { image?: { url?: string } })?.image?.url
-        if (!imageUrl) return null
-
-        const imageResponse = await fetch(imageUrl)
-        const imageBuffer = Buffer.from(await imageResponse.arrayBuffer())
-
-        const { default: sharp } = await import('sharp')
-        const processedBuffer = await sharp(imageBuffer)
-          .flatten({ background: { r: 255, g: 255, b: 255 } })
-          .resize(1024, 1024, { fit: 'contain', background: { r: 255, g: 255, b: 255 } })
-          .png()
-          .toBuffer()
-
-        const filename = `studio/${user.id}/${Date.now()}_${i}.png`
-        const { error } = await supabase.storage
-          .from('pieces')
-          .upload(filename, processedBuffer, { contentType: 'image/png', upsert: true })
-
-        if (error) {
-          console.error('Upload error', i, error)
-          return null
-        }
-
-        const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(filename)
-        return urlData.publicUrl
-      })
-    )
-
-    const urls = results.filter(Boolean) as string[]
-    // ─── FIM FAL.AI BRIA RMBG ───
+      )
+    ).filter((u): u is string => u !== null)
+    // ─── FIM REMOVE.BG ───
 
     if (urls.length === 0) {
       return NextResponse.json({ error: 'Nenhuma imagem gerada' }, { status: 500 })
