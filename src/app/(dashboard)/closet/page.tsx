@@ -4,6 +4,16 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Piece, WishlistItem } from '@/types/database'
+import { toBase64, moderateImage } from '@/lib/image'
+import ClosetOnboarding from '@/components/closet/ClosetOnboarding'
+import ClosetTour from '@/components/closet/ClosetTour'
+import WishlistSuggestionsModal, { WishlistSuggestion } from '@/components/closet/WishlistSuggestionsModal'
+import WishlistSavedModal from '@/components/closet/WishlistSavedModal'
+import ClosetFiltersDrawer from '@/components/closet/ClosetFiltersDrawer'
+import PieceDetailModal from '@/components/closet/PieceDetailModal'
+import '../../closet.css'
+import '../../perfil.css'
+import '../../wishlist.css'
 
 interface AiSuggestion {
   name?: string
@@ -16,10 +26,6 @@ interface AiSuggestion {
   season?: string
   description?: string
 }
-import { toBase64, moderateImage } from '@/lib/image'
-import '../../closet.css'
-import '../../perfil.css'
-import '../../wishlist.css'
 
 const CATEGORY_GROUPS = {
   'Todos': [] as string[],
@@ -40,33 +46,9 @@ type GroupKey = keyof typeof CATEGORY_GROUPS
 
 const ALL_CATEGORIES = Object.values(CATEGORY_GROUPS).flat()
 
-const STYLE_OPTIONS = ['Streetwear', 'Sportwear', 'Casual', 'Social', 'Minimalista']
 const FIT_OPTIONS = ['Oversized', 'Regular', 'Slim', 'Cropped', 'A-line']
 const STYLE_TYPE_OPTIONS = ['Casual', 'Social', 'Esportivo', 'Streetwear', 'Minimalista']
 const SEASON_OPTIONS = ['Todas', 'Verão', 'Inverno', 'Meia estação']
-
-const TOUR_STEPS = [
-  {
-    title: '✦ Sugerir Peças',
-    text: 'A IA analisa seu closet e sugere peças que faltam para criar mais combinações.',
-  },
-  {
-    title: '♡ Sua Wishlist',
-    text: 'Aqui ficam as peças que você quer comprar. Quando comprar, adicione direto ao closet com um toque.',
-  },
-  {
-    title: '+ Adicionar Peça',
-    text: 'Cadastre as peças que você já tem para a IA conhecer seu guarda-roupa e gerar outfits perfeitos.',
-  },
-]
-
-type WishlistSuggestion = {
-  category: string
-  name: string
-  color: string
-  reason: string
-  priority: 'high' | 'medium' | 'low'
-}
 
 async function compressImageForUpload(file: File): Promise<Blob> {
   return new Promise((resolve) => {
@@ -153,7 +135,7 @@ export default function ClosetPage() {
   const [wishlistLoading, setWishlistLoading] = useState(false)
   const [purchasingWishlistId, setPurchasingWishlistId] = useState<string | null>(null)
 
-  // Add modal (for wishlist "Já comprei" flow)
+  // Add modal (fluxo wishlist "Já comprei")
   const [modalOpen, setModalOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [name, setName] = useState('')
@@ -170,13 +152,6 @@ export default function ClosetPage() {
 
   // Onboarding
   const [onboardingOpen, setOnboardingOpen] = useState(false)
-  const [obStep, setObStep] = useState(1)
-  const [obName, setObName] = useState('')
-  const [obHeight, setObHeight] = useState('')
-  const [obWeight, setObWeight] = useState('')
-  const [obSelectedStyles, setObSelectedStyles] = useState<string[]>([])
-  const [obCustomStyle, setObCustomStyle] = useState('')
-  const [obSaving, setObSaving] = useState(false)
   const [showNameField, setShowNameField] = useState(false)
 
   // Tour
@@ -219,7 +194,6 @@ export default function ClosetPage() {
     setLoading(false)
   }
 
-  // Apply theme to document root on mount
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
@@ -243,53 +217,30 @@ export default function ClosetPage() {
     setTooltipStyle({ top: rect.bottom + 14, left: tooltipLeft })
   }, [tourStep, tourOpen])
 
-  function uniqueValues(key: keyof Piece): string[] {
-    return [...new Set(
-      pieces.map(p => p[key] as string).filter(Boolean)
-    )].sort()
-  }
-
-  function toggleFilter(arr: string[], val: string, setter: (v: string[]) => void) {
-    setter(arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val])
-  }
-
   const filteredPieces = pieces.filter(piece => {
     const groupCats = CATEGORY_GROUPS[activeGroup]
     const matchGroup = activeGroup === 'Todos' || groupCats.includes(piece.category)
-
     const matchSearch = !search ||
       piece.name.toLowerCase().includes(search.toLowerCase()) ||
       piece.category.toLowerCase().includes(search.toLowerCase()) ||
       (piece.color || '').toLowerCase().includes(search.toLowerCase())
-
     const matchCategory = !filterCategory || piece.category === filterCategory
-
     const matchSeason = filterSeason.length === 0 ||
       filterSeason.some(s => (piece.season || '').toLowerCase().includes(s.toLowerCase()))
-
     const matchStyle = filterStyle.length === 0 ||
       filterStyle.some(s => (piece.style_type || '').toLowerCase().includes(s.toLowerCase()))
-
     const matchColor = filterColor.length === 0 ||
       filterColor.some(c => (piece.color || '').toLowerCase().includes(c.toLowerCase()))
-
     const matchBrand = filterBrand.length === 0 ||
       filterBrand.some(b => (piece.brand || '').toLowerCase().includes(b.toLowerCase()))
-
     const matchFit = filterFit.length === 0 ||
       filterFit.some(f => (piece.fit || '').toLowerCase().includes(f.toLowerCase()))
-
     return matchGroup && matchSearch && matchCategory &&
       matchSeason && matchStyle && matchColor && matchBrand && matchFit
   })
 
   const activeFilterCount = [
-    filterCategory,
-    ...filterSeason,
-    ...filterStyle,
-    ...filterColor,
-    ...filterBrand,
-    ...filterFit,
+    filterCategory, ...filterSeason, ...filterStyle, ...filterColor, ...filterBrand, ...filterFit,
   ].filter(Boolean).length
 
   const toggleTheme = () => {
@@ -304,37 +255,6 @@ export default function ClosetPage() {
     setSelectedPiece(piece)
     setDetailOpen(true)
   }
-
-  function toggleStyle(style: string) {
-    setObSelectedStyles(prev =>
-      prev.includes(style) ? prev.filter(s => s !== style) : [...prev, style]
-    )
-  }
-
-  async function handleOnboardingSave() {
-    setObSaving(true)
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { setObSaving(false); return }
-
-    const allStyles = [
-      ...obSelectedStyles,
-      ...(obCustomStyle.trim() ? [obCustomStyle.trim()] : []),
-    ].join(' / ')
-
-    const updates: Record<string, unknown> = {
-      height: obHeight ? parseInt(obHeight) : null,
-      weight: obWeight ? parseFloat(obWeight) : null,
-      style: allStyles || null,
-    }
-    if (showNameField && obName.trim()) updates.name = obName.trim()
-
-    await supabase.from('profiles').update(updates).eq('id', user.id)
-    setObSaving(false)
-    setObStep(3)
-  }
-
-  const step1Valid = !!obHeight && !!obWeight && (!showNameField || !!obName.trim())
-  const step2Valid = obSelectedStyles.length > 0 || !!obCustomStyle.trim()
 
   async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -552,6 +472,23 @@ export default function ClosetPage() {
     setPurchasingWishlistId(item.id); setWishlistSavedOpen(false); setModalOpen(true)
   }
 
+  function handleSetAnchor(piece: Piece) {
+    sessionStorage.setItem('anchor_piece', JSON.stringify(piece))
+    setAnchorPieceId(piece.id)
+    setDetailOpen(false)
+    setSelectedPiece(null)
+  }
+
+  function handleFiltersReset() {
+    setFilterCategory('')
+    setFilterSeason([])
+    setFilterStyle([])
+    setFilterColor([])
+    setFilterBrand([])
+    setFilterFit([])
+    setActiveGroup('Todos')
+  }
+
   return (
     <>
       {/* ─── HEADER ─── */}
@@ -601,7 +538,6 @@ export default function ClosetPage() {
             <button onClick={() => setSearch('')} className="closet-search-clear">✕</button>
           )}
         </div>
-
         <button
           className={`closet-filter-btn ${filterOpen || activeFilterCount > 0 ? 'active' : ''}`}
           onClick={() => setFilterOpen(true)}
@@ -610,20 +546,13 @@ export default function ClosetPage() {
             <span className="closet-filter-badge">{activeFilterCount}</span>
           )}
         </button>
-
         <div className="closet-cols-wrap">
-          <button
-            className="closet-cols-btn"
-            onClick={() => setShowColsMenu(p => !p)}
-          >
+          <button className="closet-cols-btn" onClick={() => setShowColsMenu(p => !p)}>
             ⊞ ▾
           </button>
           {showColsMenu && (
             <>
-              <div
-                className="closet-cols-backdrop"
-                onClick={() => setShowColsMenu(false)}
-              />
+              <div className="closet-cols-backdrop" onClick={() => setShowColsMenu(false)} />
               <div className="closet-cols-menu">
                 {[
                   { label: '2 colunas', value: 2 },
@@ -680,9 +609,7 @@ export default function ClosetPage() {
         style={cols > 1 ? { gridTemplateColumns: `repeat(${cols}, 1fr)` } : undefined}
       >
         {loading ? (
-          <div className="closet-grid-placeholder">
-            Carregando...
-          </div>
+          <div className="closet-grid-placeholder">Carregando...</div>
         ) : filteredPieces.length === 0 ? (
           <div className="closet-grid-placeholder">
             {search || activeGroup !== 'Todos' || activeFilterCount > 0
@@ -691,11 +618,7 @@ export default function ClosetPage() {
           </div>
         ) : (
           filteredPieces.map(piece => (
-            <div
-              key={piece.id}
-              className="closet-piece-card"
-              onClick={() => openPieceDetail(piece)}
-            >
+            <div key={piece.id} className="closet-piece-card" onClick={() => openPieceDetail(piece)}>
               <div className="closet-piece-photo">
                 {piece.photo_url ? (
                   <img src={piece.photo_url} alt={piece.name} />
@@ -726,77 +649,6 @@ export default function ClosetPage() {
       >
         +
       </button>
-
-      {/* ─── MODAL DETALHE ─── */}
-      <div
-        className={`modal-overlay ${detailOpen ? 'open' : ''}`}
-        onClick={(e) => { if (e.target === e.currentTarget) { setDetailOpen(false); setSelectedPiece(null) } }}
-      >
-        <div className="modal-sheet">
-          <div className="modal-handle" />
-          {selectedPiece && (
-            <>
-              <div className="modal-title">{selectedPiece.name}</div>
-              <div className="piece-detail-photo">
-                {selectedPiece.photo_url ? (
-                  <img src={selectedPiece.photo_url} alt={selectedPiece.name} />
-                ) : (
-                  <label className="upload-label">
-                    <div className="upload-area upload-area--small">{uploadingPhoto ? 'Enviando...' : '+ Adicionar foto'}</div>
-                    <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAddPhoto} />
-                  </label>
-                )}
-              </div>
-              <div className="piece-detail-info">
-                <div className="piece-detail-row">
-                  <span className="piece-detail-label">Categoria</span>
-                  <span className="piece-detail-value">{selectedPiece.category}</span>
-                </div>
-                {selectedPiece.color && (
-                  <div className="piece-detail-row">
-                    <span className="piece-detail-label">Cor</span>
-                    <span className="piece-detail-value">{selectedPiece.color}</span>
-                  </div>
-                )}
-                {selectedPiece.brand && (
-                  <div className="piece-detail-row">
-                    <span className="piece-detail-label">Marca</span>
-                    <span className="piece-detail-value">{selectedPiece.brand}</span>
-                  </div>
-                )}
-              </div>
-              {selectedPiece.photo_url && (
-                <label className="modal-swap-photo">
-                  <div className="modal-btn">
-                    {uploadingPhoto ? 'Enviando...' : 'Trocar foto'}
-                  </div>
-                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAddPhoto} />
-                </label>
-              )}
-              <button
-                className="anchor-piece-btn"
-                onClick={() => {
-                  if (selectedPiece) {
-                    sessionStorage.setItem('anchor_piece', JSON.stringify(selectedPiece))
-                    setAnchorPieceId(selectedPiece.id)
-                    setDetailOpen(false)
-                    setSelectedPiece(null)
-                  }
-                }}
-              >
-                <span>📌</span>
-                Usar como peça âncora
-              </button>
-              <button
-                className="modal-btn modal-btn--danger"
-                onClick={handleDelete}
-              >
-                Excluir Peça
-              </button>
-            </>
-          )}
-        </div>
-      </div>
 
       {/* ─── MODAL ADICIONAR (fluxo wishlist "Já comprei") ─── */}
       <div
@@ -845,7 +697,9 @@ export default function ClosetPage() {
             <input className="modal-input" placeholder="Ex: Adidas" value={brand} onChange={e => setBrand(e.target.value)} />
           </div>
           <div className="modal-field">
-            <span className="modal-label">Fit{aiSuggestion?.fit && <span className="modal-label-badge">MIA</span>}</span>
+            <span className="modal-label">
+              Fit{aiSuggestion?.fit && <span className="modal-label-badge">MIA</span>}
+            </span>
             <div className="modal-chips-row">
               {FIT_OPTIONS.map(f => (
                 <button key={f} className={`modal-chip ${fit === f ? 'active' : ''}`} onClick={() => setFit(fit === f ? '' : f)}>{f}</button>
@@ -853,7 +707,9 @@ export default function ClosetPage() {
             </div>
           </div>
           <div className="modal-field">
-            <span className="modal-label">Estilo{aiSuggestion?.style_type && <span className="modal-label-badge">MIA</span>}</span>
+            <span className="modal-label">
+              Estilo{aiSuggestion?.style_type && <span className="modal-label-badge">MIA</span>}
+            </span>
             <div className="modal-chips-row">
               {STYLE_TYPE_OPTIONS.map(o => (
                 <button key={o} className={`modal-chip ${styleType === o ? 'active' : ''}`} onClick={() => setStyleType(styleType === o ? '' : o)}>{o}</button>
@@ -861,326 +717,84 @@ export default function ClosetPage() {
             </div>
           </div>
           <div className="modal-field">
-            <span className="modal-label">Estação{aiSuggestion?.season && <span className="modal-label-badge">MIA</span>}</span>
+            <span className="modal-label">
+              Estação{aiSuggestion?.season && <span className="modal-label-badge">MIA</span>}
+            </span>
             <div className="modal-chips-row">
               {SEASON_OPTIONS.map(s => (
                 <button key={s} className={`modal-chip ${season === s ? 'active' : ''}`} onClick={() => setSeason(season === s ? '' : s)}>{s}</button>
               ))}
             </div>
           </div>
-          <button className="modal-btn" onClick={handleSave} disabled={saving || !name}>{saving ? 'Salvando...' : 'Salvar Peça'}</button>
+          <button className="modal-btn" onClick={handleSave} disabled={saving || !name}>
+            {saving ? 'Salvando...' : 'Salvar Peça'}
+          </button>
         </div>
       </div>
 
-      {/* ─── TOUR ─── */}
-      {tourOpen && (
-        <div className="tour-overlay">
-          <button className="tour-skip" onClick={handleTourFinish}>Pular</button>
-          <div className="tour-spotlight" style={spotlightStyle} />
-          <div className="tour-tooltip" style={tooltipStyle}>
-            <div className="tour-tooltip-title">{TOUR_STEPS[tourStep].title}</div>
-            <div className="tour-tooltip-text">{TOUR_STEPS[tourStep].text}</div>
-            <div className="tour-tooltip-footer">
-              <div className="tour-dots">
-                {TOUR_STEPS.map((_, i) => <div key={i} className={`tour-dot ${i === tourStep ? 'active' : ''}`} />)}
-              </div>
-              <button className="tour-next" onClick={handleTourNext}>{tourStep === 2 ? 'Concluir' : 'Próximo →'}</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* ─── COMPONENTES EXTRAÍDOS ─── */}
+      <PieceDetailModal
+        open={detailOpen}
+        piece={selectedPiece}
+        uploadingPhoto={uploadingPhoto}
+        anchorPieceId={anchorPieceId}
+        onClose={() => { setDetailOpen(false); setSelectedPiece(null) }}
+        onDelete={handleDelete}
+        onAddPhoto={handleAddPhoto}
+        onSetAnchor={handleSetAnchor}
+      />
 
-      {/* ─── MODAL SUGESTÕES WISHLIST ─── */}
-      <div
-        className={`wishlist-modal-overlay ${wishlistModalOpen ? 'open' : ''}`}
-        onClick={e => { if (e.target === e.currentTarget) { setWishlistModalOpen(false); setSavedSuggestionIds([]) } }}
-      >
-        <div className="wishlist-modal-sheet">
-          <div className="wishlist-modal-handle" />
-          <div className="wishlist-modal-header">
-            <span className="wishlist-modal-title">Sugestões para o Closet</span>
-            <button className="wishlist-modal-close" onClick={() => { setWishlistModalOpen(false); setSavedSuggestionIds([]) }}>✕</button>
-          </div>
-          <div className="wishlist-modal-scroll">
-            {wishlistSuggestions.map((s, index) => (
-              <div key={index} className="wishlist-card">
-                <div className="wishlist-card-top">
-                  <div className="wishlist-card-name">{s.name}</div>
-                  <span className={`wishlist-badge wishlist-badge-${s.priority}`}>
-                    {s.priority === 'high' ? 'Essencial' : s.priority === 'medium' ? 'Recomendado' : 'Opcional'}
-                  </span>
-                </div>
-                <div className="wishlist-card-meta">{s.category}{s.color ? ` · ${s.color}` : ''}</div>
-                <div className="wishlist-card-reason">{s.reason}</div>
-                <button
-                  className={`wishlist-save-btn ${savedSuggestionIds.includes(index) ? 'saved' : ''}`}
-                  disabled={savedSuggestionIds.includes(index)}
-                  onClick={() => handleSaveToWishlist(s, index)}
-                >
-                  {savedSuggestionIds.includes(index) ? '✓ Salvo' : 'Salvar na Wishlist'}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <WishlistSuggestionsModal
+        open={wishlistModalOpen}
+        suggestions={wishlistSuggestions}
+        savedIds={savedSuggestionIds}
+        onSave={handleSaveToWishlist}
+        onClose={() => { setWishlistModalOpen(false); setSavedSuggestionIds([]) }}
+      />
 
-      {/* ─── MODAL WISHLIST SALVA ─── */}
-      <div
-        className={`wishlist-modal-overlay ${wishlistSavedOpen ? 'open' : ''}`}
-        onClick={e => { if (e.target === e.currentTarget) setWishlistSavedOpen(false) }}
-      >
-        <div className="wishlist-modal-sheet">
-          <div className="wishlist-modal-handle" />
-          <div className="wishlist-modal-header">
-            <span className="wishlist-modal-title">Minha Wishlist</span>
-            <button className="wishlist-modal-close" onClick={() => setWishlistSavedOpen(false)}>✕</button>
-          </div>
-          <div className="wishlist-modal-scroll">
-            {wishlistLoading ? (
-              <div className="wishlist-empty">Carregando...</div>
-            ) : wishlistItems.length === 0 ? (
-              <div className="wishlist-empty">
-                <div className="wishlist-empty-icon">♡</div>
-                Sua wishlist está vazia.{'\n'}Use o botão ✦ para gerar sugestões.
-              </div>
-            ) : (
-              wishlistItems.map(item => (
-                <div key={item.id} className="wishlist-item">
-                  <div className="wishlist-item-top">
-                    <div className="wishlist-item-name">{item.name}</div>
-                    <span className={`wishlist-badge wishlist-badge-${item.priority}`}>
-                      {item.priority === 'high' ? 'Essencial' : item.priority === 'medium' ? 'Recomendado' : 'Opcional'}
-                    </span>
-                  </div>
-                  <div className="wishlist-item-meta">{item.category}{item.color ? ` · ${item.color}` : ''}</div>
-                  {item.reason && <div className="wishlist-item-reason">{item.reason}</div>}
-                  <div className="wishlist-item-actions">
-                    <button className="wishlist-action-buy" onClick={() => handleWishlistPurchased(item)}>Já comprei</button>
-                    <button className="wishlist-action-remove" onClick={() => handleRemoveWishlistItem(item.id)}>Remover</button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
+      <WishlistSavedModal
+        open={wishlistSavedOpen}
+        items={wishlistItems}
+        loading={wishlistLoading}
+        onClose={() => setWishlistSavedOpen(false)}
+        onPurchased={handleWishlistPurchased}
+        onRemove={handleRemoveWishlistItem}
+      />
 
-      {/* ─── ONBOARDING ─── */}
-      <div className={`onboarding-overlay ${onboardingOpen ? 'open' : ''}`}>
-        <div className="onboarding-sheet">
-          <div className="onboarding-handle" />
-          <div className="onboarding-dots">
-            {[1, 2, 3].map(s => <div key={s} className={`onboarding-dot ${obStep === s ? 'active' : ''}`} />)}
-          </div>
+      <ClosetOnboarding
+        open={onboardingOpen}
+        showNameField={showNameField}
+        onComplete={() => setOnboardingOpen(false)}
+      />
 
-          {obStep === 1 && (
-            <>
-              <div className="onboarding-logo">
-                <div className="onboarding-diamond" />
-                <div className="onboarding-title">Bem-vindo</div>
-                <div className="onboarding-sub">Alguns dados para personalizar suas sugestões de outfit.</div>
-              </div>
-              {showNameField && (
-                <div className="onboarding-field">
-                  <span className="onboarding-label">Como quer ser chamado?</span>
-                  <input className="onboarding-input" placeholder="Seu nome" value={obName} onChange={e => setObName(e.target.value)} />
-                </div>
-              )}
-              <div className="onboarding-row">
-                <div className="onboarding-field">
-                  <span className="onboarding-label">Altura (cm)</span>
-                  <input className="onboarding-input" type="number" inputMode="numeric" placeholder="Ex: 178" value={obHeight} onChange={e => setObHeight(e.target.value)} />
-                </div>
-                <div className="onboarding-field">
-                  <span className="onboarding-label">Peso (kg)</span>
-                  <input className="onboarding-input" type="number" inputMode="decimal" placeholder="Ex: 75" value={obWeight} onChange={e => setObWeight(e.target.value)} />
-                </div>
-              </div>
-              <button className="onboarding-btn" onClick={() => setObStep(2)} disabled={!step1Valid}>Próximo</button>
-            </>
-          )}
+      <ClosetTour
+        open={tourOpen}
+        step={tourStep}
+        spotlightStyle={spotlightStyle}
+        tooltipStyle={tooltipStyle}
+        onNext={handleTourNext}
+        onFinish={handleTourFinish}
+      />
 
-          {obStep === 2 && (
-            <>
-              <div className="onboarding-logo">
-                <div className="onboarding-diamond" />
-                <div className="onboarding-title">Seu Estilo</div>
-                <div className="onboarding-sub">Escolha um ou mais estilos que descrevem você.</div>
-              </div>
-              <div className="style-chips">
-                {STYLE_OPTIONS.map(style => (
-                  <button key={style} className={`style-chip ${obSelectedStyles.includes(style) ? 'active' : ''}`} onClick={() => toggleStyle(style)}>{style}</button>
-                ))}
-              </div>
-              <div className="onboarding-field">
-                <span className="onboarding-label">Outro estilo (opcional)</span>
-                <input className="onboarding-input" placeholder="Ex: Vintage, Gótico..." value={obCustomStyle} onChange={e => setObCustomStyle(e.target.value)} />
-              </div>
-              <button className="onboarding-btn" onClick={handleOnboardingSave} disabled={obSaving || !step2Valid}>{obSaving ? 'Salvando...' : 'Concluir'}</button>
-              <button className="onboarding-btn onboarding-btn--ghost" onClick={() => setObStep(1)}>Voltar</button>
-            </>
-          )}
-
-          {obStep === 3 && (
-            <div className="onboarding-success">
-              <div className="onboarding-success-icon">✦</div>
-              <div className="onboarding-success-title">Tudo Certo!</div>
-              <div className="onboarding-success-text">Seu perfil está configurado. Agora a IA pode sugerir outfits perfeitos para você.</div>
-              <button className="onboarding-btn" onClick={() => setOnboardingOpen(false)}>Explorar Closet</button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ─── DRAWER DE FILTROS ─── */}
-      {filterOpen && (
-        <>
-          <div
-            className="closet-filter-backdrop"
-            onClick={() => setFilterOpen(false)}
-          />
-          <div className="closet-filter-drawer">
-            <div className="closet-filter-drawer-header">
-              <span className="closet-filter-drawer-title">Filtros</span>
-              <button className="closet-filter-drawer-close" onClick={() => setFilterOpen(false)}>✕</button>
-            </div>
-
-            {/* Categoria */}
-            <div className="closet-filter-section">
-              <div className="closet-filter-section-title">Categoria</div>
-              <select
-                className="closet-filter-select"
-                value={filterCategory}
-                onChange={e => setFilterCategory(e.target.value)}
-              >
-                <option value="">Todas</option>
-                {ALL_CATEGORIES.map(c => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Estação — dinâmico */}
-            {uniqueValues('season').length > 0 && (
-              <div className="closet-filter-section">
-                <div className="closet-filter-section-title">Estação</div>
-                <div className="closet-filter-checks">
-                  {uniqueValues('season').map(s => (
-                    <label key={s} className="closet-filter-check">
-                      <input
-                        type="checkbox"
-                        checked={filterSeason.includes(s)}
-                        onChange={() => toggleFilter(filterSeason, s, setFilterSeason)}
-                      />
-                      {s}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Estilo — dinâmico */}
-            {uniqueValues('style_type').length > 0 && (
-              <div className="closet-filter-section">
-                <div className="closet-filter-section-title">Estilo</div>
-                <div className="closet-filter-checks">
-                  {uniqueValues('style_type').map(s => (
-                    <label key={s} className="closet-filter-check">
-                      <input
-                        type="checkbox"
-                        checked={filterStyle.includes(s)}
-                        onChange={() => toggleFilter(filterStyle, s, setFilterStyle)}
-                      />
-                      {s}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Cor — chips coloridos */}
-            {uniqueValues('color').length > 0 && (
-              <div className="closet-filter-section">
-                <div className="closet-filter-section-title">Cor</div>
-                <div className="closet-filter-colors">
-                  {uniqueValues('color').map(c => (
-                    <button
-                      key={c}
-                      className={`closet-filter-color-chip ${filterColor.includes(c) ? 'active' : ''}`}
-                      onClick={() => toggleFilter(filterColor, c, setFilterColor)}
-                      title={c}
-                    >
-                      {c}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Fit — dinâmico */}
-            {uniqueValues('fit').length > 0 && (
-              <div className="closet-filter-section">
-                <div className="closet-filter-section-title">Fit</div>
-                <div className="closet-filter-checks">
-                  {uniqueValues('fit').map(f => (
-                    <label key={f} className="closet-filter-check">
-                      <input
-                        type="checkbox"
-                        checked={filterFit.includes(f)}
-                        onChange={() => toggleFilter(filterFit, f, setFilterFit)}
-                      />
-                      {f}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Marca — dinâmica */}
-            {uniqueValues('brand').length > 0 && (
-              <div className="closet-filter-section">
-                <div className="closet-filter-section-title">Marca</div>
-                <div className="closet-filter-checks">
-                  {uniqueValues('brand').map(b => (
-                    <label key={b} className="closet-filter-check">
-                      <input
-                        type="checkbox"
-                        checked={filterBrand.includes(b)}
-                        onChange={() => toggleFilter(filterBrand, b, setFilterBrand)}
-                      />
-                      {b}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="closet-filter-actions">
-              <button
-                className="closet-filter-reset"
-                onClick={() => {
-                  setFilterCategory('')
-                  setFilterSeason([])
-                  setFilterStyle([])
-                  setFilterColor([])
-                  setFilterBrand([])
-                  setFilterFit([])
-                  setActiveGroup('Todos')
-                }}
-              >
-                Limpar
-              </button>
-              <button
-                className="closet-filter-apply"
-                onClick={() => setFilterOpen(false)}
-              >
-                Aplicar ({filteredPieces.length})
-              </button>
-            </div>
-          </div>
-        </>
-      )}
+      <ClosetFiltersDrawer
+        open={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        onReset={handleFiltersReset}
+        pieces={pieces}
+        filteredCount={filteredPieces.length}
+        filterCategory={filterCategory}
+        setFilterCategory={setFilterCategory}
+        filterSeason={filterSeason}
+        setFilterSeason={setFilterSeason}
+        filterStyle={filterStyle}
+        setFilterStyle={setFilterStyle}
+        filterColor={filterColor}
+        setFilterColor={setFilterColor}
+        filterBrand={filterBrand}
+        setFilterBrand={setFilterBrand}
+        filterFit={filterFit}
+        setFilterFit={setFilterFit}
+      />
     </>
   )
 }
