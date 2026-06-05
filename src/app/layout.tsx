@@ -83,13 +83,14 @@ export default function RootLayout({
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
         <script
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var theme=localStorage.getItem('mia_theme')||'light';document.documentElement.setAttribute('data-theme',theme);document.documentElement.setAttribute('data-auth-theme',theme);}catch(e){}})();`,
+            __html: `(function(){try{var m=localStorage.getItem('mia-mode');if(m==='dark')document.documentElement.classList.add('mode-dark');}catch(e){}})();`,
           }}
         />
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){var mode=localStorage.getItem('mia-mode')||'claire';document.documentElement.classList.toggle('mode-dark',mode==='dark');})();`,
+            __html: `(function(){try{var theme=localStorage.getItem('mia_theme')||'light';document.documentElement.setAttribute('data-theme',theme);document.documentElement.setAttribute('data-auth-theme',theme);}catch(e){}})();`,
           }}
         />
       </head>

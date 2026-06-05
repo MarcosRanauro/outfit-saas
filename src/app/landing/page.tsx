@@ -51,13 +51,7 @@ export default function LandingPage() {
     if (typeof window === 'undefined') return false
     return window.matchMedia('(display-mode: standalone)').matches
   })
-  const [showIOSInstructions] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false
-    if (window.matchMedia('(display-mode: standalone)').matches) return false
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
-    return isIOS && isSafari
-  })
+  const [showIOSInstructions, setShowIOSInstructions] = useState(false)
 
   useEffect(() => {
     localStorage.setItem('mia_theme', theme)
@@ -67,6 +61,12 @@ export default function LandingPage() {
   useEffect(() => {
     const saved = localStorage.getItem('mia-mode') as 'claire' | 'dark' | null
     if (saved) setMode(saved)
+  }, [])
+
+  useEffect(() => {
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+    if (isIOS && !isStandalone) setShowIOSInstructions(true)
   }, [])
 
   const handleModeChange = (newMode: 'claire' | 'dark') => {
@@ -141,8 +141,18 @@ export default function LandingPage() {
       {/* NAV */}
       <nav className="ec-nav">
         <div className="ec-nav-logo">
-          <span style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 600, fontSize: 20 }}>Mia</span>
-          <span style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 400, fontSize: 20, color: 'var(--ec-accent)' }}> Outfit AI</span>
+          {mode === 'dark' ? (
+            <>
+              <span className="logo-mia">MIA</span>
+              <span className="logo-dot">·</span>
+              <span className="logo-outfit">OUTFIT AI</span>
+            </>
+          ) : (
+            <>
+              <span style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 600, fontSize: 20 }}>Mia</span>
+              <span style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 400, fontSize: 20, color: 'var(--ec-accent)' }}> Outfit AI</span>
+            </>
+          )}
         </div>
         <div className="ec-nav-links">
           <a href="#funcionalidades">Funcionalidades</a>
@@ -179,10 +189,17 @@ export default function LandingPage() {
             <span className="badge-dot" />
             <span className="badge-text">SUA STYLIST COM IA</span>
           </div>
-          <h1>
-            Seu estilo,<br />
-            <em>finalmente entendido.</em>
-          </h1>
+          {mode === 'dark' ? (
+            <h1>
+              <span className="hero-line1">VESTE BEM</span><br />
+              <span className="hero-line2">TODO DIA.</span>
+            </h1>
+          ) : (
+            <h1>
+              Seu estilo,<br />
+              <em>finalmente entendido.</em>
+            </h1>
+          )}
           <p className="sub">A Mia analisa seu closet e monta o look certo para cada dia.</p>
           <Link href="/cadastro" className="cta-main">Começar grátis por 15 dias →</Link>
           <div className="social-proof">
@@ -230,7 +247,9 @@ export default function LandingPage() {
         <div className="ec-features-inner">
           <div className="ec-features-header scroll-animate">
             <div className="ec-section-label">FUNCIONALIDADES</div>
-            <h2 className="ec-features-title">Seu closet. O clima.<br />O look perfeito.</h2>
+            <h2 className="ec-features-title">
+              {mode === 'dark' ? 'SEU CLOSET. O CLIMA. O LOOK CERTO.' : <>Seu closet. O clima.<br />O look perfeito.</>}
+            </h2>
           </div>
           {featureBlocks.map((block, i) => (
             <div
@@ -258,7 +277,7 @@ export default function LandingPage() {
         <div className="ec-testimonials-inner">
           <div className="scroll-animate">
             <h2 className="ec-testimonials-title">
-              O que dizem quem já <em>usa</em>
+              {mode === 'dark' ? 'O QUE DIZEM QUEM JÁ USA' : <>O que dizem quem já <em>usa</em></>}
             </h2>
           </div>
           <div className="testimonials-track" ref={testimonialTrackRef}>
@@ -267,7 +286,7 @@ export default function LandingPage() {
                 <div className="testimonial-stars">★★★★★</div>
                 <p className="testimonial-text">{t.text}</p>
                 <div className="testimonial-author">
-                  <div className="testimonial-avatar" style={{ background: t.color }}>
+                  <div className="testimonial-avatar" style={mode === 'claire' ? { background: t.color } : undefined}>
                     {t.name[0]}
                   </div>
                   <div>
@@ -317,7 +336,9 @@ export default function LandingPage() {
       <section className="ec-pricing" id="planos">
         <div className="ec-pricing-inner">
           <div className="ec-pricing-header scroll-animate">
-            <h2 className="ec-pricing-title">Simples e <em>transparente</em></h2>
+            <h2 className="ec-pricing-title">
+              {mode === 'dark' ? 'SIMPLES E TRANSPARENTE' : <>Simples e <em>transparente</em></>}
+            </h2>
             <p className="ec-pricing-sub">Sem surpresas. Cancele quando quiser.</p>
           </div>
           <div className="plans-track">
@@ -349,10 +370,17 @@ export default function LandingPage() {
             <span className="badge-dot" />
             <span className="badge-text">COMECE AGORA</span>
           </div>
-          <h2 className="scroll-animate">
-            <em>Comece a arrasar</em><br />
-            <em>hoje mesmo.</em>
-          </h2>
+          {mode === 'dark' ? (
+            <h2 className="scroll-animate">
+              <span className="cta-line1">COMECE A ARRASAR</span><br />
+              <span className="cta-line2">HOJE MESMO.</span>
+            </h2>
+          ) : (
+            <h2 className="scroll-animate">
+              <em>Comece a arrasar</em><br />
+              <em>hoje mesmo.</em>
+            </h2>
+          )}
           <p className="cta-sub scroll-animate">
             Cadastre-se grátis e conheça a Mia, sua nova stylist pessoal.
           </p>
@@ -373,7 +401,9 @@ export default function LandingPage() {
               <span style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 600, fontSize: 18 }}>Mia</span>
               <span style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 400, fontSize: 18, color: 'var(--ec-accent)' }}> Outfit AI</span>
             </div>
-            <p className="footer-tagline">Sua stylist pessoal com IA.</p>
+            <p className="footer-tagline">
+              {mode === 'dark' ? 'SEU ESTILO. TODA VEZ.' : 'Sua stylist pessoal com IA.'}
+            </p>
           </div>
           <div className="footer-col">
             <div className="footer-col-title">Produto</div>
