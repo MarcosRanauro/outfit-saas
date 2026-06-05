@@ -89,10 +89,6 @@ export default function LandingPage() {
     return () => track.removeEventListener('scroll', handleScroll)
   }, [])
 
-  useEffect(() => {
-    const proCard = document.querySelector<HTMLElement>('.plan-card.featured')
-    if (proCard) proCard.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'instant' })
-  }, [])
 
   useEffect(() => {
     if (isInstalled || showIOSInstructions) return
@@ -332,56 +328,21 @@ export default function LandingPage() {
           </div>
           <div className="plans-track">
             <div className="plan-card scroll-animate">
-              <div className="plan-name">FREE</div>
+              <div className="plan-badge">ACESSO COMPLETO</div>
               <div className="plan-price">
-                <span className="plan-amount">R$0</span>
+                <span className="plan-amount">R$19,90</span>
               </div>
-              <p className="plan-period">Para sempre</p>
+              <p className="plan-period">/mês após o período de teste</p>
               <div className="plan-divider" />
               <ul className="plan-features">
-                <li>10 análises de peças/mês</li>
-                <li>5 gerações de outfit/mês</li>
-                <li>10 mensagens com a Mia/mês</li>
-                <li>Lookbook básico</li>
-              </ul>
-              <Link href="/cadastro" className="plan-cta plan-cta-outline">Criar conta grátis</Link>
-              <p className="plan-note">Cancele quando quiser</p>
-            </div>
-            <div className="plan-card featured scroll-animate">
-              <div className="plan-badge">MAIS POPULAR</div>
-              <div className="plan-name">PRO</div>
-              <div className="plan-price">
-                <span className="plan-amount">R$29</span>
-                <span className="plan-period-inline">/mês</span>
-              </div>
-              <p className="plan-period">após 15 dias grátis</p>
-              <div className="plan-divider" />
-              <ul className="plan-features">
-                <li>Tudo do Free</li>
-                <li>Análises ilimitadas</li>
-                <li>Outfits ilimitados</li>
+                <li>Closet inteligente ilimitado</li>
+                <li>Looks do dia com clima em tempo real</li>
                 <li>Chat ilimitado com a Mia</li>
                 <li>Foto de estúdio</li>
                 <li>Virtual Try-On</li>
               </ul>
               <Link href="/cadastro" className="plan-cta plan-cta-accent">Começar 15 dias grátis</Link>
-              <p className="plan-note">Cancele quando quiser</p>
-            </div>
-            <div className="plan-card scroll-animate">
-              <div className="plan-name">STYLIST</div>
-              <div className="plan-price">
-                <span className="plan-amount">R$79</span>
-                <span className="plan-period-inline">/mês</span>
-              </div>
-              <p className="plan-period">para profissionais</p>
-              <div className="plan-divider" />
-              <ul className="plan-features">
-                <li>Tudo do Pro</li>
-                <li>Multi-closet</li>
-                <li>Prioridade no suporte</li>
-              </ul>
-              <Link href="/sobre" className="plan-cta plan-cta-outline">Falar com a equipe</Link>
-              <p className="plan-note">Cancele quando quiser</p>
+              <p className="plan-note">15 dias grátis · Sem cartão de crédito · Cancele quando quiser</p>
             </div>
           </div>
         </div>
