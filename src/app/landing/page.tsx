@@ -171,55 +171,49 @@ export default function LandingPage() {
 
       {/* HERO */}
       <section className="ec-hero">
-        <div className="ec-hero-inner">
-          <div className="hero-content scroll-animate">
-            <div className="badge">
-              <span className="badge-dot" />
-              <span className="badge-text">SUA STYLIST COM IA</span>
-            </div>
-            <h1>
-              Seu estilo,<br />
-              <em>finalmente entendido.</em>
-            </h1>
-            <p className="sub">A Mia analisa seu closet e monta o look certo para cada dia.</p>
-            <Link href="/cadastro" className="cta-main">Começar grátis por 15 dias →</Link>
-            <div className="social-proof">
-              <span className="stars">★★★★★</span>
-              <span>500+ looks gerados esta semana</span>
-            </div>
-
-            {installPrompt && !isInstalled && (
-              <div style={{ marginTop: '12px' }}>
-                <button onClick={handleInstall} className="lp-btn-install">
-                  📲 Instalar app no celular
-                </button>
-              </div>
-            )}
-            {showIOSInstructions && (
-              <div style={{
-                marginTop: '12px',
-                padding: '10px 16px',
-                background: 'rgba(193,127,90,0.06)',
-                border: '0.5px solid rgba(193,127,90,0.25)',
-                borderRadius: '8px',
-                fontSize: '12px',
-                color: 'rgba(193,127,90,0.7)',
-                lineHeight: 1.5,
-              }}>
-                📲 Para instalar: toque em{' '}
-                <strong style={{ color: 'rgba(193,127,90,0.9)' }}>Compartilhar</strong>
-                {' '}→{' '}
-                <strong style={{ color: 'rgba(193,127,90,0.9)' }}>Adicionar à Tela de Início</strong>
-              </div>
-            )}
+        <div className="ec-hero-bg">
+          <img src="/illustrations/Hero-principal.png" alt="" aria-hidden="true" />
+        </div>
+        <div className="ec-hero-content scroll-animate">
+          <div className="badge">
+            <span className="badge-dot" />
+            <span className="badge-text">SUA STYLIST COM IA</span>
+          </div>
+          <h1>
+            Seu estilo,<br />
+            <em>finalmente entendido.</em>
+          </h1>
+          <p className="sub">A Mia analisa seu closet e monta o look certo para cada dia.</p>
+          <Link href="/cadastro" className="cta-main">Começar grátis por 15 dias →</Link>
+          <div className="social-proof">
+            <span className="stars">★★★★★</span>
+            <span>500+ looks gerados esta semana</span>
           </div>
 
-          <div className="hero-image-block scroll-animate scroll-animate-delay-2">
-            <img
-              src="/logos-mia-ai/Hero-principal.png"
-              alt="Fashion illustration"
-            />
-          </div>
+          {installPrompt && !isInstalled && (
+            <div style={{ marginTop: '12px' }}>
+              <button onClick={handleInstall} className="lp-btn-install">
+                📲 Instalar app no celular
+              </button>
+            </div>
+          )}
+          {showIOSInstructions && (
+            <div style={{
+              marginTop: '12px',
+              padding: '10px 16px',
+              background: 'rgba(193,127,90,0.06)',
+              border: '0.5px solid rgba(193,127,90,0.25)',
+              borderRadius: '8px',
+              fontSize: '12px',
+              color: 'rgba(193,127,90,0.7)',
+              lineHeight: 1.5,
+            }}>
+              📲 Para instalar: toque em{' '}
+              <strong style={{ color: 'rgba(193,127,90,0.9)' }}>Compartilhar</strong>
+              {' '}→{' '}
+              <strong style={{ color: 'rgba(193,127,90,0.9)' }}>Adicionar à Tela de Início</strong>
+            </div>
+          )}
         </div>
       </section>
 
@@ -300,7 +294,7 @@ export default function LandingPage() {
         <div className="ec-curation-inner">
           <div className="curation-image-wrap scroll-animate">
             <img
-              src="/logos-mia-ai/Curadoria.png"
+              src="/illustrations/Curadoria.png"
               alt="Armário aquarela"
               className="curation-image"
             />
