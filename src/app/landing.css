@@ -1073,6 +1073,19 @@ html.mode-dark .display {
   color: var(--ec-text-primary);
 }
 
+.ec-footer-col-title {
+  color: var(--ec-text-primary);
+}
+
+.ec-footer-links a,
+.ec-footer-links li {
+  color: var(--ec-text-secondary);
+}
+
+.ec-footer-links a:hover {
+  color: var(--ec-text-primary);
+}
+
 .ec-footer-bottom {
   margin-top: 40px;
   border-top: 0.5px solid var(--ec-border-light);
