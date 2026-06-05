@@ -87,6 +87,11 @@ export default function RootLayout({
             __html: `(function(){try{var theme=localStorage.getItem('mia_theme')||'light';document.documentElement.setAttribute('data-theme',theme);document.documentElement.setAttribute('data-auth-theme',theme);}catch(e){}})();`,
           }}
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var mode=localStorage.getItem('mia-mode')||'claire';document.documentElement.classList.toggle('mode-dark',mode==='dark');})();`,
+          }}
+        />
       </head>
       <body className={`${inter.variable} ${bebas.variable}`}>
         {children}
