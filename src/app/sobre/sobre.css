@@ -1,240 +1,251 @@
-.sobre-wrap {
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
+/* ── Força tema Claire independente do toggle dark ── */
+.sobre-page {
+  --ec-bg-primary:     #FAF8F5;
+  --ec-bg-secondary:   #F2EDE6;
+  --ec-accent:         #C17F5A;
+  --ec-accent-light:   #C4A882;
+  --ec-text-primary:   #1A1A1A;
+  --ec-text-secondary: #6B6B6B;
+  --ec-text-muted:     #9A8E84;
+  --ec-border:         #E8E2D9;
+  --ec-border-light:   #EAE4DC;
+  --ec-white:          #FFFFFF;
+  background: var(--ec-bg-primary);
+  font-family: 'Inter', sans-serif;
   min-height: 100vh;
-  background: #080808;
-  color: rgba(255,255,255,0.85);
-  font-family: var(--font-inter), sans-serif;
-  position: relative;
   overflow-x: hidden;
 }
 
-.sobre-bg-glow {
-  position: fixed;
-  top: -200px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(180,140,60,0.06) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
+/* ── Layout ── */
+.sobre-container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 40px;
 }
 
 .sobre-section {
-  padding: 72px 24px;
-  position: relative;
-  z-index: 1;
+  padding: 80px 0;
+  border-bottom: 0.5px solid var(--ec-border);
 }
 
-.sobre-section-alt {
-  background: rgba(255,255,255,0.02);
-  border-top: 0.5px solid rgba(255,255,255,0.04);
-  border-bottom: 0.5px solid rgba(255,255,255,0.04);
+.sobre-section:last-of-type {
+  border-bottom: none;
 }
 
-.sobre-inner {
-  max-width: 720px;
-  margin: 0 auto;
-}
-
-.sobre-badge {
+/* ── Label (ex-badge) ── */
+.sobre-label {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(180,140,60,0.08);
-  border: 0.5px solid rgba(180,140,60,0.25);
-  border-radius: 20px;
-  padding: 5px 14px;
+  font-family: 'Inter', sans-serif;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.08em;
-  color: rgba(180,140,60,0.9);
   text-transform: uppercase;
+  color: var(--ec-accent);
   margin-bottom: 20px;
 }
 
-.sobre-title {
-  font-family: var(--font-bebas), 'Bebas Neue', sans-serif;
-  font-size: clamp(28px, 6vw, 44px);
-  font-weight: 400;
-  line-height: 1.15;
-  color: #fff;
-  margin: 0 0 8px;
-  letter-spacing: 0.01em;
+.sobre-label-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ec-accent);
+  display: inline-block;
 }
 
-.sobre-subtitle {
-  color: rgba(180,140,60,0.85);
+/* ── Tipografia ── */
+.sobre-titulo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 48px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--ec-text-primary);
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+  text-transform: none;
+}
+
+.sobre-subtitulo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-weight: 300;
   font-style: italic;
-  font-family: var(--font-inter), sans-serif;
-  font-size: clamp(16px, 3vw, 22px);
+  color: var(--ec-accent-light);
+  margin-bottom: 40px;
+  line-height: 1.3;
+}
+
+.sobre-texto p {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
   font-weight: 400;
+  color: var(--ec-text-secondary);
+  line-height: 1.85;
+  margin-bottom: 20px;
+  max-width: 640px;
 }
 
-.sobre-divider {
-  width: 40px;
-  height: 1px;
-  background: rgba(180,140,60,0.3);
-  margin: 24px 0;
-}
-
-.sobre-body {
+/* ── Cards especialistas ── */
+.especialistas-lista {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  margin-top: 40px;
 }
 
-.sobre-body p {
-  font-size: 15px;
-  line-height: 1.8;
-  color: rgba(255,255,255,0.6);
-  margin: 0;
-}
-
-/* Cards especialistas */
-.sobre-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-top: 32px;
-}
-
-.sobre-card {
-  background: #111;
-  border: 0.5px solid rgba(180,140,60,0.15);
+.especialista-card {
+  background: var(--ec-white);
+  border: 0.5px solid var(--ec-border);
   border-radius: 12px;
-  padding: 24px;
+  padding: 28px 24px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.sobre-card-header {
+.especialista-header {
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-bottom: 12px;
 }
 
-.sobre-card-avatar {
-  width: 44px;
-  height: 44px;
+.especialista-avatar {
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: rgba(180,140,60,0.15);
-  border: 0.5px solid rgba(180,140,60,0.3);
+  background: var(--ec-bg-secondary);
+  border: 0.5px solid var(--ec-border);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ec-accent);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  font-weight: 600;
-  color: rgba(180,140,60,0.9);
   flex-shrink: 0;
 }
 
-.sobre-card-nome {
+.especialista-nome {
+  font-family: 'Inter', sans-serif;
   font-size: 15px;
-  font-weight: 600;
-  color: #fff;
+  font-weight: 500;
+  color: var(--ec-text-primary);
   margin-bottom: 2px;
 }
 
-.sobre-card-local {
-  font-size: 12px;
-  color: rgba(180,140,60,0.6);
-}
-
-.sobre-card-badge {
-  display: inline-block;
-  background: rgba(180,140,60,0.08);
-  border: 0.5px solid rgba(180,140,60,0.2);
-  border-radius: 6px;
-  padding: 3px 10px;
-  font-size: 11px;
-  color: rgba(180,140,60,0.8);
-  margin-bottom: 14px;
-}
-
-.sobre-card-texto {
+.especialista-cidade {
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
-  line-height: 1.75;
-  color: rgba(255,255,255,0.5);
-  margin: 0;
+  color: var(--ec-text-muted);
 }
 
-/* Missão */
-.sobre-quote {
-  border-left: 2px solid rgba(180,140,60,0.4);
-  padding-left: 20px;
-  margin: 0 0 24px;
-  font-size: 15px;
-  line-height: 1.8;
-  color: rgba(255,255,255,0.6);
-  font-style: normal;
-}
-
-.sobre-destaque {
-  font-size: 16px;
+.especialista-badge {
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
   font-weight: 500;
-  color: rgba(180,140,60,0.85);
+  letter-spacing: 0.04em;
+  color: var(--ec-accent);
+  background: var(--ec-bg-secondary);
+  border: 0.5px solid var(--ec-border);
+  border-radius: 999px;
+  padding: 4px 12px;
+  width: fit-content;
+}
+
+.especialista-bio {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--ec-text-secondary);
+  line-height: 1.75;
   margin: 0;
 }
 
-/* Visão */
-.sobre-visao {
-  font-size: 16px;
-  line-height: 1.8;
-  color: rgba(255,255,255,0.6);
-  margin: 0;
+/* ── Missão ── */
+.missao-citacao {
+  border-left: 2px solid var(--ec-accent);
+  padding: 4px 0 4px 24px;
+  margin: 32px 0;
 }
 
-/* Produto */
-.sobre-produto-texto {
+.missao-citacao p {
+  font-family: 'Inter', sans-serif;
   font-size: 15px;
-  line-height: 1.8;
-  color: rgba(255,255,255,0.6);
-  margin: 0 0 24px;
+  font-weight: 400;
+  color: var(--ec-text-secondary);
+  line-height: 1.85;
+  margin: 0;
 }
 
+.missao-destaque {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--ec-accent);
+  margin-top: 24px;
+  line-height: 1.5;
+}
+
+/* ── CTA ── */
+.sobre-cta {
+  display: inline-block;
+  background: var(--ec-accent);
+  color: #FAF8F5;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 14px 28px;
+  border-radius: 999px;
+  border: none;
+  margin-top: 24px;
+  cursor: pointer;
+  transition: background 200ms;
+  text-decoration: none;
+}
+
+.sobre-cta:hover { background: #A86B49; }
+
+/* ── Link inline ── */
 .sobre-link {
-  color: rgba(180,140,60,0.85);
+  color: var(--ec-accent);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
-.sobre-cta {
-  display: inline-block;
-  background: rgba(180,140,60,1);
-  color: #080808;
-  font-weight: 700;
-  font-size: 14px;
-  border-radius: 8px;
-  padding: 12px 28px;
-  text-decoration: none;
-  transition: opacity 0.2s;
-}
-
-.sobre-cta:hover {
-  opacity: 0.88;
-}
-
-/* Rodapé */
+/* ── Rodapé ── */
 .sobre-footer {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
   align-items: center;
   justify-content: center;
-  padding: 24px;
-  border-top: 0.5px solid rgba(255,255,255,0.06);
+  padding: 32px 24px;
+  border-top: 0.5px solid var(--ec-border);
 }
 
 .sobre-footer-link {
   font-size: 12px;
-  color: rgba(255,255,255,0.25);
+  color: var(--ec-text-muted);
   text-decoration: none;
-  transition: color 0.2s;
+  transition: color 200ms;
 }
 
-.sobre-footer-link:hover {
-  color: rgba(180,140,60,0.7);
-}
+.sobre-footer-link:hover { color: var(--ec-accent); }
 
-@media (max-width: 640px) {
-  .sobre-section { padding: 52px 20px; }
+/* ── Mobile ── */
+@media (max-width: 767px) {
+  .sobre-container { padding: 0 24px; }
+  .sobre-section { padding: 56px 0; }
+  .sobre-titulo { font-size: 36px; }
+  .sobre-subtitulo { font-size: 22px; }
+  .sobre-texto p { font-size: 15px; }
+  .especialista-card { padding: 20px 18px; }
+  .missao-citacao { padding-left: 16px; }
+  .missao-destaque { font-size: 18px; }
+  .sobre-cta { width: 100%; text-align: center; display: block; }
 }

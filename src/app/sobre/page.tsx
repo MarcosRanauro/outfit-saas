@@ -30,19 +30,18 @@ export default function SobrePage() {
   ]
 
   return (
-    <main className="sobre-wrap">
-      <div className="sobre-bg-glow" />
+    <main className="sobre-page">
 
       {/* SEÇÃO 1 — NOSSA HISTÓRIA */}
       <section className="sobre-section">
-        <div className="sobre-inner">
-          <div className="sobre-badge">✦ NOSSA HISTÓRIA</div>
-          <h1 className="sobre-title">
-            De vendedor a founder.<br />
-            <em className="sobre-subtitle">Da necessidade ao produto.</em>
-          </h1>
-          <div className="sobre-divider" />
-          <div className="sobre-body">
+        <div className="sobre-container">
+          <div className="sobre-label">
+            <span className="sobre-label-dot" />
+            Nossa História
+          </div>
+          <h1 className="sobre-titulo">De vendedor a founder.</h1>
+          <p className="sobre-subtitulo">Da necessidade ao produto.</p>
+          <div className="sobre-texto">
             <p>Tudo começou com um problema simples e muito real.</p>
             <p>
               Marcos Ranauro vendia roupas — Nike, Adidas, Farm, entre outras marcas. Bom nisso, mas sentia
@@ -68,15 +67,15 @@ export default function SobrePage() {
       </section>
 
       {/* SEÇÃO 2 — A CURADORIA */}
-      <section className="sobre-section sobre-section-alt">
-        <div className="sobre-inner">
-          <div className="sobre-badge">✦ A CURADORIA</div>
-          <h2 className="sobre-title">
-            Por trás de cada sugestão da Mia,<br />
-            <em className="sobre-subtitle">há anos de experiência real.</em>
-          </h2>
-          <div className="sobre-divider" />
-          <div className="sobre-body">
+      <section className="sobre-section">
+        <div className="sobre-container">
+          <div className="sobre-label">
+            <span className="sobre-label-dot" />
+            A Curadoria
+          </div>
+          <h2 className="sobre-titulo">Por trás de cada sugestão da Mia,</h2>
+          <p className="sobre-subtitulo">há anos de experiência real.</p>
+          <div className="sobre-texto">
             <p>
               A Mia não foi treinada apenas com dados. Foi construída com o olhar de profissionais que
               entendem de gente — de corpos diferentes, estilos diferentes, realidades diferentes.
@@ -84,18 +83,18 @@ export default function SobrePage() {
             <p>Três especialistas contribuíram para moldar como a Mia pensa:</p>
           </div>
 
-          <div className="sobre-cards">
+          <div className="especialistas-lista">
             {especialistas.map((e) => (
-              <div key={e.nome} className="sobre-card">
-                <div className="sobre-card-header">
-                  <div className="sobre-card-avatar">{e.inicial}</div>
+              <div key={e.nome} className="especialista-card">
+                <div className="especialista-header">
+                  <div className="especialista-avatar">{e.inicial}</div>
                   <div>
-                    <div className="sobre-card-nome">{e.nome}</div>
-                    <div className="sobre-card-local">{e.localizacao}</div>
+                    <div className="especialista-nome">{e.nome}</div>
+                    <div className="especialista-cidade">{e.localizacao}</div>
                   </div>
                 </div>
-                <div className="sobre-card-badge">{e.especialidade}</div>
-                <p className="sobre-card-texto">{e.texto}</p>
+                <div className="especialista-badge">{e.especialidade}</div>
+                <p className="especialista-bio">{e.texto}</p>
               </div>
             ))}
           </div>
@@ -104,48 +103,61 @@ export default function SobrePage() {
 
       {/* SEÇÃO 3 — MISSÃO */}
       <section className="sobre-section">
-        <div className="sobre-inner">
-          <div className="sobre-badge">✦ MISSÃO</div>
-          <h2 className="sobre-title">
-            Democratizar o acesso<br />
-            <em className="sobre-subtitle">à moda de verdade.</em>
-          </h2>
-          <div className="sobre-divider" />
-          <blockquote className="sobre-quote">
-            Acreditamos que estilo não é privilégio de quem tem dinheiro para pagar uma consultora.
-            Que se vestir bem não depende de ter o armário cheio — depende de saber o que você tem e como
-            combinar. Que com as peças certas e a orientação certa, qualquer pessoa consegue se sentir bem
-            do jeito que é.
-          </blockquote>
-          <p className="sobre-destaque">
+        <div className="sobre-container">
+          <div className="sobre-label">
+            <span className="sobre-label-dot" />
+            Missão
+          </div>
+          <h2 className="sobre-titulo">Democratizar o acesso</h2>
+          <p className="sobre-subtitulo">à moda de verdade.</p>
+          <div className="missao-citacao">
+            <p>
+              Acreditamos que estilo não é privilégio de quem tem dinheiro para pagar uma consultora.
+              Que se vestir bem não depende de ter o armário cheio — depende de saber o que você tem e como
+              combinar. Que com as peças certas e a orientação certa, qualquer pessoa consegue se sentir bem
+              do jeito que é.
+            </p>
+          </div>
+          <p className="missao-destaque">
             A Mia existe para provar que com pouco também se tem estilo.
           </p>
         </div>
       </section>
 
       {/* SEÇÃO 4 — VISÃO */}
-      <section className="sobre-section sobre-section-alt">
-        <div className="sobre-inner">
-          <div className="sobre-badge">✦ VISÃO</div>
-          <p className="sobre-visao">
-            Ser a stylist pessoal de cada brasileiro — independente de onde mora, quanto ganha ou como se
-            veste hoje. Uma IA que cresce com você, aprende seu estilo e te ajuda a se expressar com
-            confiança todos os dias.
-          </p>
+      <section className="sobre-section">
+        <div className="sobre-container">
+          <div className="sobre-label">
+            <span className="sobre-label-dot" />
+            Visão
+          </div>
+          <h2 className="sobre-titulo">Nossa visão</h2>
+          <div className="sobre-texto">
+            <p>
+              Ser a stylist pessoal de cada brasileiro — independente de onde mora, quanto ganha ou como se
+              veste hoje. Uma IA que cresce com você, aprende seu estilo e te ajuda a se expressar com
+              confiança todos os dias.
+            </p>
+          </div>
         </div>
       </section>
 
       {/* SEÇÃO 5 — O PRODUTO */}
       <section className="sobre-section">
-        <div className="sobre-inner">
-          <div className="sobre-badge">✦ O PRODUTO</div>
-          <p className="sobre-produto-texto">
-            A Mia é acessível em{' '}
-            <a href="https://miaoutfitai.com.br" className="sobre-link">
-              miaoutfitai.com.br
-            </a>
-            . Gratuita para começar, sem necessidade de cartão de crédito.
-          </p>
+        <div className="sobre-container">
+          <div className="sobre-label">
+            <span className="sobre-label-dot" />
+            O Produto
+          </div>
+          <div className="sobre-texto">
+            <p>
+              A Mia é acessível em{' '}
+              <a href="https://miaoutfitai.com.br" className="sobre-link">
+                miaoutfitai.com.br
+              </a>
+              . Gratuita para começar, sem necessidade de cartão de crédito.
+            </p>
+          </div>
           <Link href="/cadastro" className="sobre-cta">
             Começar grátis →
           </Link>
