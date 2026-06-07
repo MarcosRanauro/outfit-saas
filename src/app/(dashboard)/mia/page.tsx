@@ -70,6 +70,7 @@ export default function MiaPage() {
   const router = useRouter()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const autoMessageSent = useRef(false)
 
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -252,6 +253,16 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
 
     setLoading(false)
   }
+
+  useEffect(() => {
+    if (autoMessageSent.current || messages.length === 0 || loading) return
+    const autoMsg = sessionStorage.getItem('mia_auto_message')
+    if (!autoMsg) return
+    sessionStorage.removeItem('mia_auto_message')
+    autoMessageSent.current = true
+    sendMessage(autoMsg)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages.length, loading])
 
   async function handleSaveOutfit(outfit: OutfitCard, msgIndex: number, outfitIndex: number) {
     const saveKey = `${msgIndex}-${outfitIndex}`
