@@ -1,14 +1,22 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
-import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import DashboardTopBanner from '@/components/layout/DashboardTopBanner'
-import '../../lookbook.css'
+import { createClient } from '@/lib/supabase/client'
+import LookbookFiltersDrawer, { LookbookFilters } from '@/components/lookbook/LookbookFiltersDrawer'
 
-const DAY_OCCASIONS = ['Todos', 'Dia a Dia', 'Shopping', 'Amigos', 'Viagem', 'Faculdade', 'Trabalho', 'Reunião', 'Academia', 'Café', 'Praia', 'Lazer', 'Ensaio', 'Evento Cultural', 'Ao Ar Livre']
-const NIGHT_OCCASIONS = ['Todos', 'Aniversário', 'Balada', 'Jantar', 'Show', 'Festa', 'Cinema', 'Jogos', 'Bar', 'Encontro', 'Karaokê', 'Festival', 'Passeio Noturno', 'Evento Social', 'Cassino']
+const QUICK_OCCASION_CHIPS = [
+  'Dia a Dia', 'Shopping', 'Amigos', 'Viagem', 'Faculdade', 'Trabalho', 'Reunião',
+  'Academia', 'Café', 'Praia', 'Lazer', 'Ensaio', 'Evento Cultural', 'Ao Ar Livre',
+]
+
+const EMPTY_FILTERS: LookbookFilters = {
+  periodo: [],
+  ocasiao: [],
+  estilo: [],
+  estacao: [],
+}
 
 type Outfit = {
   id: string
@@ -26,37 +34,107 @@ type Piece = {
   id: string
   name: string
   category: string
+  season: string | null
   photo_url: string | null
 }
 
-function getCategoryForTryOn(category: string): string {
-  const bottomsCategories = ['Calça', 'Short / Bermuda', 'Saia', 'Macacão']
-  const topsCategories = ['Camiseta / Blusa', 'Camisa', 'Moletom', 'Casaco / Jaqueta', 'Vestido']
-  if (bottomsCategories.includes(category)) return 'bottoms'
-  if (topsCategories.includes(category)) return 'tops'
-  return 'tops'
+function formatPeriod(period: string): string {
+  return period === 'noite' ? 'Noite' : 'Dia'
+}
+
+interface OutfitCardProps {
+  outfit: Outfit
+  outfitPieces: Piece[]
+  activePiece: number
+  onActivePieceChange: (index: number) => void
+  onDelete: (id: string) => void
+  onNavigate: (id: string) => void
+}
+
+function OutfitCard({
+  outfit,
+  outfitPieces,
+  activePiece,
+  onActivePieceChange,
+  onDelete,
+  onNavigate,
+}: OutfitCardProps) {
+  const mainPhotoUrl = outfitPieces[activePiece]?.photo_url ?? outfitPieces[0]?.photo_url ?? null
+  const description = outfit.subtitle || outfit.why || ''
+
+  return (
+    <div className="outfit-card" onClick={() => onNavigate(outfit.id)}>
+      <div className="outfit-card-body">
+        <div className="outfit-card-photo">
+          {mainPhotoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={mainPhotoUrl} alt={outfit.name} />
+          ) : (
+            <div style={{ width: '100%', height: '100%' }} />
+          )}
+        </div>
+
+        <div className="outfit-card-info">
+          <span className="outfit-occasion">
+            {outfit.occasion || 'Sem ocasião'} · {formatPeriod(outfit.period)}
+          </span>
+          <h3 className="outfit-name">{outfit.name}</h3>
+          {description && <p className="outfit-desc">{description}</p>}
+          {outfit.style_tags?.length > 0 && (
+            <div className="outfit-tags">
+              {outfit.style_tags.map(tag => (
+                <span key={tag} className="outfit-tag">{tag}</span>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="outfit-card-footer">
+        <div className="outfit-thumbs">
+          {outfitPieces.map((piece, i) => (
+            <div
+              key={piece.id}
+              className={`outfit-thumb ${i === activePiece ? 'active' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation()
+                onActivePieceChange(i)
+              }}
+            >
+              {piece.photo_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={piece.photo_url} alt={piece.name} />
+              ) : null}
+            </div>
+          ))}
+        </div>
+        <button
+          className="outfit-delete"
+          onClick={(e) => {
+            e.stopPropagation()
+            onDelete(outfit.id)
+          }}
+        >
+          Excluir
+        </button>
+      </div>
+    </div>
+  )
 }
 
 export default function LookbookPage() {
+  const router = useRouter()
   const supabase = createClient()
 
   const [outfits, setOutfits] = useState<Outfit[]>([])
   const [pieces, setPieces] = useState<Record<string, Piece>>({})
   const [loading, setLoading] = useState(true)
-  const [period, setPeriod] = useState('dia')
-  const [occasion, setOccasion] = useState('Todos')
-  const [selectedOutfit, setSelectedOutfit] = useState<Outfit | null>(null)
-  const [modalOpen, setModalOpen] = useState(false)
-  const [deleting, setDeleting] = useState(false)
-  const [userPlan, setUserPlan] = useState<string>('free')
+  const [activePieces, setActivePieces] = useState<Record<string, number>>({})
 
-  const [tryOnOpen, setTryOnOpen] = useState(false)
-  const [tryOnOutfit, setTryOnOutfit] = useState<Outfit | null>(null)
-  const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null)
-  const [modelPhoto, setModelPhoto] = useState<string | null>(null)
-  const [tryOnLoading, setTryOnLoading] = useState(false)
-  const [tryOnResult, setTryOnResult] = useState<string | null>(null)
-  const [tryOnError, setTryOnError] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
+  const [filters, setFilters] = useState<LookbookFilters>(EMPTY_FILTERS)
+  const [activeChips, setActiveChips] = useState<string[]>([])
+  const [filterOpen, setFilterOpen] = useState(false)
 
   async function loadData() {
     const { data: { user } } = await supabase.auth.getUser()
@@ -70,14 +148,8 @@ export default function LookbookPage() {
 
     const { data: piecesData } = await supabase
       .from('pieces')
-      .select('*')
+      .select('id, name, category, season, photo_url')
       .eq('user_id', user.id)
-
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('plan')
-      .eq('id', user.id)
-      .single()
 
     if (outfitsData) setOutfits(outfitsData)
     if (piecesData) {
@@ -85,7 +157,6 @@ export default function LookbookPage() {
       piecesData.forEach(p => { map[p.id] = p })
       setPieces(map)
     }
-    setUserPlan(profileData?.plan || 'free')
 
     setLoading(false)
   }
@@ -96,125 +167,82 @@ export default function LookbookPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  async function handleDelete() {
-    if (!selectedOutfit) return
-    setDeleting(true)
+  async function confirmDelete(outfitId: string) {
+    if (!window.confirm('Excluir este outfit do lookbook?')) return
 
     try {
       const { error } = await supabase
         .from('outfits')
         .delete()
-        .eq('id', selectedOutfit.id)
+        .eq('id', outfitId)
 
       if (error) throw error
-
-      setOutfits(prev => prev.filter(o => o.id !== selectedOutfit.id))
-      setSelectedOutfit(null)
-      setModalOpen(false)
+      setOutfits(prev => prev.filter(o => o.id !== outfitId))
     } catch (err) {
       console.error('Erro ao deletar outfit:', err)
       alert('Erro ao excluir outfit. Tente novamente.')
-    } finally {
-      setDeleting(false)
     }
   }
 
-  async function handleTryOn() {
-    if (!modelPhoto || !selectedPiece) return
-    setTryOnLoading(true)
-    setTryOnError(null)
+  function resetFilters() {
+    setFilters(EMPTY_FILTERS)
+    setActiveChips([])
+  }
 
-    try {
-      if (!selectedPiece.photo_url) {
-        setTryOnError('Selecione uma peça para experimentar')
-        setTryOnLoading(false)
-        return
-      }
+  function toggleChip(occ: string) {
+    setActiveChips(prev =>
+      prev.includes(occ) ? prev.filter(x => x !== occ) : [...prev, occ]
+    )
+  }
 
-      const res = await fetch('/api/tryon', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          modelImage: modelPhoto,
-          garmentImage: selectedPiece.photo_url,
-          category: getCategoryForTryOn(selectedPiece.category),
-        }),
-      })
+  const activeFilterCount =
+    filters.periodo.length +
+    filters.ocasiao.length +
+    filters.estilo.length +
+    filters.estacao.length
 
-      const data = await res.json()
+  const hasActiveFilters = activeFilterCount > 0 || activeChips.length > 0
 
-      if (!res.ok) {
-        setTryOnError(data.error || 'Erro ao processar')
-        setTryOnLoading(false)
-        return
-      }
-
-      const predictionId = data.predictionId
-      let attempts = 0
-      const maxAttempts = 30
-
-      const poll = async () => {
-        if (attempts >= maxAttempts) {
-          setTryOnError('Tempo limite excedido. Tente novamente.')
-          setTryOnLoading(false)
-          return
-        }
-
-        const statusRes = await fetch(`/api/tryon/status?id=${predictionId}`)
-        const statusData = await statusRes.json()
-
-        if (statusData.status === 'completed') {
-          setTryOnResult(statusData.output?.[0] || null)
-          setTryOnLoading(false)
-        } else if (statusData.status === 'failed') {
-          setTryOnError('Falha ao gerar imagem. Tente novamente.')
-          setTryOnLoading(false)
-        } else {
-          attempts++
-          setTimeout(poll, 1000)
-        }
-      }
-
-      poll()
-
-    } catch {
-      setTryOnError('Erro de conexão. Tente novamente.')
-      setTryOnLoading(false)
+  const filtered = outfits.filter(outfit => {
+    if (search && !outfit.name.toLowerCase().includes(search.toLowerCase())) {
+      return false
     }
-  }
 
-  function closeTryOn() {
-    setTryOnOpen(false)
-    setSelectedPiece(null)
-    setTryOnResult(null)
-    setModelPhoto(null)
-    setTryOnError(null)
-  }
-
-  const tagClass = (tag: string) => {
-    const map: Record<string, string> = {
-      'Neutro': 'tag-neutro',
-      'Statement': 'tag-statement',
-      'Retrô': 'tag-retro',
-      'Cor Forte': 'tag-cor',
-      'Casual': 'tag-casual',
-      'Conjunto': 'tag-conjunto',
+    if (filters.periodo.length > 0 && !filters.periodo.includes(outfit.period)) {
+      return false
     }
-    return map[tag] || 'tag-neutro'
-  }
 
-  const filtered = outfits.filter(o => {
-    const matchPeriod = o.period === period
-    const matchOccasion = occasion === 'Todos' || o.occasion === occasion
-    return matchPeriod && matchOccasion
+    const activeOcasiao = [...filters.ocasiao, ...activeChips]
+    if (activeOcasiao.length > 0) {
+      if (!outfit.occasion || !activeOcasiao.some(o => outfit.occasion === o)) {
+        return false
+      }
+    }
+
+    if (filters.estilo.length > 0) {
+      const tags = outfit.style_tags ?? []
+      const match = filters.estilo.some(e =>
+        tags.some(tag => tag.toLowerCase() === e.toLowerCase())
+      )
+      if (!match) return false
+    }
+
+    if (filters.estacao.length > 0) {
+      const outfitSeasons = outfit.pieces
+        .map(id => pieces[id]?.season)
+        .filter((s): s is string => Boolean(s))
+      const match = filters.estacao.some(s => outfitSeasons.includes(s))
+      if (!match) return false
+    }
+
+    return true
   })
 
-  const occasions = period === 'dia' ? DAY_OCCASIONS : NIGHT_OCCASIONS
+  const hasOutfits = outfits.length > 0
+  const hasResults = filtered.length > 0
 
   return (
     <>
-      <DashboardTopBanner />
-
       <div className="lookbook-header">
         <h1 className="lookbook-title">
           Look<span>book</span>
@@ -222,27 +250,32 @@ export default function LookbookPage() {
         <span className="lookbook-count">{outfits.length} outfits</span>
       </div>
 
-      <div className="lookbook-period-row">
+      <div className="lookbook-search-row">
+        <div className="lookbook-search">
+          <span className="lookbook-search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Buscar outfits..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="lookbook-search-input"
+          />
+        </div>
         <button
-          className={`lookbook-period-btn ${period === 'dia' ? 'active' : ''}`}
-          onClick={() => { setPeriod('dia'); setOccasion('Todos') }}
+          className={`lookbook-filter-btn ${hasActiveFilters ? 'has-filters' : ''}`}
+          onClick={() => setFilterOpen(true)}
+          aria-label="Abrir filtros"
         >
-          ☀️ Dia
-        </button>
-        <button
-          className={`lookbook-period-btn ${period === 'noite' ? 'active' : ''}`}
-          onClick={() => { setPeriod('noite'); setOccasion('Todos') }}
-        >
-          🌙 Noite
+          ⊟
         </button>
       </div>
 
-      <div className="lookbook-occ-row">
-        {occasions.map(occ => (
+      <div className="lookbook-chips">
+        {QUICK_OCCASION_CHIPS.map(occ => (
           <button
             key={occ}
-            className={`lookbook-occ-chip ${occasion === occ ? 'active' : ''}`}
-            onClick={() => setOccasion(occ)}
+            className={`lookbook-chip ${activeChips.includes(occ) ? 'active' : ''}`}
+            onClick={() => toggleChip(occ)}
           >
             {occ}
           </button>
@@ -251,18 +284,24 @@ export default function LookbookPage() {
 
       {loading ? (
         <div className="lookbook-empty">
-          <div className="lookbook-empty-text">Carregando...</div>
+          <p className="lookbook-loading">Carregando...</p>
         </div>
-      ) : filtered.length === 0 ? (
+      ) : !hasOutfits ? (
         <div className="lookbook-empty">
-          <div className="lookbook-empty-icon">✦</div>
-          <div className="lookbook-empty-text">
-            Nenhum outfit salvo aqui ainda.{'\n'}
-            Gere outfits na aba IA e salve os que gostar.
-          </div>
-          <Link href="/outfit-ia" className="lookbook-empty-link">
-            Ir para Outfit IA
+          <h2 className="lookbook-empty-title">Nenhum outfit aqui ainda.</h2>
+          <p className="lookbook-empty-sub">
+            Gere outfits com a Mia e salve os que gostar.
+          </p>
+          <Link href="/mia" className="lookbook-empty-cta">
+            Gerar outfits
           </Link>
+        </div>
+      ) : !hasResults ? (
+        <div className="lookbook-empty">
+          <h2 className="lookbook-empty-title">Nenhum outfit encontrado.</h2>
+          <p className="lookbook-empty-sub">
+            Tente outro termo de busca ou ajuste os filtros.
+          </p>
         </div>
       ) : (
         <div className="lookbook-list">
@@ -272,274 +311,30 @@ export default function LookbookPage() {
               .filter(Boolean)
 
             return (
-              <div
+              <OutfitCard
                 key={outfit.id}
-                className="lookbook-card"
-                onClick={() => {
-                  setSelectedOutfit(outfit)
-                  setModalOpen(true)
+                outfit={outfit}
+                outfitPieces={outfitPieces}
+                activePiece={activePieces[outfit.id] ?? 0}
+                onActivePieceChange={(index) => {
+                  setActivePieces(prev => ({ ...prev, [outfit.id]: index }))
                 }}
-              >
-                <div className="lookbook-card-photos">
-                  {[0, 1, 2].map(i => (
-                    <div key={i} className="lookbook-card-photo">
-                      {outfitPieces[i]?.photo_url ? (
-                        <Image src={outfitPieces[i].photo_url!} alt={outfitPieces[i].name} fill sizes="(max-width: 768px) 33vw, 130px" />
-                      ) : (
-                        <div className="lookbook-photo-empty" />
-                      )}
-                      {i === 2 && outfitPieces.length > 3 && (
-                        <span className="pieces-badge-more">+{outfitPieces.length - 3}</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <div className="lookbook-card-body">
-                  <div className="lookbook-card-info">
-                    <div className="lookbook-card-name">{outfit.name}</div>
-                    <div className="lookbook-card-sub">{outfit.subtitle}</div>
-                    <div className="lookbook-card-bottom">
-                      <div className="lookbook-card-tags">
-                        {outfit.style_tags?.slice(0, 2).map(tag => (
-                          <span key={tag} className={`tag ${tagClass(tag)}`}>{tag}</span>
-                        ))}
-                      </div>
-                      {outfit.occasion && (
-                        <span className="lookbook-card-occ">{outfit.occasion}</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
+                onDelete={confirmDelete}
+                onNavigate={(id) => router.push(`/lookbook/${id}`)}
+              />
             )
           })}
         </div>
       )}
 
-      {/* Modal detalhe */}
-      <div className={`lookbook-modal ${modalOpen ? 'open' : ''}`}>
-        <button
-          className="lookbook-modal-close"
-          onClick={() => {
-            setModalOpen(false)
-            setSelectedOutfit(null)
-          }}
-        >
-          ✕
-        </button>
-
-        <div className="lookbook-modal-inner">
-          {selectedOutfit && (() => {
-            const outfitPieces = selectedOutfit.pieces
-              .map(id => pieces[id])
-              .filter(Boolean)
-
-            return (
-              <>
-                <div className="lookbook-detail-photos" style={{
-                  gridTemplateColumns: outfitPieces.length === 4 ? '1fr 1fr' : '1fr 1fr 1fr'
-                }}>
-                  {outfitPieces.map((piece, i) => (
-                    <div
-                      key={i}
-                      className="lookbook-detail-photo"
-                      style={outfitPieces.length === 5 && i === 4 ? { gridColumnStart: '3' } : undefined}
-                    >
-                      {piece.photo_url ? (
-                        <Image src={piece.photo_url!} alt={piece.name} fill sizes="(max-width: 768px) 33vw, 200px" />
-                      ) : (
-                        <div className="lookbook-piece-placeholder" />
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="lookbook-detail-title">{selectedOutfit.name}</div>
-                <div className="lookbook-detail-sub">{selectedOutfit.subtitle}</div>
-
-                <div className="lookbook-detail-tags">
-                  {selectedOutfit.style_tags?.map(tag => (
-                    <span key={tag} className={`tag ${tagClass(tag)}`}>{tag}</span>
-                  ))}
-                </div>
-
-                <div className="lookbook-detail-section">Peças do Outfit</div>
-
-                {outfitPieces.map((piece, i) => (
-                  <div key={i} className="lookbook-detail-piece">
-                    <div className="lookbook-detail-piece-photo">
-                      {piece.photo_url ? (
-                        <Image src={piece.photo_url} alt={piece.name} fill sizes="42px" />
-                      ) : (
-                        <div className="lookbook-piece-placeholder--sm" />
-                      )}
-                    </div>
-                    <div>
-                      <div className="lookbook-detail-piece-name">{piece.name}</div>
-                      <div className="lookbook-detail-piece-cat">{piece.category}</div>
-                    </div>
-                  </div>
-                ))}
-
-                {selectedOutfit.why && (
-                  <div className="lookbook-why">
-                    <div className="lookbook-why-label">Por que funciona</div>
-                    <div className="lookbook-why-text">{selectedOutfit.why}</div>
-                  </div>
-                )}
-
-                <div className="lookbook-detail-actions">
-                  {userPlan === 'pro' && (
-                    <button
-                      className="tryon-btn"
-                      onClick={() => {
-                        setTryOnOutfit(selectedOutfit)
-                        setTryOnOpen(true)
-                        setTryOnResult(null)
-                        setTryOnError(null)
-                        setModelPhoto(null)
-                        setSelectedPiece(null)
-                      }}
-                    >
-                      👤 Experimentar look
-                    </button>
-                  )}
-
-                  <button
-                    className="delete-outfit-btn"
-                    onClick={handleDelete}
-                    disabled={deleting}
-                  >
-                    {deleting ? 'Removendo...' : 'Remover do Lookbook'}
-                  </button>
-                </div>
-              </>
-            )
-          })()}
-        </div>
-      </div>
-
-      {/* Modal Try-On */}
-      {tryOnOpen && tryOnOutfit && (
-        <div className="tryon-overlay" onClick={closeTryOn}>
-          <div className="tryon-modal" onClick={e => e.stopPropagation()}>
-
-            <div className="tryon-header">
-              <div className="tryon-title">👤 Experimentar Look</div>
-              <button className="tryon-close" onClick={closeTryOn}>✕</button>
-            </div>
-
-            {!tryOnResult ? (
-              <>
-                <div className="tryon-piece-selector">
-                  <p className="tryon-subtitle">Escolha qual peça quer experimentar:</p>
-                  <div className="tryon-pieces-grid">
-                    {tryOnOutfit.pieces
-                      .map(id => pieces[id])
-                      .filter(p => p?.photo_url)
-                      .map(piece => (
-                        <div
-                          key={piece.id}
-                          className={`tryon-piece-option ${selectedPiece?.id === piece.id ? 'selected' : ''}`}
-                          onClick={() => setSelectedPiece(
-                            selectedPiece?.id === piece.id ? null : piece
-                          )}
-                        >
-                          <img
-                            src={piece.photo_url!}
-                            alt={piece.name}
-                            className="tryon-piece-thumb"
-                          />
-                          <span className="tryon-piece-name">{piece.name}</span>
-                        </div>
-                      ))
-                    }
-                  </div>
-                </div>
-
-                {selectedPiece && !modelPhoto && (
-                  <label className="tryon-upload">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      style={{ display: 'none' }}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        if (!file) return
-                        const reader = new FileReader()
-                        reader.onload = (ev) => {
-                          setModelPhoto(ev.target?.result as string)
-                        }
-                        reader.readAsDataURL(file)
-                      }}
-                    />
-                    <div className="tryon-upload-icon">📸</div>
-                    <div className="tryon-upload-text">Toque para enviar sua foto</div>
-                    <div className="tryon-upload-hint">Foto de corpo inteiro, boa iluminação</div>
-                  </label>
-                )}
-
-                {!selectedPiece && (
-                  <p className="tryon-select-hint">
-                    Selecione uma peça acima para continuar
-                  </p>
-                )}
-
-                {selectedPiece && modelPhoto && (
-                  <div className="tryon-preview">
-                    <img src={modelPhoto} alt="Sua foto" className="tryon-preview-img" />
-                    <button
-                      className="tryon-change-photo"
-                      onClick={() => setModelPhoto(null)}
-                    >
-                      Trocar foto
-                    </button>
-                  </div>
-                )}
-
-                {tryOnError && (
-                  <div className="tryon-error">{tryOnError}</div>
-                )}
-
-                <button
-                  className="tryon-generate-btn"
-                  onClick={handleTryOn}
-                  disabled={!selectedPiece || !modelPhoto || tryOnLoading}
-                >
-                  {tryOnLoading ? (
-                    <span>⏳ Gerando... pode levar até 20s</span>
-                  ) : (
-                    <span>✦ Experimentar agora</span>
-                  )}
-                </button>
-              </>
-            ) : (
-              <div className="tryon-result">
-                <img src={tryOnResult} alt="Try-on resultado" className="tryon-result-img" />
-                <div className="tryon-result-actions">
-                  <button
-                    className="tryon-generate-btn"
-                    onClick={() => {
-                      setTryOnResult(null)
-                      setModelPhoto(null)
-                    }}
-                  >
-                    Tentar novamente
-                  </button>
-                  <a
-                    href={tryOnResult}
-                    download="mia-look.jpg"
-                    className="tryon-download-btn"
-                  >
-                    ⬇ Salvar foto
-                  </a>
-                </div>
-              </div>
-            )}
-
-          </div>
-        </div>
-      )}
+      <LookbookFiltersDrawer
+        open={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        onReset={resetFilters}
+        filters={filters}
+        setFilters={setFilters}
+        filteredCount={filtered.length}
+      />
     </>
   )
 }

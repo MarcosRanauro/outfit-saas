@@ -203,6 +203,19 @@ export default function ClosetPage() {
   }, [])
 
   useEffect(() => {
+    if (loading || pieces.length === 0) return
+    const params = new URLSearchParams(window.location.search)
+    const pieceId = params.get('piece')
+    if (!pieceId) return
+    const piece = pieces.find(p => p.id === pieceId)
+    if (piece) {
+      setSelectedPiece(piece)
+      setDetailOpen(true)
+      window.history.replaceState({}, '', '/closet')
+    }
+  }, [loading, pieces])
+
+  useEffect(() => {
     if (!tourOpen) return
     const refs = [suggestBtnRef, wishlistBtnRef, fabRef]
     const el = refs[tourStep]?.current

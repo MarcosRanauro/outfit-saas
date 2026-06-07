@@ -8,178 +8,166 @@
 ## 1. Estado atual do projeto
 
 **Status:** Em produção
-**Versão:** 1.3.0
+**Versão:** 1.4.0
 **Última atualização:** 2026-06-07
 **Domínio:** miaoutfitai.com.br
-**Próxima ação recomendada:** Redesign visual do app interno (closet, lookbook, chat Mia, perfil) seguindo o sistema de design Édition Claire / Dark Edition já implementado na landing e login.
+**Próxima ação recomendada:** Redesign visual do Chat da Mia e Perfil seguindo o sistema Édition Claire / Dark Edition.
 
 ---
 
 ## 2. O que já está funcionando
 
 ### Infraestrutura
-- [x] Next.js 16 App Router + TypeScript + Tailwind CSS v4
+- [x] Next.js 15 App Router + TypeScript + Tailwind CSS v4
 - [x] Supabase (PostgreSQL + Auth + Storage) — região São Paulo
 - [x] Vercel — domínio miaoutfitai.com.br com redirect www → sem www (308)
-- [x] PWA completo (service worker `/sw.js`, manifest, instalação Android e iOS)
+- [x] PWA completo (service worker, manifest, instalação Android e iOS)
 - [x] Google Analytics (G-BE79RBHKKT)
 
 ### Autenticação
 - [x] Login email/senha + Google OAuth
-- [x] Recuperação de senha (`/esqueci-senha`) e confirmação de e-mail
+- [x] Recuperação de senha e confirmação de e-mail
 - [x] Trigger automático de criação de perfil no cadastro
-- [x] Middleware de proteção de rotas autenticadas (`src/middleware.ts`)
+- [x] Middleware de proteção de rotas autenticadas
 
-### Sistema visual (landing + auth)
-- [x] Dois modos visuais: Édition Claire (claro) e Dark Edition (escuro)
-- [x] Toggle pill "Édition Claire / Dark Edition" com persistência em `localStorage` (`mia-mode`)
-- [x] Variáveis CSS `--ec-*` para todos os elementos — troca de modo via classe `html.mode-dark`
-- [x] Landing page redesenhada nos dois modos (`/landing`, desktop + mobile)
-- [x] Página de login/cadastro com split screen 60/40 (ilustração + formulário)
-- [x] Página `/sobre` no padrão Édition Claire
+### Sistema visual
+- [x] Dois modos: Édition Claire (claro) e Dark Edition (escuro)
+- [x] Toggle pill "Édition Claire / Dark Edition" com persistência em localStorage
+- [x] Variáveis CSS `--ec-*` — troca de modo via classe `html.mode-dark`
+- [x] Landing page redesenhada nos dois modos (desktop + mobile)
+- [x] Login/cadastro com split screen 60/40 (ilustração aquarela + formulário)
+- [x] Página /sobre no padrão Édition Claire
 - [x] Fontes: Cormorant Garamond (Claire) + Inter 300 (Dark)
-- [x] `ModeToggle` no closet (componente reutilizável em `src/components/ui/ModeToggle.tsx`)
 
 ### Closet
-- [x] CRUD de peças com upload de foto e compressão automática
-- [x] Galeria de até 6 fotos por peça com seleção de capa (Nova Peça)
-- [x] Análise automática de peças com visão computacional (Mia) — badge MIA nos campos
-- [x] Campos: categoria, cor primária, cor secundária, descrição, notas, fit, estação, estilo
+- [x] CRUD de peças com upload, compressão e moderação automática
+- [x] Galeria de até 6 fotos por peça com seleção de capa
+- [x] Análise automática com visão computacional (Mia) — badge MIA nos campos
+- [x] Campos: categoria, cor primária/secundária, descrição, notas, fit, estação, estilo
 - [x] Grid 1–5 colunas com persistência via localStorage
 - [x] Drawer de filtros (desktop) / bottom sheet (mobile)
 - [x] Chips de grupo: Todos / Roupas / Calçados / Acessórios
-- [x] Peça âncora (fixar uma peça para gerar outfits a partir dela — `sessionStorage`)
+- [x] Peça âncora
 - [x] Foto de estúdio com fundo branco (Remove.bg)
-- [x] Virtual Try-On com FASHN.ai (seleção múltipla e sequencial)
-- [x] Moderação de conteúdo com OpenAI Moderation API antes de qualquer upload
-- [x] Tour guiado do closet (exibido uma vez após onboarding — `closet_tour_completed`)
-- [x] `object-position: top` nos cards (não corta colarinho/ombros)
-- [x] `object-fit: contain` no detalhe (peça inteira visível)
-
-### Outfit IA
-- [x] Geração de 5 outfits por vez com clima real (Open-Meteo + geolocalização)
-- [x] Seleção de período do dia e ocasião
-- [x] Bloqueio de peças já usadas entre gerações
-- [x] Salvar outfits no Lookbook
+- [x] Virtual Try-On com FASHN.ai
+- [x] Moderação OpenAI antes de qualquer upload
+- [x] object-position: top nos cards (não corta colarinho/ombros)
+- [x] object-fit: contain no detalhe (peça inteira visível)
+- [x] Sistema visual --ec-* aplicado (header, cards, drawer, chips, bottom nav)
 
 ### Lookbook
-- [x] Outfits salvos com filtros por período e ocasião
-- [x] Modal de detalhe e exclusão
+- [x] Banner/header antigo removido — usa header padrão do app
+- [x] Cards com layout split: foto principal esquerda (42%) + info/thumbs direita
+- [x] Thumbs das peças na base do card (52×52px) com borda ativa em `var(--ec-accent)`
+- [x] Grid 2 colunas no desktop, 1 coluna no mobile
+- [x] Busca por nome do outfit em tempo real
+- [x] Chips de ocasião com scroll horizontal e fade nas bordas
+- [x] Drawer de filtros: Período, Ocasião, Estilo, Estação
+- [x] Toggle Dia/Noite dentro do drawer (removido standalone)
+- [x] Página de detalhe do outfit — split 50/50, foto sticky no desktop
+- [x] Thumbs no detalhe trocam a foto principal (não redirecionam para o closet)
+- [x] object-fit: contain no detalhe (peça inteira visível)
+- [x] Sistema visual --ec-* aplicado nos dois modos
+
+### Outfit IA
+- [x] Geração de 5 outfits com clima real (Open-Meteo + geolocalização)
+- [x] Seleção de período e ocasião
+- [x] Bloqueio de peças já usadas entre gerações
+- [x] Salvar no Lookbook
 
 ### Chat Mia
 - [x] Personalidade carioca definida
-- [x] Quick actions
-- [x] Cards de outfit inline
-- [x] Typing indicator
-- [x] Suporte a data futura para planejamento de looks (`/api/mia/extract-date`)
-- [x] Peça âncora no chat
+- [x] Quick actions, cards de outfit inline, typing indicator
+- [x] Suporte a data futura e peça âncora
+- [ ] Redesign visual pendente
 
 ### Wishlist
-- [x] Sugestões de IA baseadas no closet atual
-- [x] Prioridade alta/média/baixa
-- [x] Salvar e marcar como comprado
-- [x] Pré-preencher Nova Peça a partir da wishlist
+- [x] Sugestões de IA com prioridade alta/média/baixa
+- [x] Salvar, marcar como comprado, pré-preencher Nova Peça
 
 ### Perfil
-- [x] Avatar com crop circular (400×400 JPEG)
-- [x] Edição de nome, altura, peso, estilo
-- [x] Banner de plano com trial restante
-- [x] Checkout Stripe server-side (`/api/stripe/checkout`) e portal de assinatura
-- [x] Logout
+- [x] Avatar crop circular, edição de dados, banner de plano, logout
+- [ ] Redesign visual pendente
 
 ### Monetização
-- [x] Stripe: checkout, webhook com validação HMAC
-- [x] Portal de gerenciamento de assinatura (Stripe Customer Portal)
-- [x] Trial de 15 dias — após expirar, usuário vê `TrialExpiredModal` e é bloqueado
-- [x] Planos: Free (limitado) e Pro (R$ 19,90/mês)
-- [x] Plano Stylist removido — não existe mais nos tipos nem no rate limit
+- [x] Stripe: checkout, webhook HMAC, customer portal
+- [x] Trial 15 dias → expirado + free → TrialExpiredModal
+- [x] Planos: Free e Pro (R$ 19,90/mês) — Stylist removido
 
 ### Rate Limiting
-- [x] Colunas `usage_*` na tabela `profiles` com reset a cada 30 dias (lazy)
-- [x] Ordem de verificação: trial ativo → ilimitado; trial expirado + free → bloqueado; Pro → limites Pro; free sem trial → limites restritos
-- [x] `rateLimitResponse()` centralizado — HTTP 403 + `code: 'TRIAL_EXPIRED'` ou 429 + `code: 'RATE_LIMITED'`
-- [x] `TrialExpiredModal` em `mia/page.tsx` e `closet/page.tsx`
+- [x] Ordem: trial ativo → ilimitado; trial expirado + free → bloqueado; Pro → limites Pro
+- [x] `rateLimitResponse()` centralizado — HTTP 403 TRIAL_EXPIRED / 429 RATE_LIMITED
+- [x] TrialExpiredModal em mia/page.tsx e closet/page.tsx
 
 ### Segurança
-- [x] RLS ativo em todas as tabelas Supabase
-- [x] Nenhuma chave de API exposta no client bundle
-- [x] Webhook Stripe valida assinatura HMAC
-- [x] SSRF protection na rota de estúdio (valida hostname Supabase)
-- [x] Moderação de conteúdo antes de upload
-- [x] Tabela `tryon_predictions` com RLS — ownership validado em `/api/tryon/status`
+- [x] RLS em todas as tabelas
+- [x] Nenhuma chave exposta no client bundle
+- [x] Webhook Stripe com HMAC, SSRF protection, moderação OpenAI
+- [x] Tabela tryon_predictions com RLS e ownership em /api/tryon/status
 
-### Qualidade de código
-- [x] `npm run lint`: 0 erros (`react-hooks/set-state-in-effect` rebaixado para warn)
-- [x] `npm run build`: passa sem erros
-- [x] `next/image` nos cards do closet, lookbook e `PieceDetailModal`
-- [x] `Plan = 'free' | 'pro'` — Stylist removido dos tipos
+### Qualidade
+- [x] npm run lint: 0 erros
+- [x] npm run build: passa sem erros
+- [x] next/image nos cards do closet, lookbook e detalhe
+- [x] Plan = 'free' | 'pro' — Stylist removido dos tipos
 
 ---
 
 ## 3. O que está em andamento
 
-- [ ] Redesign visual do app interno — sistema `--ec-*` parcialmente aplicado (closet/nova-peça), mas lookbook, chat Mia e perfil ainda no tema dark legado
-- [ ] Virtual Try-On (FASHN.ai) — tabela `tryon_predictions` criada, ownership implementado, mas migration ainda não rodada em produção
+- [ ] Redesign visual Chat da Mia
+- [ ] Redesign visual Perfil
+- [ ] Virtual Try-On (FASHN.ai) — tabela criada, fluxo completo pendente
 
 ---
 
-## 4. Pendências e próximos passos
+## 4. Pendências
 
 | Prioridade | Tarefa | Observação |
 |---|---|---|
-| Alta | Redesign closet (grid, drawer, detalhe, nova peça) | Aguarda spec |
-| Alta | Redesign lookbook | Aguarda spec |
-| Alta | Redesign chat Mia | Aguarda spec |
-| Alta | Redesign perfil | Aguarda spec |
-| Média | Finalizar Virtual Try-On | Tabela criada, rodar migration e testar fluxo completo |
-| Média | Rodar migration `tryon_predictions` no Supabase | `supabase/migrations/0001_tryon_predictions.sql` |
-| Média | Regenerar tipos após migration | `npx supabase gen types typescript --linked > src/types/database.ts` |
-| Média | Email transacional via Resend | Boas-vindas, trial expirando, cobrança |
-| Baixa | Renomear `middleware.ts` → `proxy.ts` | Deprecado no Next 16, emite aviso no build |
-| Baixa | Histórico de outfits usados com UI | Tabela `outfit_history` existe, sem UI ainda |
-| Baixa | Publicação na Play Store via TWA/Capacitor | — |
+| Alta | Redesign Chat da Mia | Próxima branch |
+| Alta | Redesign Perfil | Após Chat |
+| Média | Finalizar Virtual Try-On | Migration 0001_tryon_predictions.sql pendente no Supabase |
+| Média | Regenerar tipos após migration | npx supabase gen types typescript --linked > src/types/database.ts |
+| Média | Email transacional (Resend) | Boas-vindas, trial expirando, cobrança |
+| Baixa | Renomear middleware.ts → proxy.ts | Deprecado no Next 15 |
+| Baixa | Histórico de outfits usados com UI | Tabela outfit_history existe, sem UI |
+| Baixa | Play Store via TWA/Capacitor | — |
 
 ---
 
 ## 5. Arquivos importantes
 
-| Arquivo / Pasta | Função |
+| Arquivo | Função |
 |---|---|
-| `src/app/(dashboard)/closet/page.tsx` | Closet — 794 linhas, candidato a refatoração |
-| `src/app/(dashboard)/closet/nova-peca/page.tsx` | Adicionar nova peça — 586 linhas |
-| `src/app/(dashboard)/lookbook/page.tsx` | Lookbook — 545 linhas |
-| `src/app/(dashboard)/mia/page.tsx` | Chat com a Mia — 526 linhas |
-| `src/app/(dashboard)/perfil/page.tsx` | Perfil do usuário — 490 linhas |
-| `src/app/landing/page.tsx` | Landing page |
-| `src/app/(auth)/login/page.tsx` | Login — split screen com ilustração |
-| `src/app/(auth)/cadastro/page.tsx` | Cadastro — mesma estrutura do login |
-| `src/lib/rate-limit.ts` | Rate limiting centralizado — lógica de trial/planos |
-| `src/lib/supabase/client.ts` | Conexão client-side |
-| `src/lib/supabase/server.ts` | Conexão server-side |
-| `src/middleware.ts` | Proteção de rotas — deprecado, renomear para `proxy.ts` |
-| `src/types/database.ts` | Tipos TypeScript do banco — `Plan = 'free' \| 'pro'` |
-| `src/components/ui/TrialExpiredModal.tsx` | Modal de upgrade pós-trial |
-| `src/components/ui/ModeToggle.tsx` | Toggle Édition Claire / Dark Edition |
-| `src/app/api/stripe/webhook/route.ts` | Webhook Stripe com validação HMAC |
-| `src/app/api/pieces/studio/route.ts` | Remove.bg — foto de estúdio |
-| `src/app/api/pieces/moderate/route.ts` | OpenAI Moderation |
-| `src/app/api/tryon/route.ts` | FASHN.ai — Virtual Try-On |
-| `src/app/api/tryon/status/route.ts` | Status do try-on — com ownership |
-| `supabase/migrations/` | Migrations — incluindo `0001_tryon_predictions.sql` (pendente de rodar) |
-| `public/illustrations/Hero-principal.png` | Ilustração aquarela usada na landing e login |
+| `src/app/(dashboard)/closet/page.tsx` | Closet — 782 linhas |
+| `src/app/(dashboard)/closet/nova-peca/page.tsx` | Nova peça — 586 linhas |
+| `src/app/(dashboard)/lookbook/page.tsx` | Lookbook — 544 linhas |
+| `src/app/(dashboard)/mia/page.tsx` | Chat Mia — 514 linhas |
+| `src/app/(dashboard)/perfil/page.tsx` | Perfil — 490 linhas |
+| `src/app/(public)/page.tsx` | Landing page |
+| `src/app/(auth)/login/page.tsx` | Login — split screen |
+| `src/lib/rate-limit.ts` | Rate limiting — lógica de trial/planos |
+| `src/types/database.ts` | Tipos — Plan = 'free' \| 'pro' |
+| `src/components/ui/TrialExpiredModal.tsx` | Modal de upgrade |
+| `src/app/api/stripe/webhook/route.ts` | Webhook Stripe |
+| `src/app/api/pieces/studio/route.ts` | Remove.bg |
+| `src/app/api/tryon/route.ts` | FASHN.ai |
+| `src/app/api/tryon/status/route.ts` | Status try-on com ownership |
+| `supabase/migrations/0001_tryon_predictions.sql` | Migration pendente de rodar |
+| `public/logos-mia-ai/Hero-principal.png` | Ilustração aquarela — landing e login |
 
 ---
 
 ## 6. Sistema de design
 
-### Variáveis CSS (`--ec-*`)
-
-Definidas no `:root` (Édition Claire) e sobrescritas em `html.mode-dark` (Dark Edition) — ver `src/app/globals.css`.
+### Variáveis CSS (--ec-*)
 
 ```css
 /* Édition Claire */
 --ec-bg-primary:     #FAF8F5;
 --ec-bg-secondary:   #F2EDE6;
+--ec-bg-tertiary:    — (não definido no Claire);
 --ec-accent:         #C17F5A;
 --ec-accent-light:   #C4A882;
 --ec-text-primary:   #1A1A1A;
@@ -188,9 +176,10 @@ Definidas no `:root` (Édition Claire) e sobrescritas em `html.mode-dark` (Dark 
 --ec-border:         #E8E2D9;
 --ec-white:          #FFFFFF;
 
-/* Dark Edition */
+/* Dark Edition — html.mode-dark */
 --ec-bg-primary:     #080808;
 --ec-bg-secondary:   #111111;
+--ec-bg-tertiary:    #1C1C1C;
 --ec-accent:         #B8974A;
 --ec-accent-light:   #D4AF6A;
 --ec-text-primary:   #F0EDE8;
@@ -202,52 +191,49 @@ Definidas no `:root` (Édition Claire) e sobrescritas em `html.mode-dark` (Dark 
 
 ### Tipografia
 
-| Modo | Display/Títulos | Body/UI |
+| Modo | Títulos | Body/UI |
 |---|---|---|
 | Édition Claire | Cormorant Garamond 300–600 | Inter 400–500 |
-| Dark Edition | Inter 300 uppercase | Inter 300–500 |
+| Dark Edition | Inter 300 (uppercase onde indicado) | Inter 300–500 |
 
-### Toggle de modo
+### Padrões de componentes
 
-```javascript
-// Salvar preferência
-localStorage.setItem('mia-mode', 'claire' | 'dark')
-
-// Aplicar modo
-document.documentElement.classList.toggle('mode-dark', mode === 'dark')
-```
+**Botão primário:** fundo `var(--ec-accent)`, texto `#FAF8F5` (Claire) / `#080808` (Dark), border-radius 999px
+**Botão outline:** borda `var(--ec-accent)`, texto `var(--ec-accent)`, hover preenchido
+**Chip ativo:** fundo `var(--ec-accent)`, texto `#FAF8F5` / `#080808`
+**Input:** fundo `var(--ec-bg-secondary)`, borda `var(--ec-border)`, focus `var(--ec-accent)`
+**Card:** fundo `var(--ec-white)`, borda `0.5px solid var(--ec-border)`, border-radius 12px
+**Fotos no grid:** `object-fit: cover`, `object-position: top`
+**Fotos no detalhe:** `object-fit: contain`, fundo `var(--ec-bg-secondary)`
+**Drawer desktop:** lateral direita 320px, border-left `var(--ec-border)`
+**Drawer mobile:** bottom sheet, border-radius 16px 16px 0 0, handle de arrasto
 
 ---
 
 ## 7. Banco de dados
 
-| Tabela | Descrição | RLS |
-|---|---|---|
-| `profiles` | Dados do usuário, plano, trial, `usage_*`, avatar | Sim |
-| `pieces` | Peças do closet com fotos, categoria, análise da Mia | Sim |
-| `outfits` | Combinações salvas com tags e "por que funciona" | Sim |
-| `outfit_history` | Histórico de outfits usados | Sim |
-| `wishlist_items` | Itens da wishlist com prioridade e status de compra | Sim |
-| `tryon_predictions` | Predictions do FASHN.ai com ownership | Sim (migration pendente) |
+| Tabela | RLS |
+|---|---|
+| `profiles` | Sim |
+| `pieces` | Sim |
+| `outfits` | Sim |
+| `outfit_history` | Sim |
+| `tryon_predictions` | Sim — migration pendente de rodar |
 
 ### Colunas relevantes em `profiles`
 
-```sql
-plan                      'free' | 'pro'
-trial_ends_at             timestamptz
-usage_mia_generations     int
-usage_outfit_generations  int
-usage_pieces_analyzed     int
-usage_wishlist_generations int
-usage_studio_generations  int
-usage_reset_at            timestamptz
-stripe_customer_id        text
-stripe_subscription_id    text
-plan_expires_at           timestamptz
-closet_tour_completed     boolean
 ```
-
-> **Nota:** `usage_studio_generations` é usada em `rate-limit.ts` mas ainda não está no tipo `Profile` em `database.ts` — regenerar tipos após confirmar schema no Supabase.
+plan                     'free' | 'pro'
+trial_ends_at            timestamptz
+usage_mia_generations    int
+usage_outfit_generations int
+usage_pieces_analyzed    int
+usage_wishlist_generations int
+usage_studio_generations int
+usage_reset_at           timestamptz
+stripe_customer_id       text
+stripe_subscription_id   text
+```
 
 ---
 
@@ -256,56 +242,51 @@ closet_tour_completed     boolean
 | Método | Endpoint | Auth | Descrição |
 |---|---|---|---|
 | GET | `/api/weather` | Não | Clima via Open-Meteo |
-| POST | `/api/outfit/generate` | Sim | Gerar 5 outfits com IA |
-| POST | `/api/pieces/analyze` | Sim | Análise de peça com visão computacional |
+| POST | `/api/outfit/generate` | Sim | Gerar 5 outfits |
+| POST | `/api/pieces/analyze` | Sim | Análise com visão computacional |
 | POST | `/api/pieces/describe` | Sim | Análise multi-foto |
 | POST | `/api/pieces/studio` | Sim | Foto de estúdio (Remove.bg) |
-| POST | `/api/pieces/moderate` | Sim | Moderação de conteúdo (OpenAI) |
+| POST | `/api/pieces/moderate` | Sim | Moderação (OpenAI) |
 | POST | `/api/tryon` | Sim | Virtual Try-On (FASHN.ai) |
-| GET | `/api/tryon/status` | Sim | Status do try-on — valida ownership |
+| GET | `/api/tryon/status` | Sim | Status com ownership |
 | POST | `/api/mia/chat` | Sim | Chat com a Mia |
-| POST | `/api/mia/extract-date` | Sim | Extrai data futura de mensagem do usuário |
-| POST | `/api/wishlist/generate` | Sim | Gerar sugestões de wishlist |
-| POST | `/api/stripe/checkout` | Sim | Criar sessão de checkout |
+| POST | `/api/wishlist/generate` | Sim | Gerar wishlist |
+| POST | `/api/stripe/checkout` | Sim | Criar checkout |
 | POST | `/api/stripe/webhook` | HMAC | Webhook Stripe |
-| POST | `/api/stripe/portal` | Sim | Portal de gerenciamento de assinatura |
+| POST | `/api/stripe/portal` | Sim | Portal de assinatura |
 
 ---
 
 ## 9. Variáveis de ambiente
 
-| Variável | Escopo | Configurada |
-|---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Client + Server | ✅ |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Client + Server | ✅ |
-| `SUPABASE_SERVICE_ROLE_KEY` | Apenas webhook Stripe | ✅ |
-| `ANTHROPIC_API_KEY` | Server-side only | ✅ |
-| `OPENAI_API_KEY` | Server-side only | ✅ |
-| `REMOVE_BG_API_KEY` | Server-side only | ✅ |
-| `FASHN_API_KEY` | Server-side only | ✅ |
-| `STRIPE_SECRET_KEY` | Server-side only | ✅ |
-| `STRIPE_WEBHOOK_SECRET` | Server-side only | ✅ |
-| `STRIPE_PRICE_ID` | Server-side only | ✅ |
-| `NEXT_PUBLIC_APP_URL` | Client + Server | ✅ |
-
-> Checkout Stripe é 100% server-side — não há `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` no projeto.
+| Variável | Escopo |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Client + Server |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Client + Server |
+| `SUPABASE_SERVICE_ROLE_KEY` | Apenas webhook Stripe |
+| `ANTHROPIC_API_KEY` | Server-side only |
+| `OPENAI_API_KEY` | Server-side only |
+| `REMOVE_BG_API_KEY` | Server-side only |
+| `FASHN_API_KEY` | Server-side only |
+| `STRIPE_SECRET_KEY` | Server-side only |
+| `STRIPE_WEBHOOK_SECRET` | Server-side only |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Client |
 
 ---
 
 ## 10. Regras de negócio
 
-- Usuário só acessa seus próprios dados (RLS em todas as tabelas)
+- RLS em todas as tabelas — usuário só acessa seus próprios dados
 - Toda foto passa por moderação OpenAI antes do upload
-- Trial de 15 dias: acesso ilimitado. Após expirar com plano free → bloqueado (`TrialExpiredModal`)
-- Usuário Pro nunca é bloqueado, mesmo com `trial_ends_at` expirado
-- Rate limiting lazy: reset na primeira chamada após 30 dias (sem cron job)
-- Plano Stylist não existe — `Plan = 'free' | 'pro'` apenas
-- Modelo Anthropic fixo: `claude-sonnet-4-6` — atualizar requer revisar todas as rotas
-- `ANTHROPIC_API_KEY` nunca exposta no client bundle
-- `SUPABASE_SERVICE_ROLE_KEY` usada apenas no webhook do Stripe
-- Storage público: URLs diretas sem signed URLs (aceito para fotos de moda)
-- `font-size: 16px` nos inputs — evita zoom automático no iOS
-- `maxDuration` configurado nas rotas de IA: estúdio 60s, análise 30s
+- Trial 15 dias: ilimitado. Expirado + free → TrialExpiredModal
+- Pro nunca é bloqueado mesmo com trial_ends_at expirado
+- Rate limiting lazy: reset na primeira chamada após 30 dias
+- Plan = 'free' | 'pro' — Stylist não existe
+- Modelo Anthropic: `claude-sonnet-4-6` fixo em todas as rotas
+- ANTHROPIC_API_KEY nunca exposta no client bundle
+- Storage público: URLs diretas sem signed URLs
+- font-size: 16px nos inputs — evita zoom iOS
+- maxDuration = 60 nas rotas de IA
 
 ---
 
@@ -313,117 +294,75 @@ closet_tour_completed     boolean
 
 | Bug | Impacto | Status |
 |---|---|---|
-| Migration `tryon_predictions` não rodada no Supabase | Try-on não funciona em produção | Pendente |
+| Migration tryon_predictions não rodada no Supabase | Try-on não funciona em produção | Pendente |
 | Fotos adicionais na galeria não passam por moderação | Baixo | Conhecido |
-| `middleware.ts` deprecado no Next 16 | Aviso no build | Baixo |
-| ~170 linhas de código comentado em `studio/route.ts` | Leitura | Baixo |
-| `usage_studio_generations` ausente em `database.ts` | Tipos desatualizados | Conhecido |
+| middleware.ts deprecado no Next 15 | Aviso no build | Baixo |
 
 ---
 
-## 12. Decisões técnicas relevantes
+## 12. Histórico de implementações
 
-| Data | Decisão | Impacto |
-|---|---|---|
-| 2026-05-01 | Supabase como banco, auth e storage | Migrar seria custoso |
-| 2026-05-01 | App Router do Next.js (nunca Pages Router) | Sem compatibilidade Pages Router |
-| 2026-05-01 | Storage público sem signed URLs | URLs diretas acessíveis — aceito |
-| 2026-05-22 | Remove.bg para foto de estúdio | 100% fidelidade ao produto original |
-| 2026-05-23 | OpenAI Moderation falha-aberta | Upload permitido se API indisponível |
-| 2026-06-07 | Plano Stylist removido — apenas free/pro | Tipos limpos, rate limit correto |
-| 2026-06-07 | Trial expirado bloqueia totalmente | Usuário free pós-trial vê modal de upgrade |
-| 2026-06-07 | `react-hooks/set-state-in-effect` como warn | `setMounted` em `useEffect` é padrão legítimo |
-
----
-
-## 13. Como rodar o projeto localmente
-
-```bash
-npm install
-cp .env.example .env.local
-# Preencher os valores em .env.local
-
-PATH="/home/marcos-ranauro/.nvm/versions/node/v20.20.2/bin:$PATH" npm run dev
-# http://localhost:3000
-
-npm run lint    # deve retornar 0 erros
-npm run build   # deve passar sem erros
-```
-
----
-
-## 14. Histórico de implementações
-
-### 2026-06-07 — Correções técnicas pós-auditoria + CSS dos cards
+### 2026-06-07 — v1.4.0 — Redesign Lookbook
 
 **O que foi feito:**
-- Removido plano Stylist dos tipos e rate limit (`Plan = 'free' | 'pro'`)
-- Reescrita lógica de trial: expirado + free → bloqueado com `TrialExpiredModal`
-- `rateLimitResponse()` centralizado com `TRIAL_EXPIRED` e `RATE_LIMITED`
-- `TrialExpiredModal` implementado (Édition Claire + Dark Edition)
-- 7 erros de lint corrigidos (`set-state-in-effect` → warn)
-- `next/image` nos cards do closet, lookbook e `PieceDetailModal`
-- Tabela `tryon_predictions` + RLS + ownership em `/api/tryon/status`
-- `object-position: top` nos cards do grid (não corta colarinho)
-- `object-fit: contain` no detalhe da peça (peça inteira visível)
-- `CONTEXT.md` criado/atualizado com estado real do projeto
+- Banner/header antigo removido
+- Cards com layout split: foto principal esquerda (42%) + info/thumbs direita
+- Thumbs na base do card (52×52px)
+- Grid 2 colunas no desktop
+- Busca em tempo real por nome do outfit
+- Chips de ocasião com fade nas bordas
+- Drawer de filtros: Período, Ocasião, Estilo, Estação
+- Toggle Dia/Noite movido para dentro do drawer
+- Página de detalhe do outfit (split 50/50)
+- Thumbs no detalhe trocam foto principal (não redirecionam)
+- object-fit: contain no detalhe
+- Sistema --ec-* aplicado nos dois modos
 
 **Arquivos alterados:**
-- `src/types/database.ts` — Plan sem `'stylist'`
-- `src/lib/rate-limit.ts` — lógica de trial reescrita
-- `src/app/api/mia/chat/route.ts` — usa `rateLimitResponse()`
-- `src/app/api/outfit/generate/route.ts` — usa `rateLimitResponse()`
-- `src/app/api/pieces/analyze/route.ts` — usa `rateLimitResponse()`
-- `src/app/api/pieces/studio/route.ts` — usa `rateLimitResponse()`
-- `src/app/api/wishlist/generate/route.ts` — usa `rateLimitResponse()`
-- `src/app/(dashboard)/mia/page.tsx` — `TrialExpiredModal` wired
-- `src/app/(dashboard)/closet/page.tsx` — `TrialExpiredModal` + `ModeToggle`
-- `src/app/api/tryon/route.ts` — registra prediction no banco
-- `src/app/api/tryon/status/route.ts` — valida ownership
-- `src/app/closet.css` — `object-position: top` no grid, `object-fit: contain` no detalhe
-- `eslint.config.mjs` — `set-state-in-effect` como warn
-- `next.config.ts` — `remotePatterns` para `*.supabase.co`
+- `src/app/(dashboard)/lookbook/page.tsx`
+- `src/app/(dashboard)/lookbook/[id]/page.tsx` (ou similar — detalhe)
+- `src/app/lookbook.css` (ou equivalente)
 
-**Arquivos criados:**
-- `src/components/ui/TrialExpiredModal.tsx`
-- `src/components/ui/ModeToggle.tsx`
-- `supabase/migrations/0001_tryon_predictions.sql`
-- `CONTEXT.md`
-
-**Pendências deixadas:**
-- Migration `0001_tryon_predictions.sql` ainda não rodada no Supabase
-- Regenerar tipos após rodar a migration
-
-**Próximo passo recomendado:**
-Redesign visual do app interno começando pelo closet.
+**Próximo passo:** Redesign Chat da Mia
 
 ---
 
-### 2026-06-06 — Redesign landing + login
+### 2026-06-07 — v1.3.0 — Redesign Closet + Correções técnicas
 
 **O que foi feito:**
-Sistema visual Édition Claire / Dark Edition implementado na landing e login. Toggle com persistência, variáveis `--ec-*`, fontes Cormorant + Inter, split screen no login com a ilustração aquarela.
+- Sistema --ec-* aplicado no closet (header, cards, drawer, chips, bottom nav)
+- object-position: top nos cards do grid
+- object-fit: contain no detalhe da peça
+- Removido plano Stylist (Plan = 'free' | 'pro')
+- Lógica de trial reescrita — expirado + free → TrialExpiredModal
+- rateLimitResponse() centralizado
+- 7 erros de lint corrigidos
+- next/image nos cards do closet, lookbook e detalhe
+- Tabela tryon_predictions + RLS + ownership
 
-**Próximo passo recomendado:**
-Aplicar sistema `--ec-*` no app interno (closet, lookbook, mia, perfil).
+---
+
+### 2026-06-06 — v1.2.1 — Redesign Landing + Login
+
+**O que foi feito:**
+- Sistema Édition Claire / Dark Edition na landing e login
+- Toggle com persistência, variáveis --ec-*, fontes Cormorant + Inter
+- Split screen no login com ilustração aquarela
 
 ---
 
 ### 2026-05-23 — v1.2.0
 
-**O que foi feito:**
 Remove.bg no estúdio, análise multi-foto, galeria 6 fotos, moderação OpenAI, rate limit estúdio, SSRF protection.
 
 ---
 
 ### 2026-05-22 — v1.1.0
 
-**O que foi feito:**
-Trial 15 dias, Virtual Try-On FASHN.ai, foto de estúdio, redesign dashboard e closet, página Nova Peça, FAQ, `/sobre`.
+Trial 15 dias, Virtual Try-On, foto de estúdio, redesign dashboard e closet, Nova Peça, FAQ, /sobre.
 
 ---
 
 ### 2026-05-01 — v1.0.0 — MVP
 
-**O que foi feito:**
-Auth completo, closet, lookbook, chat Mia, wishlist, perfil, Stripe, PWA, landing, deploy em miaoutfitai.com.br.
+Auth, closet, lookbook, chat Mia, wishlist, perfil, Stripe, PWA, landing, deploy.
