@@ -1,0 +1,65 @@
+# .cursorrules - Configuração para Full-Stack Dev (Vercel + Supabase)
+
+## STACK DO PROJETO
+- **Frontend**: Next.js 14+ (App Router), React 18+, TypeScript strict
+- **UI**: Tailwind CSS, Shadcn UI, Radix UI
+- **Backend**: Next.js API Routes, Node.js
+- **Database**: Supabase (PostgreSQL)
+- **Auth**: Supabase Auth
+- **Deployment**: Vercel
+
+## PADRÕES DE CÓDIGO
+- Use TypeScript strict mode em todos os arquivos
+- Variáveis e funções: camelCase
+- Classes e componentes: PascalCase
+- Pastas e arquivos: kebab-case
+- NUNCA use `console.log` — use `console.error` apenas para erros críticos
+- Use `async/await`, nunca callbacks
+- Sempre use typed arrays e interfaces explícitas
+
+## ESTRUTURA DE PASTAS
+- Rotas: `/src/app` (Next.js App Router)
+- Componentes: `/src/components`
+- Hooks: `/src/hooks`
+- Utilitários: `/src/lib`
+- Tipos: `/src/types`
+- API Routes: `/src/app/api`
+- Supabase: `/src/lib/supabase`
+
+## SUPABASE - REGRAS CRÍTICAS
+- Use UUID para primary keys (NUNCA auto-increment)
+- Sempre habilitar RLS (Row Level Security)
+- Usar `createClient()` do `@supabase/supabase-js`
+- Client-side: `createBrowserClient()`
+- Server-side: `createServerClient()`
+- Sempre verificar tipos de retorno do Supabase
+- Usar `supabase.types` gerados automaticamente
+
+## NEXT.JS - REGRAS
+- Usar Server Components por padrão
+- Client Components apenas quando necessário (use "use client")
+- Optimize images com `next/image`
+- Use `next/link` para navegação interna
+- Implementar loading states com `loading.tsx`
+- Implementar error boundaries com `error.tsx`
+
+## TAILWIND - REGRAS
+- Usar classes utilitárias do Tailwind
+- Evitar inline styles
+- Usar `cn()` do `clsx` para combinar classes condicionalmente
+- Mobile-first: sempre começar com classes mobile
+- Usar breakpoints: `sm`, `md`, `lg`, `xl`, `2xl`
+
+## AUTOMAÇÃO
+- Sempre criar tests para novas features
+- Rodar linter antes de commit
+- Usar `required` para campos obrigatórios em formulários
+- Validar inputs com Zod schemas
+
+## COMPORTAMENTO DA IA
+- Antes de codificar: **sempre criar plano passo-a-passo** e pedir aprovação
+- Se tiver dúvida sobre contexto: **parar e perguntar**
+- Documentar funções complexas com JSDoc
+- Sugerir melhorias de performance quando identificar gargalos
+- Manter código DRY (Don't Repeat Yourself)
+- Priorizar performance e segurança
