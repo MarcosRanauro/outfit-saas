@@ -56,11 +56,12 @@ src/
 
 ## Banco de dados
 
-- `profiles` — id, name, height, weight, style, avatar_url, plan (`free` | `pro` | `stylist`), closet_tour_completed, stripe_customer_id, stripe_subscription_id, plan_expires_at, usage_mia_generations, usage_outfit_generations, usage_pieces_analyzed, usage_wishlist_generations, usage_reset_at, created_at, updated_at
+- `profiles` — id, name, height, weight, style, avatar_url, plan (`free` | `pro`), closet_tour_completed, stripe_customer_id, stripe_subscription_id, plan_expires_at, usage_mia_generations, usage_outfit_generations, usage_pieces_analyzed, usage_wishlist_generations, usage_studio_generations, usage_reset_at, trial_ends_at, created_at, updated_at
 - `pieces` — id, user_id, code, name, category, color, brand, photo_url, fit, style_type, season, created_at
 - `outfits` — id, user_id, name, subtitle, style_tags[], occasion_tags[], period, occasion, why, pieces (IDs[]), notes, created_at
 - `outfit_history` — id, user_id, outfit_id, worn_at, occasion, created_at
 - `wishlist_items` — id, user_id, name, category, color, reason, priority (`high` | `medium` | `low`), purchased, created_at
+- `tryon_predictions` — id, user_id, prediction_id (unique), piece_id, status, created_at (valida ownership no `/api/tryon/status`)
 - Trigger `on_auth_user_created` cria perfil automaticamente no signup
 - **RLS ativado em todas as tabelas** — toda query precisa respeitar `auth.uid()`
 
@@ -93,8 +94,10 @@ src/
 | Plano | Preço | Limite |
 |---|---|---|
 | Free | R$ 0 | limitado (peças e sugestões/mês) |
-| Pro | R$ 19/mês | ilimitado |
-| Stylist | R$ 79/mês | multi-closet (para personal stylists) |
+| Pro | R$ 19,90/mês | ilimitado |
+
+- **Só existem os planos `free` e `pro`.** O plano `stylist` foi descontinuado e removido do código (tipos, rate limit, webhook).
+- **Trial de 15 dias** (`trial_ends_at`): durante o trial o acesso é ilimitado. Ao expirar, usuário `free` é **bloqueado** nas rotas de IA (HTTP 403, `code: TRIAL_EXPIRED`) e o frontend abre o `TrialExpiredModal` pedindo upgrade. Limite de plano atingido (free sem trial) retorna HTTP 429, `code: RATE_LIMITED`.
 
 ## Convenções de código
 

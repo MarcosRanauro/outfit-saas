@@ -1,5 +1,74 @@
 @import "tailwindcss";
 
+/* ─── ÉDITION CLAIRE (padrão) ─────────────────── */
+:root {
+  --ec-bg-primary:    #FAF8F5;
+  --ec-bg-secondary:  #F2EDE6;
+  --ec-bg-tertiary:   #EDEAE4;
+  --ec-accent:        #C17F5A;
+  --ec-accent-light:  #C4A882;
+  --ec-accent-faint:  rgba(193, 127, 90, 0.08);
+  --ec-accent-subtle: rgba(193, 127, 90, 0.15);
+  --ec-accent-border: rgba(193, 127, 90, 0.25);
+  --ec-text-primary:  #1A1A1A;
+  --ec-text-secondary:#6B6B6B;
+  --ec-text-muted:    #9A8E84;
+  --ec-border:        #E8E2D9;
+  --ec-border-light:  #EAE4DC;
+  --ec-white:         #FFFFFF;
+}
+
+/* ─── DARK EDITION ────────────────────────────── */
+html.mode-dark {
+  --ec-bg-primary:    #080808;
+  --ec-bg-secondary:  #111111;
+  --ec-bg-tertiary:   #1A1A1A;
+  --ec-accent:        #B8974A;
+  --ec-accent-light:  #D4AF6A;
+  --ec-accent-faint:  rgba(184, 151, 74, 0.08);
+  --ec-accent-subtle: rgba(184, 151, 74, 0.15);
+  --ec-accent-border: rgba(184, 151, 74, 0.25);
+  --ec-text-primary:  #F0EDE8;
+  --ec-text-secondary:#7A7A7A;
+  --ec-text-muted:    #4A4A4A;
+  --ec-border:        #2A2A2A;
+  --ec-border-light:  #1C1C1C;
+  --ec-white:         #111111;
+}
+
+/* ─── MODE TOGGLE (pill global) ──────────────── */
+
+.mode-toggle {
+  display: flex;
+  background: var(--ec-border-light);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.toggle-option {
+  font-family: var(--font-inter), 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  transition: all 280ms ease;
+  white-space: nowrap;
+}
+
+.toggle-option.active {
+  background: var(--ec-bg-primary);
+  color: var(--ec-text-primary);
+}
+
+.toggle-option:not(.active) {
+  background: transparent;
+  color: var(--ec-text-muted);
+}
+
 * {
   margin: 0;
   padding: 0;

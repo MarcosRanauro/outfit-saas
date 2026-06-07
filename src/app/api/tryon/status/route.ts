@@ -14,6 +14,18 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'ID obrigatório' }, { status: 400 })
     }
 
+    // Valida ownership: a prediction precisa pertencer ao usuário atual
+    const { data: prediction } = await supabase
+      .from('tryon_predictions')
+      .select('id')
+      .eq('prediction_id', predictionId)
+      .eq('user_id', user.id)
+      .single()
+
+    if (!prediction) {
+      return NextResponse.json({ error: 'Não encontrado' }, { status: 404 })
+    }
+
     const response = await fetch(
       `https://api.fashn.ai/v1/status/${predictionId}`,
       {

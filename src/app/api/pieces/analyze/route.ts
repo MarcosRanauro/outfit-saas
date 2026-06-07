@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { checkRateLimit, incrementUsage } from "@/lib/rate-limit";
+import { checkRateLimit, incrementUsage, rateLimitResponse } from "@/lib/rate-limit";
 
 export const maxDuration = 30
 
@@ -35,15 +35,7 @@ export async function POST(request: Request) {
 
   const rateCheck = await checkRateLimit(user.id, 'pieces_analyze')
   if (!rateCheck.allowed) {
-    const isExpired = rateCheck.plan === 'expired'
-    return NextResponse.json(
-      {
-        error: isExpired
-          ? 'Seu período de teste de 15 dias encerrou. Assine o Mia Pro para continuar! 🚀'
-          : `Limite de análises atingido (${rateCheck.used}/${rateCheck.limit}). Faça upgrade para o plano Pro.`,
-      },
-      { status: 429 }
-    )
+    return rateLimitResponse(rateCheck)
   }
 
   try {

@@ -1,4 +1,4 @@
-export type Plan = 'free' | 'pro' | 'stylist'
+export type Plan = 'free' | 'pro'
 
 export type Profile = {
   id: string
