@@ -5,11 +5,6 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import '../../auth.css'
 
-interface BeforeInstallPromptEvent extends Event {
-  prompt(): Promise<void>
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
-}
-
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -23,67 +18,26 @@ export default function LoginPage() {
   const router = useRouter()
   const supabase = createClient()
 
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    if (typeof window === 'undefined') return 'light'
-    return (localStorage.getItem('mia_theme') as 'light' | 'dark') ?? 'light'
-  })
+  const [mode, setMode] = useState<'claire' | 'dark'>('claire')
   const [mounted, setMounted] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [loadingGoogle, setLoadingGoogle] = useState(false)
   const [error, setError] = useState('')
-  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
-  const [isInstalled, setIsInstalled] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false
-    return window.matchMedia('(display-mode: standalone)').matches
-  })
-  const [showIOSInstructions] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false
-    if (window.matchMedia('(display-mode: standalone)').matches) return false
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
-    return isIOS && isSafari
-  })
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light'
-    setTheme(newTheme)
-    localStorage.setItem('mia_theme', newTheme)
-    document.documentElement.setAttribute('data-auth-theme', newTheme)
-  }
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
+    const saved = localStorage.getItem('mia-mode') as 'claire' | 'dark' | null
+    const initialMode = saved ?? 'claire'
+    setMode(initialMode)
+    document.documentElement.classList.toggle('mode-dark', initialMode === 'dark')
   }, [])
 
-  useEffect(() => {
-    if (isInstalled || showIOSInstructions) return
-    const handler = (e: Event) => {
-      e.preventDefault()
-      setInstallPrompt(e as BeforeInstallPromptEvent)
-    }
-    const handleInstalled = () => {
-      setIsInstalled(true)
-      setInstallPrompt(null)
-    }
-    window.addEventListener('beforeinstallprompt', handler)
-    window.addEventListener('appinstalled', handleInstalled)
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handler)
-      window.removeEventListener('appinstalled', handleInstalled)
-    }
-  }, [isInstalled, showIOSInstructions])
-
-  const handleInstall = async () => {
-    if (!installPrompt) return
-    await installPrompt.prompt()
-    const result = await installPrompt.userChoice
-    if (result.outcome === 'accepted') {
-      setInstallPrompt(null)
-      setIsInstalled(true)
-    }
+  const handleModeChange = (newMode: 'claire' | 'dark') => {
+    setMode(newMode)
+    localStorage.setItem('mia-mode', newMode)
+    document.documentElement.classList.toggle('mode-dark', newMode === 'dark')
   }
 
   async function handleLogin(e: React.FormEvent) {
@@ -113,42 +67,63 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="auth-page" data-theme={mounted ? theme : 'light'}>
+    <div className="auth-page">
+      {/* Lado esquerdo — imagem */}
+      <div className="auth-img-side">
+        <img src="/illustrations/Hero-principal.png" alt="" aria-hidden="true" />
+        <div className="overlay" />
+        <span className="auth-img-tag">
+          {mode === 'dark' ? '· Stylist pessoal com IA' : '· Sua stylist com IA'}
+        </span>
+      </div>
 
-      <div className="auth-bg" />
-
-      {/* Card */}
-      <div className="auth-card">
-
+      {/* Lado direito — formulário */}
+      <div className="auth-form-side">
         {mounted && (
-          <button className="auth-theme-toggle" onClick={toggleTheme} title="Alternar tema">
-            {theme === 'light' ? '🌙' : '☀️'}
-          </button>
+          <div className="auth-toggle">
+            <div className="mode-toggle">
+              <button
+                className={`toggle-option${mode === 'claire' ? ' active' : ''}`}
+                onClick={() => handleModeChange('claire')}
+              >
+                Édition Claire
+              </button>
+              <button
+                className={`toggle-option${mode === 'dark' ? ' active' : ''}`}
+                onClick={() => handleModeChange('dark')}
+              >
+                Dark Edition
+              </button>
+            </div>
+          </div>
         )}
 
         <div className="auth-logo">
-          <div className="auth-logo-diamond">✦</div>
-          <span className="auth-logo-text">Mia <span>Outfit AI</span></span>
+          {mode === 'dark'
+            ? <><span style={{ color: 'inherit' }}>MIA </span><span>·</span><span style={{ color: 'inherit' }}> OUTFIT AI</span></>
+            : <>Mia <span>Outfit AI</span></>
+          }
         </div>
 
-        <h1 className="auth-title">Bem-vindo de volta</h1>
+        <h1 className="auth-title">Bem-vindo de volta.</h1>
         <p className="auth-subtitle">Entre na sua conta para continuar</p>
 
-        <button className="btn-google" onClick={handleGoogle} disabled={loadingGoogle}>
+        <button className="google-btn" onClick={handleGoogle} disabled={loadingGoogle}>
           <GoogleIcon />
           {loadingGoogle ? 'Conectando...' : 'Continuar com Google'}
         </button>
 
-        <div className="divider">
-          <div className="divider-line" />
-          <span>ou</span>
-          <div className="divider-line" />
+        <div className="auth-divider">
+          <div className="auth-divider-line" />
+          <span className="auth-divider-text">ou</span>
+          <div className="auth-divider-line" />
         </div>
 
         <form onSubmit={handleLogin}>
-          <div className="field">
-            <label>E-mail</label>
+          <div className="auth-field">
+            <label className="auth-label">E-mail</label>
             <input
+              className="auth-input"
               type="email"
               placeholder="seu@email.com"
               value={email}
@@ -156,9 +131,10 @@ export default function LoginPage() {
               required
             />
           </div>
-          <div className="field">
-            <label>Senha</label>
+          <div className="auth-field">
+            <label className="auth-label">Senha</label>
             <input
+              className="auth-input"
               type="password"
               placeholder="••••••••"
               value={password}
@@ -167,43 +143,21 @@ export default function LoginPage() {
             />
           </div>
           {error && <p className="error-msg">{error}</p>}
-          <button type="submit" className="btn-primary" disabled={loading}>
+          <button type="submit" className="auth-cta" disabled={loading}>
             {loading ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
 
-        <div className="footer-link auth-footer-link--top">
-          Não tem conta?{' '}
-          <a href="/cadastro">Criar conta</a>
-        </div>
-        <div className="footer-link auth-footer-link--sub">
-          <a href="/esqueci-senha">Esqueci minha senha</a>
-        </div>
-
-        {installPrompt && !isInstalled && (
-          <div className="install-btn-wrap">
-            <button onClick={handleInstall} className="install-btn">
-              📲 Instalar app no celular
-            </button>
-          </div>
-        )}
-        {showIOSInstructions && (
-          <div className="ios-install-hint">
-            📲 Para instalar: toque em{' '}
-            <strong>Compartilhar</strong>
-            {' '}→{' '}
-            <strong>Adicionar à Tela de Início</strong>
-          </div>
-        )}
-
         <div className="auth-links">
+          <p>Não tem conta? <a href="/cadastro">Criar conta</a></p>
+          <p><a href="/esqueci-senha">Esqueci minha senha</a></p>
+        </div>
+
+        <div className="auth-footer">
           <a href="/termos">Termos de Uso</a>
-          <span className="auth-links-sep">·</span>
           <a href="/privacidade">Privacidade</a>
-          <span className="auth-links-sep">·</span>
           <a href="/sobre">Sobre</a>
         </div>
-
       </div>
     </div>
   )

@@ -18,10 +18,7 @@ export default function CadastroPage() {
   const router = useRouter()
   const supabase = createClient()
 
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    if (typeof window === 'undefined') return 'light'
-    return (localStorage.getItem('mia_theme') as 'light' | 'dark') ?? 'light'
-  })
+  const [mode, setMode] = useState<'claire' | 'dark'>('claire')
   const [mounted, setMounted] = useState(false)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -31,17 +28,19 @@ export default function CadastroPage() {
   const [error, setError] = useState('')
   const [showConfirmEmail, setShowConfirmEmail] = useState(false)
 
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light'
-    setTheme(newTheme)
-    localStorage.setItem('mia_theme', newTheme)
-    document.documentElement.setAttribute('data-auth-theme', newTheme)
-  }
-
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
+    const saved = localStorage.getItem('mia-mode') as 'claire' | 'dark' | null
+    const initialMode = saved ?? 'claire'
+    setMode(initialMode)
+    document.documentElement.classList.toggle('mode-dark', initialMode === 'dark')
   }, [])
+
+  const handleModeChange = (newMode: 'claire' | 'dark') => {
+    setMode(newMode)
+    localStorage.setItem('mia-mode', newMode)
+    document.documentElement.classList.toggle('mode-dark', newMode === 'dark')
+  }
 
   async function handleCadastro(e: React.FormEvent) {
     e.preventDefault()
@@ -79,26 +78,44 @@ export default function CadastroPage() {
   }
 
   return (
-    <div className="auth-page" data-theme={mounted ? theme : 'light'}>
+    <div className="auth-page">
+      {/* Lado esquerdo — imagem */}
+      <div className="auth-img-side">
+        <img src="/illustrations/Hero-principal.png" alt="" aria-hidden="true" />
+        <div className="overlay" />
+        <span className="auth-img-tag">· Comece grátis hoje</span>
+      </div>
 
-      <div className="auth-bg" />
-
-      {/* Card */}
-      <div className="auth-card">
-
+      {/* Lado direito — formulário */}
+      <div className="auth-form-side">
         {mounted && (
-          <button className="auth-theme-toggle" onClick={toggleTheme} title="Alternar tema">
-            {theme === 'light' ? '🌙' : '☀️'}
-          </button>
+          <div className="auth-toggle">
+            <div className="mode-toggle">
+              <button
+                className={`toggle-option${mode === 'claire' ? ' active' : ''}`}
+                onClick={() => handleModeChange('claire')}
+              >
+                Édition Claire
+              </button>
+              <button
+                className={`toggle-option${mode === 'dark' ? ' active' : ''}`}
+                onClick={() => handleModeChange('dark')}
+              >
+                Dark Edition
+              </button>
+            </div>
+          </div>
         )}
 
         <div className="auth-logo">
-          <div className="auth-logo-diamond">✦</div>
-          <span className="auth-logo-text">Mia <span>Outfit AI</span></span>
+          {mode === 'dark'
+            ? <><span style={{ color: 'inherit' }}>MIA </span><span>·</span><span style={{ color: 'inherit' }}> OUTFIT AI</span></>
+            : <>Mia <span>Outfit AI</span></>
+          }
         </div>
 
-        <h1 className="auth-title">Criar sua conta</h1>
-        <p className="auth-subtitle">Comece seu teste gratuito de 15 dias</p>
+        <h1 className="auth-title">Crie sua conta.</h1>
+        <p className="auth-subtitle">Comece grátis — sem cartão de crédito</p>
 
         {showConfirmEmail && (
           <div className="auth-confirm-email">
@@ -106,21 +123,22 @@ export default function CadastroPage() {
           </div>
         )}
 
-        <button className="btn-google" onClick={handleGoogle} disabled={loadingGoogle}>
+        <button className="google-btn" onClick={handleGoogle} disabled={loadingGoogle}>
           <GoogleIcon />
           {loadingGoogle ? 'Conectando...' : 'Continuar com Google'}
         </button>
 
-        <div className="divider">
-          <div className="divider-line" />
-          <span>ou</span>
-          <div className="divider-line" />
+        <div className="auth-divider">
+          <div className="auth-divider-line" />
+          <span className="auth-divider-text">ou</span>
+          <div className="auth-divider-line" />
         </div>
 
         <form onSubmit={handleCadastro}>
-          <div className="field">
-            <label>Nome</label>
+          <div className="auth-field">
+            <label className="auth-label">Nome</label>
             <input
+              className="auth-input"
               type="text"
               placeholder="Seu nome"
               value={name}
@@ -128,9 +146,10 @@ export default function CadastroPage() {
               required
             />
           </div>
-          <div className="field">
-            <label>E-mail</label>
+          <div className="auth-field">
+            <label className="auth-label">E-mail</label>
             <input
+              className="auth-input"
               type="email"
               placeholder="seu@email.com"
               value={email}
@@ -138,9 +157,10 @@ export default function CadastroPage() {
               required
             />
           </div>
-          <div className="field">
-            <label>Senha</label>
+          <div className="auth-field">
+            <label className="auth-label">Senha</label>
             <input
+              className="auth-input"
               type="password"
               placeholder="mínimo 6 caracteres"
               value={password}
@@ -150,22 +170,20 @@ export default function CadastroPage() {
             />
           </div>
           {error && <p className="error-msg">{error}</p>}
-          <button type="submit" className="btn-primary" disabled={loading || showConfirmEmail}>
+          <button type="submit" className="auth-cta" disabled={loading || showConfirmEmail}>
             {loading ? 'Criando conta...' : 'Criar conta'}
           </button>
         </form>
 
-        <div className="footer-link auth-footer-link--top">
-          Já tem conta?{' '}
-          <a href="/login">Entrar</a>
-        </div>
-
         <div className="auth-links">
-          <a href="/termos">Termos de Uso</a>
-          <span className="auth-links-sep">·</span>
-          <a href="/privacidade">Privacidade</a>
+          <p>Já tem conta? <a href="/login">Entrar</a></p>
         </div>
 
+        <div className="auth-footer">
+          <a href="/termos">Termos de Uso</a>
+          <a href="/privacidade">Privacidade</a>
+          <a href="/sobre">Sobre</a>
+        </div>
       </div>
     </div>
   )
