@@ -67,6 +67,17 @@ export async function POST(request: Request) {
 
     const predictionId = data.id
 
+    // Registra a prediction associada ao usuário para validar ownership
+    // na rota de status (/api/tryon/status). Requer a tabela tryon_predictions.
+    if (predictionId) {
+      const { error: insertError } = await supabase
+        .from('tryon_predictions')
+        .insert({ user_id: user.id, prediction_id: predictionId })
+      if (insertError) {
+        console.error('[tryon] erro ao registrar prediction:', insertError.message)
+      }
+    }
+
     return NextResponse.json({ predictionId })
 
   } catch (error) {

@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { checkRateLimit, incrementUsage } from "@/lib/rate-limit";
+import { checkRateLimit, incrementUsage, rateLimitResponse } from "@/lib/rate-limit";
 
 interface ChatMessage {
   role: 'user' | 'assistant'
@@ -286,15 +286,7 @@ export async function POST(request: Request) {
 
   const rateCheck = await checkRateLimit(user.id, 'mia_chat')
   if (!rateCheck.allowed) {
-    const isExpired = rateCheck.plan === 'expired'
-    return NextResponse.json(
-      {
-        error: isExpired
-          ? 'Seu período de teste de 15 dias encerrou. Assine o Mia Pro para continuar! 🚀'
-          : `Limite atingido (${rateCheck.used}/${rateCheck.limit}). Faça upgrade para o Pro.`,
-      },
-      { status: 429 }
-    )
+    return rateLimitResponse(rateCheck)
   }
 
   let message: string, history: ChatMessage[], weather: WeatherData | null, weatherContext: string | null, anchorPiece: AnchorPiece | null

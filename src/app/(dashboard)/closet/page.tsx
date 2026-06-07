@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import NextImage from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Piece, WishlistItem } from '@/types/database'
@@ -11,6 +12,8 @@ import WishlistSuggestionsModal, { WishlistSuggestion } from '@/components/close
 import WishlistSavedModal from '@/components/closet/WishlistSavedModal'
 import ClosetFiltersDrawer from '@/components/closet/ClosetFiltersDrawer'
 import PieceDetailModal from '@/components/closet/PieceDetailModal'
+import ModeToggle from '@/components/ui/ModeToggle'
+import TrialExpiredModal from '@/components/ui/TrialExpiredModal'
 import '../../closet.css'
 import '../../perfil.css'
 import '../../wishlist.css'
@@ -101,20 +104,10 @@ export default function ClosetPage() {
   const [showUpgradeBanner, setShowUpgradeBanner] = useState(false)
 
   // Layout
-  const [cols, setCols] = useState(() => {
-    if (typeof window === 'undefined') return 2
-    const saved = localStorage.getItem('closet_cols')
-    const parsed = parseInt(saved || '2', 10)
-    return [1, 2, 3, 4, 5].includes(parsed) ? parsed : 2
-  })
+  const [cols, setCols] = useState(4)
   const [showColsMenu, setShowColsMenu] = useState(false)
   const [search, setSearch] = useState('')
   const [activeGroup, setActiveGroup] = useState<GroupKey>('Todos')
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    if (typeof window === 'undefined') return 'light'
-    return (localStorage.getItem('mia_theme') as 'light' | 'dark') ?? 'light'
-  })
-  const [mounted, setMounted] = useState(false)
 
   // Filtros drawer
   const [filterOpen, setFilterOpen] = useState(false)
@@ -127,6 +120,7 @@ export default function ClosetPage() {
 
   // Wishlist
   const [wishlistGenerating, setWishlistGenerating] = useState(false)
+  const [showTrialExpired, setShowTrialExpired] = useState(false)
   const [wishlistSuggestions, setWishlistSuggestions] = useState<WishlistSuggestion[]>([])
   const [wishlistModalOpen, setWishlistModalOpen] = useState(false)
   const [savedSuggestionIds, setSavedSuggestionIds] = useState<number[]>([])
@@ -195,10 +189,12 @@ export default function ClosetPage() {
   }
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true)
-    document.documentElement.setAttribute('data-theme', theme)
-  }, [theme])
+    const saved = localStorage.getItem('mia-closet-cols')
+    if (saved) {
+      const parsed = parseInt(saved, 10)
+      if ([1, 2, 3, 4, 5].includes(parsed)) setCols(parsed)
+    }
+  }, [])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -243,13 +239,6 @@ export default function ClosetPage() {
     filterCategory, ...filterSeason, ...filterStyle, ...filterColor, ...filterBrand, ...filterFit,
   ].filter(Boolean).length
 
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light'
-    setTheme(newTheme)
-    localStorage.setItem('mia_theme', newTheme)
-    document.documentElement.setAttribute('data-theme', newTheme)
-    document.documentElement.setAttribute('data-auth-theme', newTheme)
-  }
 
   function openPieceDetail(piece: Piece) {
     setSelectedPiece(piece)
@@ -428,9 +417,13 @@ export default function ClosetPage() {
     try {
       const res = await fetch('/api/wishlist/generate', { method: 'POST' })
       const data = await res.json()
+      if (data.code === 'TRIAL_EXPIRED') {
+        setShowTrialExpired(true)
+        return
+      }
       if (data.suggestions) { setWishlistSuggestions(data.suggestions); setSavedSuggestionIds([]); setWishlistModalOpen(true) }
     } catch {}
-    setWishlistGenerating(false)
+    finally { setWishlistGenerating(false) }
   }
 
   async function loadWishlistItems() {
@@ -515,11 +508,7 @@ export default function ClosetPage() {
           >
             ♡
           </button>
-          {mounted && (
-            <button className="dash-theme-toggle" onClick={toggleTheme}>
-              {theme === 'light' ? '🌙' : '☀️'}
-            </button>
-          )}
+          <ModeToggle />
         </div>
       </div>
 
@@ -564,7 +553,7 @@ export default function ClosetPage() {
                   <button
                     key={opt.value}
                     className={`closet-cols-option ${cols === opt.value ? 'active' : ''}`}
-                    onClick={() => { setCols(opt.value); localStorage.setItem('closet_cols', String(opt.value)); setShowColsMenu(false) }}
+                    onClick={() => { setCols(opt.value); localStorage.setItem('mia-closet-cols', String(opt.value)); setShowColsMenu(false) }}
                   >
                     <span>{opt.label}</span>
                     {cols === opt.value && <span>✓</span>}
@@ -621,7 +610,7 @@ export default function ClosetPage() {
             <div key={piece.id} className="closet-piece-card" onClick={() => openPieceDetail(piece)}>
               <div className="closet-piece-photo">
                 {piece.photo_url ? (
-                  <img src={piece.photo_url} alt={piece.name} />
+                  <NextImage src={piece.photo_url} alt={piece.name} fill sizes="(max-width: 768px) 25vw, 20vw" />
                 ) : (
                   <div className="closet-piece-no-photo"><span>👗</span></div>
                 )}
@@ -742,6 +731,11 @@ export default function ClosetPage() {
         onDelete={handleDelete}
         onAddPhoto={handleAddPhoto}
         onSetAnchor={handleSetAnchor}
+      />
+
+      <TrialExpiredModal
+        isOpen={showTrialExpired}
+        onClose={() => setShowTrialExpired(false)}
       />
 
       <WishlistSuggestionsModal

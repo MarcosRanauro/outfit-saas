@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
+.trial-expired-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(250, 248, 245, 0.88);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 24px;
+}
+
+html.mode-dark .trial-expired-overlay {
+  background: rgba(8, 8, 8, 0.92);
+}
+
+.trial-expired-card {
+  background: var(--ec-white);
+  border: 0.5px solid var(--ec-border);
+  border-radius: 16px;
+  padding: 40px 32px;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+}
+
+.trial-expired-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--ec-text-primary);
+  margin-bottom: 8px;
+  letter-spacing: 0;
+}
+
+html.mode-dark .trial-expired-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 20px;
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+}
+
+.trial-expired-sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: var(--ec-text-secondary);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.trial-expired-price {
+  margin-bottom: 20px;
+}
+
+.price-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 42px;
+  font-weight: 300;
+  color: var(--ec-text-primary);
+}
+
+html.mode-dark .price-value {
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+}
+
+.price-period {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  color: var(--ec-text-muted);
+  margin-left: 4px;
+}
+
+.trial-expired-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 28px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.trial-expired-features li {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: var(--ec-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trial-expired-features li::before {
+  content: '—';
+  color: var(--ec-accent);
+  font-weight: 300;
+}
+
+.trial-expired-cta {
+  width: 100%;
+  padding: 13px;
+  border-radius: 999px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  background: var(--ec-accent);
+  color: #faf8f5;
+  margin-bottom: 10px;
+  transition: background 150ms;
+}
+
+.trial-expired-cta:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+html.mode-dark .trial-expired-cta {
+  color: #080808;
+}
+
+.trial-expired-close {
+  width: 100%;
+  padding: 10px;
+  border-radius: 999px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--ec-text-muted);
+}

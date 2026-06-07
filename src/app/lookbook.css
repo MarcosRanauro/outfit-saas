@@ -318,6 +318,7 @@
 }
 
 .lookbook-detail-photo {
+  position: relative;
   aspect-ratio: 1;
   background: #1a1a1a;
   border-radius: 10px;
@@ -373,6 +374,7 @@
 }
 
 .lookbook-detail-piece-photo {
+  position: relative;
   width: 42px;
   height: 42px;
   border-radius: 8px;

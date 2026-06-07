@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import TrialExpiredModal from '@/components/ui/TrialExpiredModal'
 import '../../mia.css'
 
 interface OutfitPiece {
@@ -78,6 +79,7 @@ export default function MiaPage() {
   const [savedOutfitIds, setSavedOutfitIds] = useState<Set<string>>(new Set())
   const [savedWishlistIds, setSavedWishlistIds] = useState<Set<string>>(new Set())
   const [expandedOutfits, setExpandedOutfits] = useState<Set<string>>(new Set())
+  const [showTrialExpired, setShowTrialExpired] = useState(false)
   const [anchorPiece, setAnchorPiece] = useState<AnchorPiece | null>(() => {
     if (typeof window === 'undefined') return null
     try {
@@ -213,8 +215,13 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
       })
 
       // Verifica rate limit antes de parsear
-      if (res.status === 429) {
+      if (res.status === 429 || res.status === 403) {
         const errorData = await res.json()
+        if (errorData.code === 'TRIAL_EXPIRED') {
+          setShowTrialExpired(true)
+          setLoading(false)
+          return
+        }
         setMessages(prev => [...prev, {
           role: 'mia',
           content: errorData.error || 'Você atingiu o limite do plano Free. Faça upgrade para o Pro para continuar usando a Mia sem limites! 🚀',
@@ -508,6 +515,11 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
           →
         </button>
       </div>
+
+      <TrialExpiredModal
+        isOpen={showTrialExpired}
+        onClose={() => setShowTrialExpired(false)}
+      />
 
     </div>
   )

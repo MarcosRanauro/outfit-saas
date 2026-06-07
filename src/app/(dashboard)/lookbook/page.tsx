@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import DashboardTopBanner from '@/components/layout/DashboardTopBanner'
@@ -283,7 +284,7 @@ export default function LookbookPage() {
                   {[0, 1, 2].map(i => (
                     <div key={i} className="lookbook-card-photo">
                       {outfitPieces[i]?.photo_url ? (
-                        <img src={outfitPieces[i].photo_url!} alt={outfitPieces[i].name} />
+                        <Image src={outfitPieces[i].photo_url!} alt={outfitPieces[i].name} fill sizes="(max-width: 768px) 33vw, 130px" />
                       ) : (
                         <div className="lookbook-photo-empty" />
                       )}
@@ -345,7 +346,7 @@ export default function LookbookPage() {
                       style={outfitPieces.length === 5 && i === 4 ? { gridColumnStart: '3' } : undefined}
                     >
                       {piece.photo_url ? (
-                        <img src={piece.photo_url!} alt={piece.name} />
+                        <Image src={piece.photo_url!} alt={piece.name} fill sizes="(max-width: 768px) 33vw, 200px" />
                       ) : (
                         <div className="lookbook-piece-placeholder" />
                       )}
@@ -368,7 +369,7 @@ export default function LookbookPage() {
                   <div key={i} className="lookbook-detail-piece">
                     <div className="lookbook-detail-piece-photo">
                       {piece.photo_url ? (
-                        <img src={piece.photo_url} alt={piece.name} />
+                        <Image src={piece.photo_url} alt={piece.name} fill sizes="42px" />
                       ) : (
                         <div className="lookbook-piece-placeholder--sm" />
                       )}

@@ -1,4 +1,4 @@
-/* ─── TEMA CLARO (padrão) ─────────────────────── */
+/* ─── TEMA CLARO (padrão — mantido para compat com outras páginas) */
 
 :root,
 [data-theme="light"] {
@@ -16,7 +16,7 @@
   --dash-nav: #d8d8e8;
 }
 
-/* ─── TEMA ESCURO ─────────────────────────────── */
+/* ─── TEMA ESCURO (mantido para compat com outras páginas) */
 
 [data-theme="dark"] {
   --dash-bg: #111618;
@@ -39,7 +39,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: var(--dash-bg);
+  background: var(--ec-bg-primary);
   transition: background 0.3s ease;
 }
 
@@ -47,7 +47,7 @@
   flex: 1;
   overflow-y: auto;
   padding-bottom: 80px;
-  background: var(--dash-bg);
+  background: var(--ec-bg-primary);
 }
 
 /* ─── BANNER ──────────────────────────────────── */
@@ -57,7 +57,7 @@
   width: 100%;
   height: 132px;
   overflow: hidden;
-  border-bottom: 0.5px solid rgba(180, 140, 60, 0.2);
+  border-bottom: 0.5px solid var(--ec-accent-border);
 }
 
 @media (min-width: 480px) {
@@ -80,8 +80,10 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: var(--dash-nav);
-  border-top: 0.5px solid var(--dash-border-subtle);
+  background: rgba(250,248,245,0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 0.5px solid var(--ec-border-light);
   display: flex;
   justify-content: space-around;
   padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
@@ -89,7 +91,13 @@
   transition: background 0.3s ease;
 }
 
-/* Classe legada — mantida para compatibilidade com BottomNav.tsx */
+html.mode-dark .bottom-nav {
+  background: rgba(8,8,8,0.92);
+  border-top-color: var(--ec-border);
+}
+
+/* ─── NAV ITEM ────────────────────────────────── */
+
 .nav-item {
   display: flex;
   flex-direction: column;
@@ -99,15 +107,44 @@
   flex: 1;
   padding: 8px 0;
   text-decoration: none;
+  color: var(--ec-text-muted);
+  transition: color 0.2s;
+}
+
+.nav-item.active {
+  color: var(--ec-accent);
 }
 
 .nav-label {
   font-size: 9px;
   letter-spacing: 1px;
   text-transform: uppercase;
+  font-family: var(--font-inter), sans-serif;
 }
 
-/* Nova classe (para futura atualização do BottomNav) */
+/* ─── ÍCONE MIA (círculo especial) ────────────── */
+
+.nav-mia-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--ec-accent-faint);
+  border: 1.5px solid var(--ec-accent-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: var(--ec-text-muted);
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.nav-item.active .nav-mia-icon {
+  background: var(--ec-accent-subtle);
+  border-color: var(--ec-accent-light);
+  color: var(--ec-accent);
+}
+
+/* Classe legada — mantida para compatibilidade */
 .bottom-nav-item {
   display: flex;
   flex-direction: column;
@@ -115,24 +152,12 @@
   gap: 3px;
   padding: 4px 16px;
   text-decoration: none;
-  color: var(--dash-text-faint);
+  color: var(--ec-text-muted);
   font-size: 10px;
   letter-spacing: 0.5px;
   transition: color 0.2s;
 }
 
-[data-theme="light"] .bottom-nav {
-  border-top: 1px solid rgba(26,26,46,0.2);
-}
-
-[data-theme="light"] .bottom-nav-item {
-  color: rgba(26,26,46,0.55);
-}
-
-[data-theme="light"] .bottom-nav-item.active {
-  color: #B48C3C;
-}
-
 .bottom-nav-item.active {
-  color: var(--dash-gold);
+  color: var(--ec-accent);
 }
