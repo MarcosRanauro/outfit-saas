@@ -950,6 +950,42 @@
   border: 1px dashed var(--ec-accent-border);
 }
 
+.piece-detail-gallery {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  z-index: 2;
+}
+
+.piece-detail-gallery::-webkit-scrollbar { display: none; }
+
+.piece-detail-gallery-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1.5px solid transparent;
+  flex-shrink: 0;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 150ms;
+  background: var(--ec-bg-secondary);
+  padding: 0;
+}
+
+.piece-detail-gallery-thumb.active {
+  border-color: var(--ec-accent);
+}
+
+.piece-detail-gallery-thumb img {
+  object-fit: cover;
+}
+
 .piece-detail-name-overlay {
   position: absolute;
   bottom: 0;

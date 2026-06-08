@@ -4,14 +4,13 @@ import { useEffect, useRef, useState } from 'react'
 import NextImage from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Piece, WishlistItem } from '@/types/database'
+import { Piece, WishlistItem } from '@/types/app'
 import { toBase64, moderateImage } from '@/lib/image'
 import ClosetOnboarding from '@/components/closet/ClosetOnboarding'
 import ClosetTour from '@/components/closet/ClosetTour'
 import WishlistSuggestionsModal, { WishlistSuggestion } from '@/components/closet/WishlistSuggestionsModal'
 import WishlistSavedModal from '@/components/closet/WishlistSavedModal'
 import ClosetFiltersDrawer from '@/components/closet/ClosetFiltersDrawer'
-import PieceDetailModal from '@/components/closet/PieceDetailModal'
 import ModeToggle from '@/components/ui/ModeToggle'
 import TrialExpiredModal from '@/components/ui/TrialExpiredModal'
 import '../../closet.css'
@@ -89,9 +88,6 @@ export default function ClosetPage() {
   const [pieces, setPieces] = useState<Piece[]>([])
   const [loading, setLoading] = useState(true)
   const [userPlan, setUserPlan] = useState<string>('free')
-  const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null)
-  const [detailOpen, setDetailOpen] = useState(false)
-  const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [anchorPieceId, setAnchorPieceId] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null
     try {
@@ -163,7 +159,16 @@ export default function ClosetPage() {
     if (!user) return
 
     const [piecesResult, profileResult] = await Promise.all([
-      supabase.from('pieces').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+      supabase.from('pieces').select(`
+        *,
+        piece_photos (
+          id,
+          url,
+          is_cover,
+          is_studio,
+          sort_order
+        )
+      `).eq('user_id', user.id).order('created_at', { ascending: false }),
       supabase.from('profiles').select('plan, name, height, weight, style, closet_tour_completed, trial_ends_at').eq('id', user.id).single(),
     ])
 
@@ -203,19 +208,6 @@ export default function ClosetPage() {
   }, [])
 
   useEffect(() => {
-    if (loading || pieces.length === 0) return
-    const params = new URLSearchParams(window.location.search)
-    const pieceId = params.get('piece')
-    if (!pieceId) return
-    const piece = pieces.find(p => p.id === pieceId)
-    if (piece) {
-      setSelectedPiece(piece)
-      setDetailOpen(true)
-      window.history.replaceState({}, '', '/closet')
-    }
-  }, [loading, pieces])
-
-  useEffect(() => {
     if (!tourOpen) return
     const refs = [suggestBtnRef, wishlistBtnRef, fabRef]
     const el = refs[tourStep]?.current
@@ -252,11 +244,6 @@ export default function ClosetPage() {
     filterCategory, ...filterSeason, ...filterStyle, ...filterColor, ...filterBrand, ...filterFit,
   ].filter(Boolean).length
 
-
-  function openPieceDetail(piece: Piece) {
-    setSelectedPiece(piece)
-    setDetailOpen(true)
-  }
 
   async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -362,58 +349,6 @@ export default function ClosetPage() {
     }
   }
 
-  async function handleDelete() {
-    if (!selectedPiece) return
-    try {
-      const { error } = await supabase.from('pieces').delete().eq('id', selectedPiece.id)
-      if (error) throw error
-      setPieces(prev => prev.filter(p => p.id !== selectedPiece.id))
-      try {
-        const savedAnchor = sessionStorage.getItem('anchor_piece')
-        if (savedAnchor) {
-          const anchor = JSON.parse(savedAnchor)
-          if (anchor.id === selectedPiece.id) { sessionStorage.removeItem('anchor_piece'); setAnchorPieceId(null) }
-        }
-      } catch {}
-      setDetailOpen(false); setSelectedPiece(null)
-    } catch {
-      alert('Erro ao excluir a peça. Tente novamente.')
-    }
-  }
-
-  async function handleAddPhoto(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file || !selectedPiece) return
-    const base64 = await toBase64(file)
-    const approved = await moderateImage(base64)
-    if (!approved) {
-      alert('Esta imagem não é permitida. Por favor, envie uma foto de roupa ou acessório.')
-      return
-    }
-    setUploadingPhoto(true)
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const path = `${user.id}/${Date.now()}.jpg`
-      const compressedFile = await compressImageForUpload(file)
-      const { error: uploadError } = await supabase.storage.from('pieces').upload(path, compressedFile, { contentType: 'image/jpeg' })
-      if (!uploadError) {
-        const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(path)
-        const { data } = await supabase.from('pieces').update({ photo_url: urlData.publicUrl }).eq('id', selectedPiece.id).select().single()
-        if (data) {
-          setPieces(prev => prev.map(p => p.id === data.id ? data : p))
-          setSelectedPiece(data)
-          if (data.id === anchorPieceId) sessionStorage.setItem('anchor_piece', JSON.stringify(data))
-        }
-      }
-    } catch (err) {
-      console.error('Erro ao adicionar foto:', err)
-      alert('Erro ao adicionar foto. Tente novamente.')
-    } finally {
-      setUploadingPhoto(false)
-    }
-  }
-
   async function handleTourFinish() {
     const { data: { user } } = await supabase.auth.getUser()
     if (user) await supabase.from('profiles').update({ closet_tour_completed: true }).eq('id', user.id)
@@ -476,13 +411,6 @@ export default function ClosetPage() {
     setName(item.name); setCategory(item.category); setColor(item.color || '')
     setBrand(''); setPhoto(null); setPhotoPreview(null)
     setPurchasingWishlistId(item.id); setWishlistSavedOpen(false); setModalOpen(true)
-  }
-
-  function handleSetAnchor(piece: Piece) {
-    sessionStorage.setItem('anchor_piece', JSON.stringify(piece))
-    setAnchorPieceId(piece.id)
-    setDetailOpen(false)
-    setSelectedPiece(null)
   }
 
   function handleFiltersReset() {
@@ -620,7 +548,7 @@ export default function ClosetPage() {
           </div>
         ) : (
           filteredPieces.map(piece => (
-            <div key={piece.id} className="closet-piece-card" onClick={() => openPieceDetail(piece)}>
+            <div key={piece.id} className="closet-piece-card" onClick={() => router.push(`/closet/${piece.id}`)}>
               <div className="closet-piece-photo">
                 {piece.photo_url ? (
                   <NextImage src={piece.photo_url} alt={piece.name} fill sizes="(max-width: 768px) 25vw, 20vw" />
@@ -733,18 +661,6 @@ export default function ClosetPage() {
           </button>
         </div>
       </div>
-
-      {/* ─── COMPONENTES EXTRAÍDOS ─── */}
-      <PieceDetailModal
-        open={detailOpen}
-        piece={selectedPiece}
-        uploadingPhoto={uploadingPhoto}
-        anchorPieceId={anchorPieceId}
-        onClose={() => { setDetailOpen(false); setSelectedPiece(null) }}
-        onDelete={handleDelete}
-        onAddPhoto={handleAddPhoto}
-        onSetAnchor={handleSetAnchor}
-      />
 
       <TrialExpiredModal
         isOpen={showTrialExpired}

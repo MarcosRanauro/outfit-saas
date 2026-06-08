@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { toBase64, moderateImage } from '@/lib/image'
+import TrialExpiredModal from '@/components/ui/TrialExpiredModal'
+import StudioScannerOverlay from '@/components/studio/StudioScannerOverlay'
 import './nova-peca.css'
 
 const PIECE_CATEGORIES = [
@@ -64,12 +66,12 @@ export default function NovaPecaPage() {
   const [moderating, setModerating] = useState(false)
   const [moderationError, setModerationError] = useState<string | null>(null)
   const [pendingPreview, setPendingPreview] = useState<string | null>(null)
-  const [photos, setPhotos] = useState<File[]>([])
-  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0)
+  const [photo, setPhoto] = useState<File | null>(null)
   const [aiSuggestion, setAiSuggestion] = useState<Record<string, string> | null>(null)
 
   const [studioImages, setStudioImages] = useState<string[]>([])
   const [studioLoading, setStudioLoading] = useState(false)
+  const [ghostLoading, setGhostLoading] = useState(false)
   const [studioModalOpen, setStudioModalOpen] = useState(false)
   const [selectedStudioIndex, setSelectedStudioIndex] = useState<number | null>(null)
 
@@ -83,11 +85,28 @@ export default function NovaPecaPage() {
   const [styleType, setStyleType] = useState('')
   const [description, setDescription] = useState('')
   const [notes, setNotes] = useState('')
+  const [showTrialExpired, setShowTrialExpired] = useState(false)
 
   useEffect(() => {
     const saved = localStorage.getItem('mia_theme') as 'light' | 'dark' | null
     document.documentElement.setAttribute('data-theme', saved || 'light')
   }, [])
+
+  function handleApiError(response: Response, data: Record<string, unknown>): boolean {
+    if (response.ok) return false
+
+    if (data.code === 'TRIAL_EXPIRED') {
+      setShowTrialExpired(true)
+      return true
+    }
+
+    if (data.code === 'RATE_LIMITED') {
+      alert('Limite do plano atingido. Faça upgrade para continuar.')
+      return true
+    }
+
+    return false
+  }
 
   async function analyzeFile(file: File) {
     setAnalyzing(true)
@@ -98,7 +117,9 @@ export default function NovaPecaPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ imageBase64: base64, mimeType }),
       })
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
+      if (handleApiError(res, data)) return
+
       if (res.ok && data.suggestion) {
         const s = data.suggestion
         if (s.name) setName(s.name)
@@ -143,23 +164,9 @@ export default function NovaPecaPage() {
 
     if (blocked) return
 
-    setPhotos([file])
-    setSelectedPhotoIndex(0)
+    setPhoto(file)
     setAiSuggestion(null)
     analyzeFile(file)
-  }
-
-  async function handleAddPhoto(file: File) {
-    const base64 = await toBase64(file)
-    const approved = await moderateImage(base64)
-    if (!approved) {
-      alert('Esta imagem não é permitida. Por favor, envie uma foto de roupa ou acessório.')
-      return
-    }
-    setPhotos(prev => {
-      if (prev.length >= 6) return prev
-      return [...prev, file]
-    })
   }
 
   async function handleGenerateStudio() {
@@ -167,30 +174,68 @@ export default function NovaPecaPage() {
     setStudioLoading(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user || !photos[0]) return
+      if (!user || !photo) return
 
-      const ts = Date.now()
-      const photo_urls: string[] = []
-      for (let i = 0; i < photos.length; i++) {
-        const filename = `studio-input/${user.id}/${ts}_${i}.jpg`
-        await supabase.storage.from('pieces').upload(filename, photos[i], { upsert: true })
-        const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(filename)
-        photo_urls.push(urlData.publicUrl)
-      }
+      const filename = `studio-input/${user.id}/${Date.now()}.jpg`
+      await supabase.storage.from('pieces').upload(filename, photo, { upsert: true })
+      const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(filename)
+      const photo_urls = [urlData.publicUrl]
 
       const res = await fetch('/api/pieces/studio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, category, color, color_secondary: colorSecondary || null, brand: brand || null, description: description || null, photo_urls }),
       })
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
+      if (handleApiError(res, data)) return
+
       if (res.ok && data.images?.length) {
         setStudioImages(data.images)
       }
-    } catch {
-      // geração é opcional
+    } catch (error) {
+      console.error('Erro ao gerar foto de estúdio:', error)
+      alert('Erro ao gerar foto de estúdio. Tente novamente.')
     } finally {
       setStudioLoading(false)
+    }
+  }
+
+  async function handleGenerateGhostMannequin() {
+    if (!photo) return
+
+    setGhostLoading(true)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const compressed = await compressForUpload(photo)
+      const tempPath = `studio-input/${user.id}/temp_${Date.now()}.jpg`
+      const { error: uploadError } = await supabase.storage
+        .from('pieces')
+        .upload(tempPath, compressed, { contentType: 'image/jpeg', upsert: true })
+      if (uploadError) return
+
+      const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(tempPath)
+
+      const res = await fetch('/api/pieces/ghost-mannequin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photo_url: urlData.publicUrl }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (handleApiError(res, data)) return
+
+      if (res.ok && data.studio_urls?.length > 0) {
+        setStudioImages(prev => {
+          setSelectedStudioIndex(prev.length)
+          return [...prev, ...data.studio_urls]
+        })
+      }
+    } catch (error) {
+      console.error('Ghost mannequin error:', error)
+      alert('Erro ao gerar manequim fantasma. Tente novamente.')
+    } finally {
+      setGhostLoading(false)
     }
   }
 
@@ -201,69 +246,89 @@ export default function NovaPecaPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      let photo_url = null
+      const uploadedUrls: { url: string; isStudio: boolean; isCover: boolean }[] = []
+      const ts = Date.now()
 
-      if (selectedStudioIndex !== null && studioImages[selectedStudioIndex]) {
-        // Studio image selected as cover — download and re-upload to Supabase Storage
-        const studioUrl = studioImages[selectedStudioIndex]
-        const blob = await fetch(studioUrl).then(r => r.blob())
-        const path = `${user.id}/${Date.now()}.jpg`
+      if (photo) {
+        const compressed = await compressForUpload(photo)
+        const path = `${user.id}/${ts}.jpg`
         const { error: uploadError } = await supabase.storage
           .from('pieces')
-          .upload(path, blob, { contentType: 'image/jpeg' })
+          .upload(path, compressed, { contentType: 'image/jpeg' })
         if (!uploadError) {
           const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(path)
-          photo_url = urlData.publicUrl
-        }
-      } else if (photos.length > 0) {
-        const primaryFile = photos[selectedPhotoIndex] ?? photos[0]
-        const primaryPath = `${user.id}/${Date.now()}.jpg`
-        const primaryCompressed = await compressForUpload(primaryFile)
-        const { error: uploadError } = await supabase.storage
-          .from('pieces')
-          .upload(primaryPath, primaryCompressed, { contentType: 'image/jpeg' })
-        if (!uploadError) {
-          const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(primaryPath)
-          photo_url = urlData.publicUrl
-        }
-        for (let i = 0; i < photos.length; i++) {
-          if (i === selectedPhotoIndex) continue
-          const extraPath = `${user.id}/${Date.now()}-${i}.jpg`
-          const extraCompressed = await compressForUpload(photos[i])
-          await supabase.storage.from('pieces').upload(extraPath, extraCompressed, { contentType: 'image/jpeg' })
+          uploadedUrls.push({
+            url: urlData.publicUrl,
+            isStudio: false,
+            isCover: selectedStudioIndex === null,
+          })
         }
       }
 
-      const { error } = await supabase.from('pieces').insert({
-        user_id: user.id,
-        code: `P${Date.now()}`,
-        name,
-        category,
-        color: color || null,
-        color_secondary: colorSecondary || null,
-        brand: brand || null,
-        photo_url,
-        fit: fit || null,
-        style_type: styleType || null,
-        season: season || null,
-        description: description || null,
-        notes: notes || null,
-      })
+      for (let i = 0; i < studioImages.length; i++) {
+        uploadedUrls.push({
+          url: studioImages[i],
+          isStudio: true,
+          isCover: selectedStudioIndex === i,
+        })
+      }
 
-      if (error) throw error
+      if (uploadedUrls.length > 0 && !uploadedUrls.some(p => p.isCover)) {
+        uploadedUrls[0].isCover = true
+      }
+
+      const coverPhoto = uploadedUrls.find(p => p.isCover) ?? uploadedUrls[0]
+
+      const { data: piece, error: pieceError } = await supabase
+        .from('pieces')
+        .insert({
+          user_id: user.id,
+          code: `P${Date.now()}`,
+          name,
+          category,
+          color: color || null,
+          color_secondary: colorSecondary || null,
+          brand: brand || null,
+          photo_url: coverPhoto?.url ?? null,
+          fit: fit || null,
+          style_type: styleType || null,
+          season: season || null,
+          description: description || null,
+          notes: notes || null,
+        })
+        .select()
+        .single()
+
+      if (pieceError || !piece) throw pieceError
+
+      if (uploadedUrls.length > 0) {
+        const photoRows = uploadedUrls.map((p, i) => ({
+          piece_id: piece.id,
+          user_id: user.id,
+          url: p.url,
+          is_cover: p.isCover,
+          is_studio: p.isStudio,
+          sort_order: i,
+        }))
+
+        const { error: photosError } = await supabase.from('piece_photos').insert(photoRows)
+        if (photosError) throw photosError
+      }
+
       router.push('/closet')
-    } catch {
+    } catch (error) {
+      console.error('Erro ao salvar:', error)
       alert('Erro ao salvar a peça. Tente novamente.')
     } finally {
       setSaving(false)
     }
   }
 
-  const canSave = !!name && !!category && !saving && !analyzing && !moderating
+  const canSave = !!name && !!category && !saving && !analyzing && !moderating && !studioLoading && !ghostLoading
   const mainPreview = selectedStudioIndex !== null
     ? studioImages[selectedStudioIndex]
-    : photos.length > 0
-      ? URL.createObjectURL(photos[selectedPhotoIndex] ?? photos[0])
+    : photo
+      ? URL.createObjectURL(photo)
       : pendingPreview
 
   return (
@@ -326,55 +391,33 @@ export default function NovaPecaPage() {
                 />
               </label>
             </div>
-
-            {!analyzing && (photos.length > 0 || studioImages.length > 0) && (
-              <div className="np-gallery">
-                {photos.map((photo, i) => (
-                  <button
-                    key={`photo-${i}`}
-                    type="button"
-                    className={`np-gallery-thumb ${selectedStudioIndex === null && selectedPhotoIndex === i ? 'active' : ''}`}
-                    onClick={() => { setSelectedPhotoIndex(i); setSelectedStudioIndex(null) }}
-                  >
-                    <img src={URL.createObjectURL(photo)} alt={`Foto ${i + 1}`} />
-                  </button>
-                ))}
-                {studioImages.map((url, i) => (
-                  <button
-                    key={`studio-${i}`}
-                    type="button"
-                    className={`np-gallery-thumb ${selectedStudioIndex === i ? 'active' : ''}`}
-                    onClick={() => setSelectedStudioIndex(prev => prev === i ? null : i)}
-                  >
-                    <img src={url} alt={`Estúdio ${i + 1}`} />
-                  </button>
-                ))}
-                {photos.length < 6 && (
-                  <label className="np-gallery-add">
-                    +
-                    <input
-                      type="file" accept="image/*"
-                      style={{ display: 'none' }}
-                      onChange={e => { const f = e.target.files?.[0]; if (f) handleAddPhoto(f) }}
-                    />
-                  </label>
-                )}
-              </div>
-            )}
           </>
         )}
 
         {/* ─── FOTO DE ESTÚDIO ─── */}
-        {!analyzing && aiSuggestion && (
+        {!analyzing && photo && (
           <>
+            {aiSuggestion && (
+              <button
+                className="np-studio-btn"
+                onClick={() => setStudioModalOpen(true)}
+                disabled={studioLoading || ghostLoading}
+              >
+                <span>✦</span>
+                {studioLoading ? 'Processando…' : 'Foto com modelo (IA)'}
+              </button>
+            )}
+
             <button
-              className="np-studio-btn"
-              onClick={() => setStudioModalOpen(true)}
-              disabled={studioLoading}
+              className="np-studio-btn np-studio-btn--ghost"
+              onClick={handleGenerateGhostMannequin}
+              disabled={ghostLoading || studioLoading}
             >
-              <span>✦</span>
-              {studioLoading ? 'Gerando fotos…' : 'Criar foto de estúdio'}
+              {ghostLoading ? 'Processando…' : '👻 Manequim fantasma'}
             </button>
+            <p className="np-studio-hint">
+              💡 Use uma foto nítida da frente da peça para melhores resultados.
+            </p>
 
             {studioImages.length > 0 && (
               <div className="np-studio-area">
@@ -569,18 +612,21 @@ export default function NovaPecaPage() {
         </div>
       )}
 
-      {/* ─── MODAL DE LOADING ─── */}
-      {studioLoading && (
-        <div className="np-loading-backdrop">
-          <div className="np-loading-modal">
-            <span className="np-loading-spinner" />
-            <p className="np-loading-title">Criando fotos de estúdio...</p>
-            <p className="np-loading-sub">
-              A Mia está processando suas fotos. Isso pode levar alguns segundos.
-            </p>
-          </div>
-        </div>
-      )}
+      <StudioScannerOverlay
+        open={studioLoading || ghostLoading}
+        photoSrc={photo ? URL.createObjectURL(photo) : null}
+        title={ghostLoading ? 'Criando manequim fantasma...' : 'Criando foto de estúdio...'}
+        subtitle={
+          ghostLoading
+            ? 'A Mia está processando sua peça. Isso pode levar alguns segundos.'
+            : 'A Mia está analisando sua peça. Isso pode levar alguns segundos.'
+        }
+      />
+
+      <TrialExpiredModal
+        isOpen={showTrialExpired}
+        onClose={() => setShowTrialExpired(false)}
+      />
     </div>
   )
 }

@@ -193,7 +193,7 @@ export default function OutfitDetailPage() {
               {outfitPieces.map(piece => (
                 <Link
                   key={piece.id}
-                  href={`/closet?piece=${piece.id}`}
+                  href={`/closet/${piece.id}`}
                   className="outfit-piece-item"
                 >
                   <div className="outfit-piece-thumb">
