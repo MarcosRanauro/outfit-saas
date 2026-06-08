@@ -1,6 +1,6 @@
 'use client'
 
-import { WishlistItem } from '@/types/database'
+import { WishlistItem } from '@/types/app'
 
 interface WishlistSavedModalProps {
   open: boolean

@@ -1,0 +1,181 @@
+/* ─── MODAL DE LOADING — SCANNER (compartilhado) ──────────────── */
+
+.np-studio-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(250,248,245,0.88);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 110;
+  padding: 24px;
+}
+
+html.mode-dark .np-studio-overlay {
+  background: rgba(8,8,8,0.92);
+}
+
+.np-studio-modal {
+  background: var(--ec-white);
+  border: 0.5px solid var(--ec-border);
+  border-radius: 16px;
+  padding: 24px 20px;
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
+}
+
+.np-scanner-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3/4;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--ec-bg-secondary);
+  margin-bottom: 20px;
+}
+
+.np-scanner-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+
+.np-scanner-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--ec-accent);
+  box-shadow: 0 0 8px rgba(193,127,90,0.8), 0 0 20px rgba(193,127,90,0.4);
+  animation: np-scan 2s ease-in-out infinite;
+  top: 0;
+  z-index: 2;
+}
+
+html.mode-dark .np-scanner-line {
+  box-shadow: 0 0 8px rgba(184,151,74,0.8), 0 0 20px rgba(184,151,74,0.4);
+}
+
+.np-scanner-glow {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(
+    to bottom,
+    rgba(193,127,90,0.15) 0%,
+    transparent 100%
+  );
+  animation: np-scan 2s ease-in-out infinite;
+  top: 0;
+  z-index: 1;
+}
+
+html.mode-dark .np-scanner-glow {
+  background: linear-gradient(
+    to bottom,
+    rgba(184,151,74,0.12) 0%,
+    transparent 100%
+  );
+}
+
+@keyframes np-scan {
+  0%   { top: 0; }
+  50%  { top: calc(100% - 2px); }
+  100% { top: 0; }
+}
+
+.np-scanner-corners {
+  position: absolute;
+  inset: 8px;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.np-corner {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-color: var(--ec-accent);
+  border-style: solid;
+  opacity: 0.8;
+}
+
+.np-corner-tl { top: 0; left: 0; border-width: 2px 0 0 2px; }
+.np-corner-tr { top: 0; right: 0; border-width: 2px 2px 0 0; }
+.np-corner-bl { bottom: 0; left: 0; border-width: 0 0 2px 2px; }
+.np-corner-br { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
+
+.np-scanner-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ec-text-primary);
+  margin: 0 0 6px;
+}
+
+html.mode-dark .np-scanner-title {
+  font-family: var(--font-inter), 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.np-scanner-sub {
+  font-family: var(--font-inter), 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--ec-text-muted);
+  line-height: 1.55;
+  margin: 0 0 16px;
+}
+
+.np-progress-wrap {
+  width: 100%;
+  height: 3px;
+  background: var(--ec-border);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.np-progress-bar {
+  height: 100%;
+  background: var(--ec-accent);
+  border-radius: 999px;
+  animation: np-progress 2s ease-in-out infinite;
+}
+
+@keyframes np-progress {
+  0%   { width: 10%; margin-left: 0%; }
+  50%  { width: 40%; margin-left: 40%; }
+  100% { width: 10%; margin-left: 0%; }
+}
+
+.np-dots {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.np-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ec-accent);
+  opacity: 0.3;
+  animation: np-blink 1.2s ease-in-out infinite;
+}
+
+.np-dot:nth-child(2) { animation-delay: 0.2s; }
+.np-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes np-blink {
+  0%, 100% { opacity: 0.3; }
+  50%       { opacity: 1; }
+}

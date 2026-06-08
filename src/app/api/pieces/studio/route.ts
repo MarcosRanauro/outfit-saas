@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, incrementUsage, rateLimitResponse } from '@/lib/rate-limit'
 
-export const maxDuration = 60
+export const maxDuration = 120
 
 export async function POST(request: Request) {
   try {
@@ -206,58 +206,158 @@ export async function POST(request: Request) {
     // const urls = results.filter(Boolean) as string[]
     // ─── FIM FAL.AI ───
 
-    // ─── REMOVE.BG ───
-    const urls = (
-      await Promise.all(
-        photo_urls.slice(0, 3).map(async (photoUrl: string, i: number) => {
-          const formData = new FormData()
-          formData.append('image_url', photoUrl)
-          formData.append('size', 'auto')
-          formData.append('bg_color', 'ffffff')
-          formData.append('format', 'png')
-
-          const removeBgRes = await fetch('https://api.remove.bg/v1.0/removebg', {
-            method: 'POST',
-            headers: { 'X-Api-Key': process.env.REMOVE_BG_API_KEY || '' },
-            body: formData,
-          })
-
-          if (!removeBgRes.ok) {
-            console.error('Remove.bg error', i, removeBgRes.status, await removeBgRes.text())
-            return null
-          }
-
-          const pngBuffer = Buffer.from(await removeBgRes.arrayBuffer())
-
-          const { default: sharp } = await import('sharp')
-          const processedBuffer = await sharp(pngBuffer)
-            .resize(1024, 1024, { fit: 'contain', background: { r: 255, g: 255, b: 255 } })
-            .png()
-            .toBuffer()
-
-          const filename = `studio/${user.id}/${Date.now()}_${i}.png`
-          const { error } = await supabase.storage
-            .from('pieces')
-            .upload(filename, processedBuffer, { contentType: 'image/png', upsert: true })
-
-          if (error) {
-            console.error('Upload error', i, error)
-            return null
-          }
-
-          const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(filename)
-          return urlData.publicUrl
-        })
-      )
-    ).filter((u): u is string => u !== null)
+    // ─── REMOVE.BG (comentado — descomentar para reverter) ───
+    // const { default: sharp } = await import('sharp')
+    //
+    // const urls = (
+    //   await Promise.all(
+    //     photo_urls.slice(0, 3).map(async (photoUrl: string, i: number) => {
+    //       const imageBuffer = await fetch(photoUrl).then(r => r.arrayBuffer())
+    //
+    //       const resized = await sharp(Buffer.from(imageBuffer))
+    //         .resize(4000, 4000, {
+    //           fit: 'inside',
+    //           withoutEnlargement: true,
+    //         })
+    //         .jpeg({ quality: 90 })
+    //         .toBuffer()
+    //
+    //       const formData = new FormData()
+    //       formData.append('image_file', new Blob([new Uint8Array(resized)], { type: 'image/jpeg' }), 'piece.jpg')
+    //       formData.append('size', 'auto')
+    //       formData.append('type', 'product')
+    //       formData.append('crop', 'true')
+    //       formData.append('crop_margin', '8%')
+    //       formData.append('scale', '85%')
+    //       formData.append('position', 'center')
+    //       formData.append('bg_color', 'ffffff')
+    //       formData.append('format', 'jpg')
+    //
+    //       const removeBgRes = await fetch('https://api.remove.bg/v1.0/removebg', {
+    //         method: 'POST',
+    //         headers: { 'X-Api-Key': process.env.REMOVE_BG_API_KEY || '' },
+    //         body: formData,
+    //       })
+    //
+    //       if (!removeBgRes.ok) {
+    //         console.error('Remove.bg error', i, removeBgRes.status, await removeBgRes.text())
+    //         return null
+    //       }
+    //
+    //       const jpgBuffer = Buffer.from(await removeBgRes.arrayBuffer())
+    //
+    //       const processedBuffer = await sharp(jpgBuffer)
+    //         .resize(1024, 1024, { fit: 'contain', background: { r: 255, g: 255, b: 255 } })
+    //         .jpeg({ quality: 90 })
+    //         .toBuffer()
+    //
+    //       const filename = `studio/${user.id}/${Date.now()}_${i}.jpg`
+    //       const { error } = await supabase.storage
+    //         .from('pieces')
+    //         .upload(filename, processedBuffer, { contentType: 'image/jpeg', upsert: true })
+    //
+    //       if (error) {
+    //         console.error('Upload error', i, error)
+    //         return null
+    //       }
+    //
+    //       const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(filename)
+    //       return urlData.publicUrl
+    //     })
+    //   )
+    // ).filter((u): u is string => u !== null)
+    //
+    // if (urls.length === 0) {
+    //   return NextResponse.json({ error: 'Nenhuma imagem gerada' }, { status: 500 })
+    // }
+    //
+    // await incrementUsage(user.id, 'studio_generate')
+    // return NextResponse.json({ images: urls })
     // ─── FIM REMOVE.BG ───
 
-    if (urls.length === 0) {
-      return NextResponse.json({ error: 'Nenhuma imagem gerada' }, { status: 500 })
+    // ─── FASHN product-to-model ───
+    const photoUrl = photo_urls[0]
+
+    const fashnRes = await fetch('https://api.fashn.ai/v1/run', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.FASHN_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model_name: 'product-to-model',
+        inputs: {
+          product_image: photoUrl,
+          generation_mode: 'fast',
+          resolution: '1k',
+          aspect_ratio: '3:4',
+          output_format: 'jpeg',
+          num_images: 1,
+        },
+      }),
+    })
+
+    if (!fashnRes.ok) {
+      const err = await fashnRes.json().catch(() => ({}))
+      console.error('FASHN error:', err)
+      return NextResponse.json({ error: 'Erro ao iniciar geração de estúdio' }, { status: 500 })
     }
 
+    const { id: predictionId } = await fashnRes.json()
+    if (!predictionId) {
+      return NextResponse.json({ error: 'Erro ao iniciar geração de estúdio' }, { status: 500 })
+    }
+
+    const maxAttempts = 40
+    let outputUrl: string | null = null
+
+    for (let i = 0; i < maxAttempts; i++) {
+      await new Promise(resolve => setTimeout(resolve, 3000))
+
+      const statusRes = await fetch(`https://api.fashn.ai/v1/status/${predictionId}`, {
+        headers: { 'Authorization': `Bearer ${process.env.FASHN_API_KEY}` },
+      })
+
+      if (!statusRes.ok) continue
+
+      const status = await statusRes.json()
+
+      if (status.status === 'completed' && status.output?.[0]) {
+        outputUrl = status.output[0]
+        break
+      }
+
+      if (status.status === 'failed') {
+        console.error('FASHN generation failed:', status.error)
+        return NextResponse.json({ error: 'Geração de estúdio falhou' }, { status: 500 })
+      }
+    }
+
+    if (!outputUrl) {
+      return NextResponse.json({ error: 'Timeout na geração de estúdio' }, { status: 500 })
+    }
+
+    const imgRes = await fetch(outputUrl)
+    if (!imgRes.ok) {
+      return NextResponse.json({ error: 'Erro ao baixar imagem gerada' }, { status: 500 })
+    }
+    const imgBuffer = Buffer.from(await imgRes.arrayBuffer())
+
+    const storagePath = `studio/${user.id}/${Date.now()}.jpg`
+    const { error: uploadError } = await supabase.storage
+      .from('pieces')
+      .upload(storagePath, imgBuffer, { contentType: 'image/jpeg', upsert: true })
+
+    if (uploadError) {
+      console.error('Storage upload error:', uploadError)
+      return NextResponse.json({ error: 'Erro ao salvar imagem' }, { status: 500 })
+    }
+
+    const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(storagePath)
+
     await incrementUsage(user.id, 'studio_generate')
-    return NextResponse.json({ images: urls })
+    return NextResponse.json({ images: [urlData.publicUrl] })
+    // ─── FIM FASHN ───
 
   } catch (error: unknown) {
     const err = error as Record<string, unknown>

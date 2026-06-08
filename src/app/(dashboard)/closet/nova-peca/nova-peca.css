@@ -187,80 +187,6 @@ html.mode-dark .np-change-photo {
   font-family: var(--font-inter), sans-serif;
 }
 
-/* ─── LINHA DE THUMBS ─────────────────────────── */
-
-.np-gallery {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.np-gallery::-webkit-scrollbar { display: none; }
-
-.np-gallery-thumb {
-  width: 56px;
-  height: 56px;
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1.5px solid transparent;
-  flex-shrink: 0;
-  cursor: pointer;
-  position: relative;
-  transition: border-color 150ms;
-  background: var(--ec-bg-secondary);
-  padding: 0;
-}
-
-.np-gallery-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.np-gallery-thumb.active {
-  border-color: var(--ec-accent);
-}
-
-.np-gallery-thumb.active::after {
-  content: 'Capa';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--ec-accent);
-  color: #FAF8F5;
-  font-family: var(--font-inter), 'Inter', sans-serif;
-  font-size: 9px;
-  font-weight: 500;
-  text-align: center;
-  padding: 2px 0;
-  letter-spacing: 0.04em;
-}
-
-.np-gallery-add {
-  width: 56px;
-  height: 56px;
-  border-radius: 8px;
-  border: 1.5px dashed var(--ec-border);
-  background: var(--ec-bg-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--ec-text-muted);
-  font-size: 20px;
-  flex-shrink: 0;
-  transition: border-color 150ms, color 150ms;
-}
-
-.np-gallery-add:hover {
-  border-color: var(--ec-accent);
-  color: var(--ec-accent);
-}
-
 /* ─── BOTÃO ANALISAR ──────────────────────────── */
 
 .np-analyze-btn {
@@ -465,8 +391,30 @@ html.mode-dark .np-studio-btn:hover {
 
 .np-studio-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
+.np-studio-btn--ghost {
+  border-color: var(--ec-border);
+  color: var(--ec-text-secondary);
+}
+
+.np-studio-btn--ghost:hover {
+  border-color: var(--ec-text-primary);
+  color: var(--ec-text-primary);
+  background: transparent;
+}
+
+html.mode-dark .np-studio-btn--ghost {
+  border-color: var(--ec-border);
+  color: var(--ec-text-muted);
+}
+
+html.mode-dark .np-studio-btn--ghost:hover {
+  border-color: var(--ec-text-secondary);
+  color: var(--ec-text-secondary);
+}
+
 /* ─── DICA DO ESTÚDIO ─────────────────────────── */
 
+.np-studio-hint,
 .studio-hint {
   font-family: var(--font-inter), 'Inter', sans-serif;
   font-size: 12px;
@@ -564,70 +512,6 @@ html.mode-dark .np-studio-btn:hover {
 }
 
 .np-modal-confirm:hover { opacity: 0.88; }
-
-/* ─── MODAL DE LOADING DO ESTÚDIO ──────────────── */
-
-.np-loading-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(250,248,245,0.85);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 110;
-}
-
-html.mode-dark .np-loading-backdrop {
-  background: rgba(8,8,8,0.88);
-}
-
-.np-loading-modal {
-  background: var(--ec-white);
-  border: 0.5px solid var(--ec-border);
-  border-radius: 16px;
-  padding: 40px 32px;
-  text-align: center;
-  max-width: 320px;
-  width: 90%;
-}
-
-.np-loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 2px solid var(--ec-border);
-  border-top-color: var(--ec-accent);
-  border-radius: 50%;
-  animation: np-spin 800ms linear infinite;
-  margin: 0 auto 20px;
-  display: block;
-}
-
-.np-loading-title {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--ec-text-primary);
-  margin-bottom: 8px;
-  margin-top: 0;
-}
-
-html.mode-dark .np-loading-title {
-  font-family: var(--font-inter), 'Inter', sans-serif;
-  font-size: 16px;
-  font-weight: 300;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.np-loading-sub {
-  font-family: var(--font-inter), 'Inter', sans-serif;
-  font-size: 14px;
-  color: var(--ec-text-muted);
-  line-height: 1.6;
-  margin: 0;
-}
 
 /* ─── ÁREA DE ESTÚDIO ──────────────────────────── */
 

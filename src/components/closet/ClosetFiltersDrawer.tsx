@@ -1,6 +1,6 @@
 'use client'
 
-import { Piece } from '@/types/database'
+import { Piece } from '@/types/app'
 
 const ALL_CATEGORIES = [
   'Camiseta / Blusa', 'Camisa', 'Moletom', 'Calça', 'Short / Bermuda', 'Saia', 'Vestido',
