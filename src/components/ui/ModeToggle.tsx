@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from 'react'
 
-export default function ModeToggle() {
+interface ModeToggleProps {
+  compact?: boolean
+}
+
+export default function ModeToggle({ compact = false }: ModeToggleProps) {
   const [mode, setMode] = useState<'claire' | 'dark'>('claire')
   const [mounted, setMounted] = useState(false)
 
@@ -28,13 +32,13 @@ export default function ModeToggle() {
         className={`toggle-option${mode === 'claire' ? ' active' : ''}`}
         onClick={() => handleChange('claire')}
       >
-        Édition Claire
+        {compact ? 'Claire' : 'Édition Claire'}
       </button>
       <button
         className={`toggle-option${mode === 'dark' ? ' active' : ''}`}
         onClick={() => handleChange('dark')}
       >
-        Dark Edition
+        {compact ? 'Dark' : 'Dark Edition'}
       </button>
     </div>
   )

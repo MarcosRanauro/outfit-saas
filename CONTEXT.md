@@ -8,10 +8,10 @@
 ## 1. Estado atual do projeto
 
 **Status:** Em produção
-**Versão:** 1.6.0
+**Versão:** 1.7.0
 **Última atualização:** 2026-06-08
 **Domínio:** miaoutfitai.com.br
-**Próxima ação recomendada:** Redesign visual do Perfil seguindo o sistema Édition Claire / Dark Edition.
+**Próxima ação recomendada:** O redesign visual completo está concluído. Próximas prioridades: email transacional via Resend, finalizar Virtual Try-On, e avaliar novas features.
 
 ---
 
@@ -102,8 +102,17 @@
 - [x] Sugestões de IA com prioridade, salvar, marcar como comprado
 
 ### Perfil
-- [x] Avatar, edição de dados, banner de plano, logout
-- [ ] Redesign visual pendente
+- [x] Avatar circular com botão de edição em var(--ec-accent)
+- [x] Stats 3 colunas clicáveis — Peças → closet, Outfits → lookbook
+- [x] Seção Destaques — última peça + último outfit com fotos reais
+- [x] Dados pessoais com edição inline ao clicar
+- [x] Card de plano com badge PRO e barras de progresso de uso
+- [x] Barras com cores de alerta para plano Free (warning 80%, limit 100%)
+- [x] Botão "Gerenciar assinatura" outline com var(--ec-accent)
+- [x] Botão "Sair da conta" com hover vermelho
+- [x] Links de rodapé: Sobre · FAQ · Termos · Privacidade
+- [x] Sistema visual --ec-* aplicado nos dois modos
+- [x] Banner/header antigo removido
 
 ### Monetização
 - [x] Stripe: checkout, webhook HMAC, customer portal
@@ -132,8 +141,8 @@
 
 ## 3. O que está em andamento
 
-- [ ] Redesign visual Perfil
-- [ ] Virtual Try-On (FASHN.ai) — tabela criada, fluxo completo pendente
+- Redesign visual completo ✅ — todas as páginas concluídas
+- Virtual Try-On (FASHN.ai) — tabela criada, fluxo completo pendente
 
 ---
 
@@ -141,10 +150,10 @@
 
 | Prioridade | Tarefa | Observação |
 |---|---|---|
-| Alta | Redesign Perfil | Próxima branch |
-| Média | Finalizar Virtual Try-On | Migration 0001_tryon_predictions.sql pendente no Supabase |
+| Alta | Email transacional (Resend) | Boas-vindas, trial expirando, cobrança |
+| Alta | Finalizar Virtual Try-On | Migration 0001_tryon_predictions.sql pendente no Supabase |
 | Média | Regenerar tipos após migration tryon | npx supabase gen types typescript --linked > src/types/database.ts |
-| Média | Email transacional (Resend) | Boas-vindas, trial expirando, cobrança |
+| Média | Comprar créditos Photoroom API | Trial com marca d'água; $0.10/imagem no plano Plus |
 | Baixa | Renomear middleware.ts → proxy.ts | Deprecado no Next 15 |
 | Baixa | Histórico de outfits usados com UI | Tabela outfit_history existe, sem UI |
 | Baixa | Play Store via TWA/Capacitor | — |
@@ -165,6 +174,8 @@
 | `src/app/(public)/page.tsx` | Landing page |
 | `src/app/(auth)/login/page.tsx` | Login — split screen |
 | `src/lib/rate-limit.ts` | Rate limiting — lógica de trial/planos |
+| `src/lib/plan-limits.ts` | Limites de plano e helpers de barras de uso (client-safe) |
+| `src/app/perfil.css` | Estilos do perfil — Édition Claire / Dark Edition |
 | `src/types/database.ts` | Tipos gerados — NÃO editar manualmente |
 | `src/types/app.ts` | Tipos manuais — Plan, Profile, Piece, PiecePhoto, etc. |
 | `src/components/ui/TrialExpiredModal.tsx` | Modal de upgrade |
@@ -315,6 +326,24 @@ stripe_subscription_id   text
 ---
 
 ## 12. Histórico de implementações
+
+### 2026-06-08 — v1.7.0 — Redesign Perfil + Correções
+
+**O que foi feito:**
+- Página de perfil redesenhada — banner/header antigo removido
+- Avatar com botão de edição em var(--ec-accent)
+- Stats 3 colunas clicáveis (Peças → closet, Outfits → lookbook)
+- Seção Destaques com última peça + último outfit (dados reais do banco)
+- Dados pessoais com edição inline
+- Card de plano com barras de progresso de uso (análises, outfits, chat, estúdio)
+- Sistema --ec-* aplicado nos dois modos
+- Correção: modal de onboarding aparecia sempre — CSS restaurado + timing da condição corrigido
+- Helper isProfileBodyIncomplete() trata null/undefined/string vazia
+- onboarding só abre após profile carregar e height/weight estarem vazios
+
+**Próximo passo:** Email transacional via Resend + Virtual Try-On
+
+---
 
 ### 2026-06-08 — v1.6.0 — Redesign Chat da Mia
 

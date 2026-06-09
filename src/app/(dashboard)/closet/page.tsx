@@ -52,6 +52,22 @@ const FIT_OPTIONS = ['Oversized', 'Regular', 'Slim', 'Cropped', 'A-line']
 const STYLE_TYPE_OPTIONS = ['Casual', 'Social', 'Esportivo', 'Streetwear', 'Minimalista']
 const SEASON_OPTIONS = ['Todas', 'Verão', 'Inverno', 'Meia estação']
 
+type ClosetProfile = {
+  plan: string | null
+  name: string | null
+  height: number | null
+  weight: number | null
+  style: string | null
+  closet_tour_completed: boolean | null
+  trial_ends_at: string | null
+}
+
+function isProfileBodyIncomplete(profile: ClosetProfile): boolean {
+  const heightMissing = profile.height == null || String(profile.height).trim() === ''
+  const weightMissing = profile.weight == null || String(profile.weight).trim() === ''
+  return heightMissing || weightMissing
+}
+
 async function compressImageForUpload(file: File): Promise<Blob> {
   return new Promise((resolve) => {
     const canvas = document.createElement('canvas')
@@ -87,6 +103,7 @@ export default function ClosetPage() {
   // Data
   const [pieces, setPieces] = useState<Piece[]>([])
   const [loading, setLoading] = useState(true)
+  const [profile, setProfile] = useState<ClosetProfile | null>(null)
   const [userPlan, setUserPlan] = useState<string>('free')
   const [anchorPieceId, setAnchorPieceId] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null
@@ -176,18 +193,14 @@ export default function ClosetPage() {
 
     if (profileResult.data) {
       const p = profileResult.data
+      setProfile(p)
       const dbPlan = p.plan || 'free'
       const trialEndsAt = p.trial_ends_at ? new Date(p.trial_ends_at) : null
       const isTrialActive = trialEndsAt !== null && trialEndsAt > new Date()
       const effectivePlan = dbPlan === 'pro' ? 'pro' : (isTrialActive ? 'trial' : 'expired')
       setUserPlan(effectivePlan)
-      const incomplete = !p.height || !p.weight || !p.style
-      if (incomplete) {
-        setShowNameField(!p.name)
-        setOnboardingOpen(true)
-      } else if (!p.closet_tour_completed) {
-        setTourOpen(true)
-      }
+    } else {
+      setProfile(null)
     }
 
     setLoading(false)
@@ -206,6 +219,22 @@ export default function ClosetPage() {
     loadData()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    if (loading) return
+    if (!profile) return
+
+    if (isProfileBodyIncomplete(profile)) {
+      setShowNameField(!profile.name)
+      setOnboardingOpen(true)
+      setTourOpen(false)
+    } else {
+      setOnboardingOpen(false)
+      if (!profile.closet_tour_completed) {
+        setTourOpen(true)
+      }
+    }
+  }, [profile, loading])
 
   useEffect(() => {
     if (!tourOpen) return
@@ -425,6 +454,7 @@ export default function ClosetPage() {
 
   return (
     <>
+      <div className="closet-page">
       {/* ─── HEADER ─── */}
       <div className="closet-header">
         <div className="closet-header-left">
@@ -579,6 +609,7 @@ export default function ClosetPage() {
       >
         +
       </button>
+      </div>
 
       {/* ─── MODAL ADICIONAR (fluxo wishlist "Já comprei") ─── */}
       <div
@@ -687,7 +718,10 @@ export default function ClosetPage() {
       <ClosetOnboarding
         open={onboardingOpen}
         showNameField={showNameField}
-        onComplete={() => setOnboardingOpen(false)}
+        onComplete={() => {
+          setOnboardingOpen(false)
+          loadData()
+        }}
       />
 
       <ClosetTour

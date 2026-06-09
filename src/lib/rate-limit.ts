@@ -1,30 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-
-type PlanLimits = {
-  mia_chat: number
-  outfit_generate: number
-  pieces_analyze: number
-  wishlist_generate: number
-  studio_generate: number
-}
-
-const LIMITS: Record<'free' | 'pro', PlanLimits> = {
-  free: {
-    mia_chat: 10,
-    outfit_generate: 5,
-    pieces_analyze: 3,
-    wishlist_generate: 3,
-    studio_generate: 10,
-  },
-  pro: {
-    mia_chat: 999,
-    outfit_generate: 999,
-    pieces_analyze: 999,
-    wishlist_generate: 999,
-    studio_generate: 999,
-  },
-}
+import { PLAN_LIMITS, type PlanLimits } from '@/lib/plan-limits'
 
 type ActionType = keyof PlanLimits
 
@@ -113,7 +89,7 @@ export async function checkRateLimit(
 
   const column = usageColumnMap[action] as keyof typeof profile
   const used = daysSinceReset >= 30 ? 0 : ((profile[column] as number) ?? 0)
-  const limit = LIMITS[plan][action]
+  const limit = PLAN_LIMITS[plan][action]
   const allowed = used < limit
 
   return {
