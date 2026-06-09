@@ -35,6 +35,10 @@
 
 /* ─── DASHBOARD WRAP ──────────────────────────── */
 
+:root {
+  --bottom-nav-height: calc(76px + env(safe-area-inset-bottom, 0px));
+}
+
 .dashboard-wrap {
   display: flex;
   flex-direction: column;
@@ -46,7 +50,7 @@
 .dashboard-content {
   flex: 1;
   overflow-y: auto;
-  padding-bottom: 80px;
+  padding-bottom: var(--bottom-nav-height);
   background: var(--ec-bg-primary);
 }
 

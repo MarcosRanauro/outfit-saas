@@ -300,21 +300,24 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
   }
 
   return (
-    <div className="mia-wrap">
+    <div className="mia-page">
 
       {/* Header */}
       <div className="mia-header">
-        <div className="mia-avatar">✦</div>
-        <div className="mia-header-info">
-          <div className="mia-header-name">Mia</div>
-          <div className="mia-header-sub">
-            <div className="mia-status-dot" />
-            Sua stylist pessoal
+        <div className="mia-header-left">
+          <div className="mia-header-avatar">
+            ✦
+            <span className="mia-status-dot" aria-hidden="true" />
+          </div>
+          <div className="mia-header-info">
+            <div className="mia-header-name">Mia</div>
+            <div className="mia-header-sub">Sua stylist pessoal</div>
           </div>
         </div>
         {weather && (
-          <div className="mia-weather-pill">
-            {weather.icon} {weather.temp}°C
+          <div className="mia-temp-badge">
+            <span className="mia-temp-dot" aria-hidden="true" />
+            {weather.temp}°C
           </div>
         )}
       </div>
@@ -324,7 +327,7 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
         {QUICK_ACTIONS.map((action) => (
           <button
             key={action.label}
-            className="mia-quick-btn"
+            className="mia-qa-chip"
             onClick={() => { sendMessage(action.message); setTimeout(() => inputRef.current?.focus(), 100) }}
             disabled={loading}
           >
@@ -359,15 +362,18 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
       {/* Mensagens */}
       <div className="mia-messages">
         {messages.map((msg, msgIndex) => (
-          <div key={msgIndex} className={`mia-msg ${msg.role}`}>
-            {msg.role === 'mia' && (
+          msg.role === 'user' ? (
+            <div key={msgIndex} className="user-msg-row">
+              <div className="user-bubble">
+                <p>{msg.content}</p>
+              </div>
+            </div>
+          ) : (
+            <div key={msgIndex} className="mia-msg-row">
               <div className="mia-msg-avatar">✦</div>
-            )}
-            <div className="mia-msg-content">
-              <div className="mia-msg-bubble">
-                {msg.content.split('\n').map((line, i) => (
-                  <span key={i}>{line}{i < msg.content.split('\n').length - 1 && <br />}</span>
-                ))}
+              <div className="mia-msg-col">
+                <div className="mia-bubble">
+                  <p>{msg.content}</p>
 
                 {/* Cards de outfit dentro da mensagem */}
                 {msg.outfits && msg.outfits.map((outfit, outfitIndex) => {
@@ -407,9 +413,9 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
                         )}
                       </div>
                       <div className="mia-outfit-body">
-                        <div className="mia-outfit-name">{outfit.name}</div>
+                        <div className="mia-outfit-card-name">{outfit.name}</div>
                         {outfit.subtitle && (
-                          <div className="mia-outfit-sub">{outfit.subtitle}</div>
+                          <div className="mia-outfit-card-desc">{outfit.subtitle}</div>
                         )}
                         {outfit.style_tags && outfit.style_tags.length > 0 && (
                           <div className="mia-outfit-tags">
@@ -419,7 +425,7 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
                           </div>
                         )}
                         <button
-                          className={`mia-outfit-save ${isSaved ? 'saved' : ''}`}
+                          className={`mia-outfit-card-save ${isSaved ? 'saved' : ''}`}
                           onClick={() => handleSaveOutfit(outfit, msgIndex, outfitIndex)}
                           disabled={isSaved}
                         >
@@ -441,14 +447,14 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
                           {item.priority === 'high' ? '⭐ Essencial' :
                            item.priority === 'medium' ? '👍 Recomendado' : '✨ Nice to have'}
                         </div>
-                        <div className="mia-outfit-name">{item.name}</div>
-                        <div className="mia-outfit-sub">{item.category} · {item.color}</div>
+                        <div className="mia-outfit-card-name">{item.name}</div>
+                        <div className="mia-outfit-card-desc">{item.category} · {item.color}</div>
                         <div className="mia-wishlist-reason">
                           {item.reason}
                         </div>
                         <button
                           key={`${msgIndex}-wishlist-${itemIndex}`}
-                          className={`mia-outfit-save ${isWishlistSaved ? 'saved' : ''}`}
+                          className={`mia-outfit-card-save ${isWishlistSaved ? 'saved' : ''}`}
                           disabled={isWishlistSaved}
                           onClick={async () => {
                             try {
@@ -481,20 +487,21 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
                     </div>
                   )
                 })}
+                </div>
+                <span className="mia-bubble-time">{msg.time}</span>
               </div>
-              <div className="mia-msg-time">{msg.time}</div>
             </div>
-          </div>
+          )
         ))}
 
         {/* Typing indicator */}
         {loading && (
-          <div className="mia-msg mia">
+          <div className="mia-msg-row">
             <div className="mia-msg-avatar">✦</div>
-            <div className="mia-typing">
-              <div className="mia-typing-dot" />
-              <div className="mia-typing-dot" />
-              <div className="mia-typing-dot" />
+            <div className="mia-typing-bubble">
+              <div className="typing-dot" />
+              <div className="typing-dot" />
+              <div className="typing-dot" />
             </div>
           </div>
         )}

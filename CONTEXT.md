@@ -8,10 +8,10 @@
 ## 1. Estado atual do projeto
 
 **Status:** Em produção
-**Versão:** 1.5.0
+**Versão:** 1.6.0
 **Última atualização:** 2026-06-08
 **Domínio:** miaoutfitai.com.br
-**Próxima ação recomendada:** Redesign visual do Chat da Mia e Perfil seguindo o sistema Édition Claire / Dark Edition.
+**Próxima ação recomendada:** Redesign visual do Perfil seguindo o sistema Édition Claire / Dark Edition.
 
 ---
 
@@ -93,7 +93,10 @@
 
 ### Chat Mia
 - [x] Personalidade carioca, quick actions, cards inline, typing indicator
-- [ ] Redesign visual pendente
+- [x] Redesign Édition Claire / Dark Edition — variáveis `--ec-*` em todos os elementos
+- [x] Header com avatar, dot de status, badge de temperatura
+- [x] Balões Mia/usuário, typing indicator, outfit cards inline, peça âncora
+- [x] Input pill 16px com clearance para bottom nav
 
 ### Wishlist
 - [x] Sugestões de IA com prioridade, salvar, marcar como comprado
@@ -129,7 +132,6 @@
 
 ## 3. O que está em andamento
 
-- [ ] Redesign visual Chat da Mia
 - [ ] Redesign visual Perfil
 - [ ] Virtual Try-On (FASHN.ai) — tabela criada, fluxo completo pendente
 
@@ -139,8 +141,7 @@
 
 | Prioridade | Tarefa | Observação |
 |---|---|---|
-| Alta | Redesign Chat da Mia | Próxima branch |
-| Alta | Redesign Perfil | Após Chat |
+| Alta | Redesign Perfil | Próxima branch |
 | Média | Finalizar Virtual Try-On | Migration 0001_tryon_predictions.sql pendente no Supabase |
 | Média | Regenerar tipos após migration tryon | npx supabase gen types typescript --linked > src/types/database.ts |
 | Média | Email transacional (Resend) | Boas-vindas, trial expirando, cobrança |
@@ -159,6 +160,7 @@
 | `src/app/(dashboard)/closet/[id]/page.tsx` | Detalhe da peça — visualização + edição + estúdio |
 | `src/app/(dashboard)/lookbook/page.tsx` | Lookbook |
 | `src/app/(dashboard)/mia/page.tsx` | Chat Mia |
+| `src/app/mia.css` | Estilos do chat Mia — Édition Claire / Dark Edition |
 | `src/app/(dashboard)/perfil/page.tsx` | Perfil |
 | `src/app/(public)/page.tsx` | Landing page |
 | `src/app/(auth)/login/page.tsx` | Login — split screen |
@@ -313,6 +315,20 @@ stripe_subscription_id   text
 ---
 
 ## 12. Histórico de implementações
+
+### 2026-06-08 — v1.6.0 — Redesign Chat da Mia
+
+**O que foi feito:**
+- Redesign completo do chat com sistema `--ec-*` (Édition Claire + Dark Edition)
+- Header: avatar com dot de status, tipografia Cormorant/Inter, badge de temperatura
+- Quick actions com chips, hover/active e fade nas bordas
+- Balões Mia e usuário, typing indicator animado, outfit/wishlist cards inline
+- Input pill 16px, botão de envio circular, clearance para bottom nav
+- Variável `--bottom-nav-height` no dashboard.css
+
+**Próximo passo:** Redesign Perfil
+
+---
 
 ### 2026-06-08 — v1.5.0 — Detalhe da Peça + Nova Peça + Estúdio
 
