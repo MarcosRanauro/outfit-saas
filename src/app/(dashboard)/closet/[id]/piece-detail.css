@@ -313,6 +313,36 @@ html.mode-dark .pd-thumb-cover-badge { color: #080808; }
   font-weight: 600;
 }
 
+/* ─── ÂNCORA ──────────────────────────────────── */
+
+.pd-anchor-btn {
+  width: 100%;
+  padding: 13px;
+  border-radius: 999px;
+  font-family: var(--font-inter), 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  background: var(--ec-accent-faint);
+  border: 0.5px solid var(--ec-accent-border);
+  color: var(--ec-accent);
+  cursor: pointer;
+  margin-top: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 150ms, border-color 150ms;
+}
+
+.pd-anchor-btn:hover {
+  border-color: var(--ec-accent);
+}
+
+.pd-anchor-btn--active {
+  font-weight: 600;
+}
+
 /* ─── EXCLUIR ─────────────────────────────────── */
 
 .pd-delete {
@@ -326,7 +356,7 @@ html.mode-dark .pd-thumb-cover-badge { color: #080808; }
   border: 0.5px solid var(--ec-border);
   color: var(--ec-text-muted);
   cursor: pointer;
-  margin-top: 24px;
+  margin-top: 12px;
   transition: background 150ms, color 150ms, border-color 150ms;
 }
 

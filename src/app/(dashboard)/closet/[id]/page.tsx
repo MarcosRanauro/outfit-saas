@@ -72,6 +72,15 @@ export default function PieceDetailPage() {
   const [ghostLoading, setGhostLoading] = useState(false)
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [showTrialExpired, setShowTrialExpired] = useState(false)
+  const [anchorPieceId, setAnchorPieceId] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null
+    try {
+      const saved = sessionStorage.getItem('anchor_piece')
+      return saved ? (JSON.parse(saved) as { id: string }).id : null
+    } catch {
+      return null
+    }
+  })
 
   const [name, setName] = useState('')
   const [category, setCategory] = useState('Camiseta / Blusa')
@@ -365,6 +374,23 @@ export default function PieceDetailPage() {
     setEditing(false)
   }
 
+  function handleSetAnchor() {
+    if (!piece) return
+
+    const anchor = {
+      id: piece.id,
+      name: piece.name,
+      category: piece.category,
+      color: piece.color,
+      photo_url: mainPhotoUrl ?? piece.photo_url,
+    }
+
+    try {
+      sessionStorage.setItem('anchor_piece', JSON.stringify(anchor))
+      setAnchorPieceId(piece.id)
+    } catch {}
+  }
+
   async function handleDelete() {
     if (!piece) return
     if (!confirm('Excluir esta peça? Esta ação não pode ser desfeita.')) return
@@ -598,6 +624,15 @@ export default function PieceDetailPage() {
             }
           </div>
         </div>
+
+        <button
+          type="button"
+          className={`pd-anchor-btn ${anchorPieceId === piece.id ? 'pd-anchor-btn--active' : ''}`}
+          onClick={handleSetAnchor}
+        >
+          <span aria-hidden="true">✦</span>
+          {anchorPieceId === piece.id ? 'Peça âncora ativa' : 'Usar como peça âncora'}
+        </button>
 
         <button className="pd-delete" onClick={handleDelete}>
           Excluir peça
