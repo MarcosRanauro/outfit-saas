@@ -91,6 +91,23 @@ Formato baseado em [Architecture Decision Records (ADR)](https://adr.github.io/)
 
 ---
 
+## [2026-06-12] — increment_usage usa auth.uid() internamente
+
+**Contexto:** A função RPC `increment_usage` era `SECURITY DEFINER`, recebia `user_id` por parâmetro e usava esse valor no `UPDATE` sem validar contra `auth.uid()`. Com `GRANT` para a role `anon`, um chamador autenticado poderia incrementar o contador de uso de outro usuário (IMPORTANTE-1 da auditoria técnica).
+
+**Opções consideradas:**
+1. Remover o parâmetro `user_id` da assinatura e atualizar todas as chamadas em `rate-limit.ts`
+2. Manter a assinatura e ignorar `user_id`, usando apenas `auth.uid()` dentro da função
+3. Validar `user_id = auth.uid()` em vez de ignorar o parâmetro
+
+**Decisão:** Manter a assinatura `(user_id uuid, column_name text)` por compatibilidade com as chamadas existentes em `src/lib/rate-limit.ts`, mas a função passa a usar **somente** `auth.uid()` no `UPDATE`. Lista branca de colunas permitidas. `SET search_path = public`. `REVOKE ALL` da role `anon`.
+
+**Motivo:** Corrige a vulnerabilidade sem alterar código da aplicação. Migration `0003_secure_increment_usage.sql` documenta a correção no versionamento.
+
+**Consequências:** Chamadas com `user_id` diferente de quem está autenticado não têm efeito — o contador incrementado é sempre o do caller. Após aplicar a migration no banco, regenerar tipos não é necessário (assinatura inalterada). Nova coluna de uso exige atualizar o array `allowed_columns` dentro da função.
+
+---
+
 ## [2026-05-01] — Storage público em vez de signed URLs
 
 **Contexto:** Fotos de peças são acessadas frequentemente em listas, cards, modais e enviadas para APIs de IA. Signed URLs têm TTL e precisam ser regeneradas, adicionando latência e complexidade.
