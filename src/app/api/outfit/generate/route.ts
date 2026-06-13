@@ -2,6 +2,8 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import sharp from 'sharp'
+import { outfitGenerateBodySchema } from "@/lib/api-schemas";
+import { parseRequestBody } from "@/lib/parse-request-body";
 import { checkRateLimit, incrementUsage, rateLimitResponse } from "@/lib/rate-limit";
 
 const anthropic = new Anthropic({
@@ -121,25 +123,22 @@ export async function POST(request: Request) {
     return rateLimitResponse(rateCheck)
   }
 
-  let period, occasion, temp, weatherDesc, eventDate, eventPeriod, previousOutfits, usedPieceIds, anchorPiece
+  const parsed = await parseRequestBody(request, outfitGenerateBodySchema)
+  if (!parsed.success) return parsed.response
 
-  try {
-    const body = await request.json()
-    period = body.period
-    occasion = body.occasion
-    temp = body.temp
-    weatherDesc = body.weatherDesc
-    eventDate = body.eventDate
-    eventPeriod = body.eventPeriod
-    previousOutfits = body.previousOutfits
-    usedPieceIds = body.usedPieceIds
-    anchorPiece = body.anchorPiece
-  } catch {
-    return NextResponse.json(
-      { error: 'Body inválido' },
-      { status: 400 }
-    )
-  }
+  const {
+    period,
+    occasion,
+    temp,
+    weatherDesc,
+    eventDate,
+    eventPeriod,
+    previousOutfits,
+    usedPieceIds,
+    anchorPiece,
+  } = parsed.data
+
+  const climateTemp = temp ?? 0
 
   const { data: pieces } = await supabase
     .from("pieces")
@@ -216,9 +215,9 @@ IMPORTANTE: Crie combinações completamente diferentes das listadas acima.`
 Esta peça é a escolha do usuário para o dia. Todos os 5 outfits DEVEM incluir esta peça. Construa os looks em torno dela.`
     : ''
 
-  const usedPiecesBlock = usedPieceIds?.length > 0
+  const usedPiecesBlock = (usedPieceIds?.length ?? 0) > 0
     ? `\nPEÇAS JÁ USADAS NAS GERAÇÕES ANTERIORES (não use estas peças nos novos outfits, exceto acessórios, bolsas e chapéus):
-${usedPieceIds.map((id: string) => {
+${(usedPieceIds ?? []).map((id: string) => {
   const piece = pieces.find(p => p.id === id)
   return piece ? `- [ID: ${piece.id}] ${piece.name} (${piece.category})` : ''
 }).filter(Boolean).join('\n')}
@@ -270,9 +269,9 @@ Regras técnicas:
 - Use apenas IDs que existem na lista acima
 - Considere o biotipo do usuário ao escolher os fits
 - Adapte ao clima: ${temp}°C significa ${
-  temp < 15 ? 'frio — camadas e tecidos pesados são bem-vindos' :
-  temp < 22 ? 'fresco — sobreposição leve é ideal' :
-  temp < 27 ? 'agradável — qualquer tecido funciona' :
+  climateTemp < 15 ? 'frio — camadas e tecidos pesados são bem-vindos' :
+  climateTemp < 22 ? 'fresco — sobreposição leve é ideal' :
+  climateTemp < 27 ? 'agradável — qualquer tecido funciona' :
   'calor — prefira tecidos leves e looks arejados'
 }`;
 

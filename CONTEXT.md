@@ -8,10 +8,10 @@
 ## 1. Estado atual do projeto
 
 **Status:** Em produção
-**Versão:** 1.7.4
-**Última atualização:** 2026-06-12
+**Versão:** 1.7.5
+**Última atualização:** 2026-06-13
 **Domínio:** miaoutfitai.com.br
-**Próxima ação recomendada:** Revisar relatórios CSP Report-Only em produção; depois fail-closed da moderação ou Zod (Etapa 3 restante).
+**Próxima ação recomendada:** Revisar relatórios CSP Report-Only; validar saída da IA com Zod (IMPORTANTE-3).
 
 ---
 
@@ -127,7 +127,8 @@
 ### Segurança
 - [x] RLS em todas as tabelas
 - [x] Nenhuma chave exposta no client bundle
-- [x] Webhook Stripe com HMAC, SSRF protection, moderação OpenAI
+- [x] Moderação OpenAI fail-closed com retry (3 tentativas, 500ms) — `moderation-server.ts`
+- [x] Validação Zod nos bodies das rotas de IA (8 rotas + moderate)
 - [x] Tabela tryon_predictions com RLS e ownership
 - [x] Erros 500 sanitizados em describe/studio/moderate/tryon — cliente recebe mensagem genérica; detalhe só em `console.error`
 - [x] Security headers em `next.config.ts` (X-Frame-Options, HSTS, nosniff, Referrer-Policy, Permissions-Policy)
@@ -158,9 +159,8 @@
 | Alta | Email transacional (Resend) | Boas-vindas, trial expirando, cobrança |
 | Alta | Aplicar migration 0003 no banco | `0003_secure_increment_usage.sql` — criada no repo, pendente de aplicação manual |
 | Alta | Finalizar Virtual Try-On | Migration 0001_tryon_predictions.sql pendente no Supabase |
+| Média | Zod na saída da IA | IMPORTANTE-3 — validar JSON retornado pelo modelo |
 | Média | CSP Report-Only → bloqueante | Revisar violações reportadas; trocar header para `Content-Security-Policy` quando estável |
-| Média | Moderação fail-closed | Etapa 3 restante — fora do escopo mecânico desta sessão |
-| Média | Zod nos bodies das rotas | Etapa 3 restante — fora do escopo desta sessão |
 | Média | Build depende de env Supabase no CI | `/cadastro` e `/auth/reset-password` pré-renderizam com `createClient` — CI injeta `NEXT_PUBLIC_SUPABASE_*` via secrets. **Correção de raiz futura:** `force-dynamic` ou `createClient` só no browser |
 | Média | Regenerar tipos após migration tryon | npx supabase gen types typescript --linked > src/types/database.ts |
 | Média | Comprar créditos Photoroom API | Trial com marca d'água; $0.10/imagem no plano Plus |
@@ -183,6 +183,10 @@
 | `src/app/(dashboard)/perfil/page.tsx` | Perfil |
 | `src/app/(public)/page.tsx` | Landing page |
 | `src/app/(auth)/login/page.tsx` | Login — split screen |
+| `src/lib/moderation-server.ts` | Moderação OpenAI com retry + fail-closed |
+| `src/lib/api-schemas.ts` | Schemas Zod dos bodies das rotas de IA |
+| `src/lib/parse-request-body.ts` | Helper `parseRequestBody` / `parseOptionalRequestBody` |
+| `src/lib/image.ts` | Cliente de moderação — fail-closed, mensagens por motivo |
 | `src/lib/rate-limit.ts` | Rate limiting — `decideRateLimit()` (pura) + `checkRateLimit()` (Supabase) |
 | `src/lib/rate-limit.test.ts` | Testes unitários de `decideRateLimit` |
 | `src/lib/plan-limits.test.ts` | Testes de `getUsagePercent` e `getUsageClass` |
@@ -341,6 +345,21 @@ stripe_subscription_id   text
 ---
 
 ## 12. Histórico de implementações
+
+### 2026-06-13 — v1.7.5 — Auditoria Etapa 3: Zod + moderação fail-closed
+
+**O que foi feito:**
+- IMPORTANTE-5: moderação fail-closed com retry (até 3 tentativas, 500ms) em `moderation-server.ts`; rota `/api/pieces/moderate` distingue conteúdo impróprio (`flagged:true`) de indisponibilidade (`reason:'moderation_unavailable'`, HTTP 503)
+- `src/lib/image.ts` e callers (closet, nova-peca, AvatarCrop) exibem mensagem correta; removido fail-open no catch de nova-peca
+- IMPORTANTE-4 (parcial): Zod nos bodies de `outfit/generate`, `wishlist/generate`, `mia/chat`, `mia/extract-date`, `pieces/analyze`, `pieces/describe`, `tryon`, `pieces/moderate` — 400 genérico ao cliente, detalhe logado no servidor
+
+**Pendente (auditoria):**
+- IMPORTANTE-3: Zod na saída da IA (JSON parse das respostas Anthropic)
+- CSP Report-Only → bloqueante após revisão
+
+**Próximo passo:** validar moderação em produção → Zod na saída da IA
+
+---
 
 ### 2026-06-12 — v1.7.4 — Auditoria Etapa 3 (mecânica)
 

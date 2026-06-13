@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { piecesDescribeBodySchema } from '@/lib/api-schemas'
+import { parseRequestBody } from '@/lib/parse-request-body'
 import { checkRateLimit, incrementUsage, rateLimitResponse } from '@/lib/rate-limit'
 import Anthropic from '@anthropic-ai/sdk'
 
@@ -13,12 +15,11 @@ export async function POST(request: Request) {
     return rateLimitResponse(rateCheck)
   }
 
-  try {
-    const { photo_urls, name, category } = await request.json()
+  const parsed = await parseRequestBody(request, piecesDescribeBodySchema)
+  if (!parsed.success) return parsed.response
 
-    if (!Array.isArray(photo_urls) || photo_urls.length === 0) {
-      return NextResponse.json({ error: 'photo_urls obrigatório' }, { status: 400 })
-    }
+  try {
+    const { photo_urls, name, category } = parsed.data
 
     const limitedUrls = photo_urls.slice(0, 3)
 

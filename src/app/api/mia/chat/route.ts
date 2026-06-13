@@ -1,6 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { miaChatBodySchema } from "@/lib/api-schemas";
+import { parseRequestBody } from "@/lib/parse-request-body";
 import { checkRateLimit, incrementUsage, rateLimitResponse } from "@/lib/rate-limit";
 
 interface ChatMessage {
@@ -289,17 +291,10 @@ export async function POST(request: Request) {
     return rateLimitResponse(rateCheck)
   }
 
-  let message: string, history: ChatMessage[], weather: WeatherData | null, weatherContext: string | null, anchorPiece: AnchorPiece | null
-  try {
-    const body = await request.json()
-    message = body.message
-    history = body.history
-    weather = body.weather
-    weatherContext = body.weatherContext
-    anchorPiece = body.anchorPiece
-  } catch {
-    return NextResponse.json({ error: 'Body inválido' }, { status: 400 });
-  }
+  const parsed = await parseRequestBody(request, miaChatBodySchema)
+  if (!parsed.success) return parsed.response
+
+  const { message, history, weather, weatherContext, anchorPiece } = parsed.data
 
   const mesAtual = new Date().toLocaleDateString('pt-BR', { month: 'long' })
   const anoAtual = new Date().getFullYear()

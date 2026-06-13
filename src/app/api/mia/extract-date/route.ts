@@ -1,6 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk"
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { miaExtractDateBodySchema } from "@/lib/api-schemas"
+import { parseRequestBody } from "@/lib/parse-request-body"
 import { checkRateLimit } from "@/lib/rate-limit"
 
 const anthropic = new Anthropic({
@@ -15,8 +17,11 @@ export async function POST(request: Request) {
   const { allowed } = await checkRateLimit(user.id, 'mia_chat')
   if (!allowed) return NextResponse.json({ event_date: null, event_hour: null })
 
+  const parsed = await parseRequestBody(request, miaExtractDateBodySchema)
+  if (!parsed.success) return parsed.response
+
   try {
-    const { message, history } = await request.json()
+    const { message, history } = parsed.data
     const hoje = new Date().toLocaleDateString('pt-BR', {
       weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
     })
@@ -44,7 +49,7 @@ Exemplos:
 
 Retorne APENAS o JSON, sem texto adicional.`,
       messages: [
-        ...(history || []).slice(-4).map((m: { role: string; content: string }) => ({
+        ...(history || []).slice(-4).map((m) => ({
           role: m.role,
           content: m.content,
         })),
@@ -61,8 +66,8 @@ Retorne APENAS o JSON, sem texto adicional.`,
     }
 
     const clean = content.text.replace(/```json|```/g, "").trim()
-    const parsed = JSON.parse(clean)
-    return NextResponse.json(parsed)
+    const eventData = JSON.parse(clean)
+    return NextResponse.json(eventData)
 
   } catch {
     return NextResponse.json({ event_date: null, event_hour: null })

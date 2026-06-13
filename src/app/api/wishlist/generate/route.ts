@@ -1,6 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { wishlistGenerateBodySchema } from "@/lib/api-schemas";
+import { parseOptionalRequestBody } from "@/lib/parse-request-body";
 import { checkRateLimit, incrementUsage, rateLimitResponse } from "@/lib/rate-limit";
 
 const anthropic = new Anthropic({
@@ -108,7 +110,7 @@ SEU JEITO DE TRABALHAR:
 - Você não monta looks que existem só no papel — você pensa se a
   pessoa consegue reproduzir isso sozinha na próxima manhã`;
 
-export async function POST() {
+export async function POST(request: Request) {
   const supabase = await createClient();
 
   const {
@@ -122,6 +124,9 @@ export async function POST() {
   if (!rateCheck.allowed) {
     return rateLimitResponse(rateCheck)
   }
+
+  const parsed = await parseOptionalRequestBody(request, wishlistGenerateBodySchema)
+  if (!parsed.success) return parsed.response
 
   const { data: pieces } = await supabase
     .from("pieces")

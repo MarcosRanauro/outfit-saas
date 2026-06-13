@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { toBase64, moderateImage } from '@/lib/image'
+import { toBase64, moderateImage, MODERATION_CONTENT_MESSAGE } from '@/lib/image'
 import { sortPiecePhotos, type DisplayPhoto } from '@/lib/piece-photos'
 import type { Piece } from '@/types/app'
 import StudioScannerOverlay from '@/components/studio/StudioScannerOverlay'
@@ -274,9 +274,9 @@ export default function PieceDetailPage() {
     if (!file || !piece) return
 
     const base64 = await toBase64(file)
-    const approved = await moderateImage(base64)
-    if (!approved) {
-      alert('Esta imagem não é permitida. Por favor, envie uma foto de roupa ou acessório.')
+    const moderation = await moderateImage(base64)
+    if (!moderation.approved) {
+      alert(moderation.message ?? MODERATION_CONTENT_MESSAGE)
       return
     }
 
