@@ -1,13 +1,19 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { checkRateLimit, incrementUsage, rateLimitResponse } from '@/lib/rate-limit'
 import Anthropic from '@anthropic-ai/sdk'
 
 export async function POST(request: Request) {
-  try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const rateCheck = await checkRateLimit(user.id, 'pieces_analyze')
+  if (!rateCheck.allowed) {
+    return rateLimitResponse(rateCheck)
+  }
+
+  try {
     const { photo_urls, name, category } = await request.json()
 
     if (!Array.isArray(photo_urls) || photo_urls.length === 0) {
@@ -62,6 +68,7 @@ export async function POST(request: Request) {
     })
 
     const description = response.content[0]?.type === 'text' ? response.content[0].text : ''
+    await incrementUsage(user.id, 'pieces_analyze')
     return NextResponse.json({ description })
 
   } catch (error: unknown) {

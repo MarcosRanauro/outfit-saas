@@ -8,10 +8,10 @@
 ## 1. Estado atual do projeto
 
 **Status:** Em produção
-**Versão:** 1.7.0
-**Última atualização:** 2026-06-08
+**Versão:** 1.7.2
+**Última atualização:** 2026-06-12
 **Domínio:** miaoutfitai.com.br
-**Próxima ação recomendada:** O redesign visual completo está concluído. Próximas prioridades: email transacional via Resend, finalizar Virtual Try-On, e avaliar novas features.
+**Próxima ação recomendada:** Aplicar manualmente `supabase/migrations/0003_secure_increment_usage.sql` no banco de produção (Dashboard → SQL Editor) e validar que contadores de uso ainda incrementam.
 
 ---
 
@@ -151,6 +151,7 @@
 | Prioridade | Tarefa | Observação |
 |---|---|---|
 | Alta | Email transacional (Resend) | Boas-vindas, trial expirando, cobrança |
+| Alta | Aplicar migration 0003 no banco | `0003_secure_increment_usage.sql` — criada no repo, pendente de aplicação manual |
 | Alta | Finalizar Virtual Try-On | Migration 0001_tryon_predictions.sql pendente no Supabase |
 | Média | Regenerar tipos após migration tryon | npx supabase gen types typescript --linked > src/types/database.ts |
 | Média | Comprar créditos Photoroom API | Trial com marca d'água; $0.10/imagem no plano Plus |
@@ -184,8 +185,10 @@
 | `src/app/api/pieces/moderate/route.ts` | Moderação OpenAI |
 | `src/app/api/tryon/route.ts` | FASHN Virtual Try-On |
 | `src/app/api/stripe/webhook/route.ts` | Webhook Stripe |
+| `supabase/schema.sql` | Fotografia do schema de produção (`supabase db dump`) — referência versionada |
 | `supabase/migrations/0001_tryon_predictions.sql` | Migration pendente de rodar |
 | `supabase/migrations/0002_piece_photos.sql` | Migration rodada ✅ |
+| `supabase/migrations/0003_secure_increment_usage.sql` | Corrige `increment_usage` — criada, pendente de aplicação manual no banco |
 | `public/logos-mia-ai/Hero-principal.png` | Ilustração aquarela — landing e login |
 
 ---
@@ -268,7 +271,7 @@ stripe_subscription_id   text
 | GET | `/api/weather` | Não | Clima via Open-Meteo |
 | POST | `/api/outfit/generate` | Sim | Gerar 5 outfits |
 | POST | `/api/pieces/analyze` | Sim | Análise com visão computacional |
-| POST | `/api/pieces/describe` | Sim | Análise multi-foto |
+| POST | `/api/pieces/describe` | Sim | Análise multi-foto (rate limit `pieces_analyze`) |
 | POST | `/api/pieces/studio` | Sim | FASHN product-to-model |
 | POST | `/api/pieces/ghost-mannequin` | Sim | Photoroom Ghost Mannequin |
 | POST | `/api/pieces/moderate` | Sim | Moderação OpenAI |
@@ -326,6 +329,55 @@ stripe_subscription_id   text
 ---
 
 ## 12. Histórico de implementações
+
+### 2026-06-12 — v1.7.2 — Auditoria: schema versionado + increment_usage seguro
+
+**O que foi feito:**
+- CRÍTICO-1: `supabase/schema.sql` adicionado ao repositório — dump completo do schema de produção (tabelas, RLS, grants, funções)
+- IMPORTANTE-1: `supabase/migrations/0003_secure_increment_usage.sql` — `increment_usage` passa a usar `auth.uid()` internamente (parâmetro `user_id` mantido na assinatura por compatibilidade, mas ignorado), lista branca de colunas, `SET search_path = public`, `REVOKE` da role `anon`
+
+**Pendente:**
+- Aplicar `0003_secure_increment_usage.sql` manualmente no banco (SQL Editor ou `psql`) — migration criada no repo, **não aplicada automaticamente**
+- Após aplicar: testar incremento de contador via app (ex.: análise de peça) e confirmar que chamada com `user_id` de outro usuário falha
+
+**Próximo passo:** aplicar 0003 em produção → commitar `schema.sql` + migration
+
+---
+
+### 2026-06-12 — v1.7.1 — Auditoria: rate limit describe + schema pendente
+
+**O que foi feito:**
+- IMPORTANTE-2: `POST /api/pieces/describe` passou a usar `checkRateLimit(user.id, 'pieces_analyze')` após `getUser` e `incrementUsage` no sucesso — mesmo padrão de `/api/pieces/analyze`
+- CRÍTICO-1: tentativa de `supabase db pull` bloqueada (CLI não instalado no ambiente do agente). Passo a passo documentado abaixo para o dev rodar localmente
+
+**Pendente (auditoria):**
+- CRÍTICO-1: commitar `supabase/migrations/0000_initial_schema.sql` com tabelas centrais, RLS e `increment_usage`
+- IMPORTANTE-1: revisar função `increment_usage` após o pull (validação `auth.uid()` + colunas permitidas)
+- CRÍTICO-2: testes automatizados + CI (fora do escopo desta sessão)
+
+**Como versionar o schema (rodar no seu terminal):**
+```bash
+# 1. Instalar CLI (Linux)
+curl -fsSL https://raw.githubusercontent.com/supabase/cli/main/install.sh | sh
+
+# 2. Login (abre o browser)
+supabase login
+
+# 3. Linkar ao projeto remoto (ref já conhecido: qeblfxlyrkiwucrwmydk)
+cd /caminho/outfit-saas
+supabase link --project-ref qeblfxlyrkiwucrwmydk
+
+# 4. Puxar schema remoto → gera migration em supabase/migrations/
+supabase db pull
+
+# 5. Renomear a migration gerada para 0000_initial_schema.sql
+#    (antes de 0001_tryon_predictions.sql e 0002_piece_photos.sql)
+# 6. Revisar increment_usage no arquivo e commitar
+```
+
+**Próximo passo:** concluir CRÍTICO-1 localmente → revisar IMPORTANTE-1
+
+---
 
 ### 2026-06-08 — v1.7.0 — Redesign Perfil + Correções
 
