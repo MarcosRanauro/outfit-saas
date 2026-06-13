@@ -155,6 +155,7 @@
 | Alta | Email transacional (Resend) | Boas-vindas, trial expirando, cobrança |
 | Alta | Aplicar migration 0003 no banco | `0003_secure_increment_usage.sql` — criada no repo, pendente de aplicação manual |
 | Alta | Finalizar Virtual Try-On | Migration 0001_tryon_predictions.sql pendente no Supabase |
+| Média | Build depende de env Supabase no CI | `/cadastro` e `/auth/reset-password` criam cliente Supabase na pré-renderização — CI injeta `NEXT_PUBLIC_SUPABASE_*` via secrets (públicas, RLS). **Correção de raiz futura:** tornar essas páginas dinâmicas (`export const dynamic = 'force-dynamic'`) ou garantir que `createClient` só rode no browser, removendo a dependência de env no build. Não feito agora para não misturar escopo com a Etapa 2. |
 | Média | Regenerar tipos após migration tryon | npx supabase gen types typescript --linked > src/types/database.ts |
 | Média | Comprar créditos Photoroom API | Trial com marca d'água; $0.10/imagem no plano Plus |
 | Baixa | Renomear middleware.ts → proxy.ts | Deprecado no Next 15 |
