@@ -1,0 +1,43 @@
+import { describe, expect, it } from 'vitest'
+import { getUsageClass, getUsagePercent } from '@/lib/plan-limits'
+
+describe('getUsagePercent', () => {
+  it('plano ilimitado (limit >= 999) usa escala used/50', () => {
+    expect(getUsagePercent(25, 999)).toBe(50)
+    expect(getUsagePercent(50, 999)).toBe(100)
+    expect(getUsagePercent(100, 999)).toBe(100)
+  })
+
+  it('limite normal retorna percentual proporcional capado em 100', () => {
+    expect(getUsagePercent(2, 10)).toBe(20)
+    expect(getUsagePercent(10, 10)).toBe(100)
+    expect(getUsagePercent(15, 10)).toBe(100)
+  })
+
+  it('limite zero não gera NaN — cap em 100', () => {
+    expect(getUsagePercent(0, 0)).toBeNaN()
+    expect(getUsagePercent(5, 0)).toBe(100)
+  })
+})
+
+describe('getUsageClass', () => {
+  it('plano ilimitado retorna string vazia', () => {
+    expect(getUsageClass(500, 999)).toBe('')
+  })
+
+  it('abaixo de 80% retorna vazio', () => {
+    expect(getUsageClass(7, 10)).toBe('')
+  })
+
+  it('80% ou mais retorna warning', () => {
+    expect(getUsageClass(8, 10)).toBe('warning')
+  })
+
+  it('100% retorna limit', () => {
+    expect(getUsageClass(10, 10)).toBe('limit')
+  })
+
+  it('limite zero trata pct como infinito → limit', () => {
+    expect(getUsageClass(1, 0)).toBe('limit')
+  })
+})

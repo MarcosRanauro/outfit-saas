@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "audit:project": "bash scripts/audit-project.sh"
   },
   "dependencies": {
@@ -34,6 +36,7 @@
     "eslint-config-next": "16.2.4",
     "supabase": "^2.106.0",
     "tailwindcss": "^4.2.4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.6"
   }
 }

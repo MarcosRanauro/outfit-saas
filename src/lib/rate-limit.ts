@@ -13,12 +13,82 @@ export type RateLimitResult = {
   trialEndsAt?: string | null
 }
 
-const usageColumnMap: Record<ActionType, string> = {
+export type RateLimitProfile = {
+  plan: string | null
+  usage_mia_generations: number | null
+  usage_outfit_generations: number | null
+  usage_pieces_analyzed: number | null
+  usage_wishlist_generations: number | null
+  usage_studio_generations: number | null
+  usage_reset_at: string | null
+  trial_ends_at: string | null
+}
+
+export type DecideRateLimitResult = RateLimitResult & { needsReset: boolean }
+
+const usageColumnMap: Record<ActionType, keyof RateLimitProfile> = {
   mia_chat: 'usage_mia_generations',
   outfit_generate: 'usage_outfit_generations',
   pieces_analyze: 'usage_pieces_analyzed',
   wishlist_generate: 'usage_wishlist_generations',
   studio_generate: 'usage_studio_generations',
+}
+
+export function decideRateLimit(
+  profile: RateLimitProfile | null,
+  action: ActionType,
+  now: Date
+): DecideRateLimitResult {
+  if (!profile) {
+    return { allowed: false, plan: 'free', limit: 0, used: 0, reason: 'no_profile', needsReset: false }
+  }
+
+  const plan = (profile.plan || 'free') as 'free' | 'pro'
+  const trialEndsAt = profile.trial_ends_at ? new Date(profile.trial_ends_at) : null
+  const trialActive = trialEndsAt !== null && trialEndsAt > now
+  const trialExpired = trialEndsAt !== null && trialEndsAt <= now
+
+  if (trialActive) {
+    return {
+      allowed: true,
+      plan: 'trial',
+      limit: 999,
+      used: 0,
+      trialEndsAt: profile.trial_ends_at,
+      needsReset: false,
+    }
+  }
+
+  if (trialExpired && plan === 'free') {
+    return {
+      allowed: false,
+      plan: 'expired',
+      reason: 'trial_expired',
+      limit: 0,
+      used: 0,
+      trialEndsAt: profile.trial_ends_at,
+      needsReset: false,
+    }
+  }
+
+  const resetAt = new Date(profile.usage_reset_at || new Date())
+  const daysSinceReset = (now.getTime() - resetAt.getTime()) / (1000 * 60 * 60 * 24)
+  const needsReset = daysSinceReset >= 30
+
+  const column = usageColumnMap[action]
+  const used = needsReset ? 0 : ((profile[column] as number) ?? 0)
+  const limit = PLAN_LIMITS[plan][action]
+  const allowed = used < limit
+
+  return {
+    allowed,
+    plan,
+    limit,
+    used,
+    reason: allowed ? undefined : 'rate_limited',
+    trialEndsAt: profile.trial_ends_at,
+    needsReset,
+  }
 }
 
 export async function checkRateLimit(
@@ -35,45 +105,10 @@ export async function checkRateLimit(
     .eq('id', userId)
     .single()
 
-  if (!profile) {
-    return { allowed: false, plan: 'free', limit: 0, used: 0, reason: 'no_profile' }
-  }
-
-  const plan = (profile.plan || 'free') as 'free' | 'pro'
-
   const now = new Date()
-  const trialEndsAt = profile.trial_ends_at ? new Date(profile.trial_ends_at) : null
-  const trialActive = trialEndsAt !== null && trialEndsAt > now
-  const trialExpired = trialEndsAt !== null && trialEndsAt <= now
+  const decision = decideRateLimit(profile, action, now)
 
-  // 1. Trial ainda ativo → acesso ilimitado
-  if (trialActive) {
-    return {
-      allowed: true,
-      plan: 'trial',
-      limit: 999,
-      used: 0,
-      trialEndsAt: profile.trial_ends_at,
-    }
-  }
-
-  // 2. Trial expirado e ainda no Free → bloqueia e pede upgrade
-  if (trialExpired && plan === 'free') {
-    return {
-      allowed: false,
-      plan: 'expired',
-      reason: 'trial_expired',
-      limit: 0,
-      used: 0,
-      trialEndsAt: profile.trial_ends_at,
-    }
-  }
-
-  // 3. Reset mensal de uso (Free sem trial ou Pro)
-  const resetAt = new Date(profile.usage_reset_at || new Date())
-  const daysSinceReset = (now.getTime() - resetAt.getTime()) / (1000 * 60 * 60 * 24)
-
-  if (daysSinceReset >= 30) {
+  if (decision.needsReset && profile) {
     await supabase
       .from('profiles')
       .update({
@@ -87,18 +122,13 @@ export async function checkRateLimit(
       .eq('id', userId)
   }
 
-  const column = usageColumnMap[action] as keyof typeof profile
-  const used = daysSinceReset >= 30 ? 0 : ((profile[column] as number) ?? 0)
-  const limit = PLAN_LIMITS[plan][action]
-  const allowed = used < limit
-
   return {
-    allowed,
-    plan,
-    limit,
-    used,
-    reason: allowed ? undefined : 'rate_limited',
-    trialEndsAt: profile.trial_ends_at,
+    allowed: decision.allowed,
+    plan: decision.plan,
+    limit: decision.limit,
+    used: decision.used,
+    reason: decision.reason,
+    trialEndsAt: decision.trialEndsAt,
   }
 }
 

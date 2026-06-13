@@ -8,10 +8,10 @@
 ## 1. Estado atual do projeto
 
 **Status:** Em produção
-**Versão:** 1.7.2
+**Versão:** 1.7.3
 **Última atualização:** 2026-06-12
 **Domínio:** miaoutfitai.com.br
-**Próxima ação recomendada:** Aplicar manualmente `supabase/migrations/0003_secure_increment_usage.sql` no banco de produção (Dashboard → SQL Editor) e validar que contadores de uso ainda incrementam.
+**Próxima ação recomendada:** Aplicar manualmente `0003_secure_increment_usage.sql` no banco. Depois: email transacional (Resend) ou finalizar Virtual Try-On.
 
 ---
 
@@ -133,6 +133,8 @@
 ### Qualidade
 - [x] npm run lint: 0 erros
 - [x] npm run build: passa sem erros
+- [x] npm run test: Vitest — 16 testes (rate-limit + plan-limits)
+- [x] GitHub Action CI: lint + test + build em PR/push main
 - [x] next/image nos cards
 - [x] Plan = 'free' | 'pro'
 - [x] src/types/app.ts — tipos manuais separados do database.ts gerado
@@ -153,6 +155,7 @@
 | Alta | Email transacional (Resend) | Boas-vindas, trial expirando, cobrança |
 | Alta | Aplicar migration 0003 no banco | `0003_secure_increment_usage.sql` — criada no repo, pendente de aplicação manual |
 | Alta | Finalizar Virtual Try-On | Migration 0001_tryon_predictions.sql pendente no Supabase |
+| Média | Build depende de env Supabase no CI | `/cadastro` e `/auth/reset-password` criam cliente Supabase na pré-renderização — CI injeta `NEXT_PUBLIC_SUPABASE_*` via secrets (públicas, RLS). **Correção de raiz futura:** tornar essas páginas dinâmicas (`export const dynamic = 'force-dynamic'`) ou garantir que `createClient` só rode no browser, removendo a dependência de env no build. Não feito agora para não misturar escopo com a Etapa 2. |
 | Média | Regenerar tipos após migration tryon | npx supabase gen types typescript --linked > src/types/database.ts |
 | Média | Comprar créditos Photoroom API | Trial com marca d'água; $0.10/imagem no plano Plus |
 | Baixa | Renomear middleware.ts → proxy.ts | Deprecado no Next 15 |
@@ -174,7 +177,10 @@
 | `src/app/(dashboard)/perfil/page.tsx` | Perfil |
 | `src/app/(public)/page.tsx` | Landing page |
 | `src/app/(auth)/login/page.tsx` | Login — split screen |
-| `src/lib/rate-limit.ts` | Rate limiting — lógica de trial/planos |
+| `src/lib/rate-limit.ts` | Rate limiting — `decideRateLimit()` (pura) + `checkRateLimit()` (Supabase) |
+| `src/lib/rate-limit.test.ts` | Testes unitários de `decideRateLimit` |
+| `src/lib/plan-limits.test.ts` | Testes de `getUsagePercent` e `getUsageClass` |
+| `.github/workflows/ci.yml` | CI: lint + test + build |
 | `src/lib/plan-limits.ts` | Limites de plano e helpers de barras de uso (client-safe) |
 | `src/app/perfil.css` | Estilos do perfil — Édition Claire / Dark Edition |
 | `src/types/database.ts` | Tipos gerados — NÃO editar manualmente |
@@ -329,6 +335,22 @@ stripe_subscription_id   text
 ---
 
 ## 12. Histórico de implementações
+
+### 2026-06-12 — v1.7.3 — Auditoria Etapa 2: Vitest + CI
+
+**O que foi feito:**
+- CRÍTICO-2 (parcial): Vitest instalado; scripts `test` e `test:watch`; `vitest.config.ts`
+- Lógica pura extraída: `decideRateLimit(profile, action, now)` em `rate-limit.ts` — `checkRateLimit()` continua lendo/atualizando Supabase; assinaturas públicas inalteradas
+- 16 testes unitários: `rate-limit.test.ts` (8 cenários incl. borda do reset de 30 dias) + `plan-limits.test.ts` (8 cenários)
+- `.github/workflows/ci.yml` — Node 20, `npm ci`, lint, test, build em PR e push para main
+
+**Pendente (auditoria):**
+- CRÍTICO-2 restante: expandir cobertura (webhook Stripe, parsing de IA) — fora do escopo desta sessão
+- Aplicar migration 0003 no banco (Etapa 1)
+
+**Próximo passo:** aplicar 0003 → email transacional ou Virtual Try-On
+
+---
 
 ### 2026-06-12 — v1.7.2 — Auditoria: schema versionado + increment_usage seguro
 
