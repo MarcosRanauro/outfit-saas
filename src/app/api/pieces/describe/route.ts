@@ -72,8 +72,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ description })
 
   } catch (error: unknown) {
-    const err = error as Record<string, unknown>
-    const message = err?.message && typeof err.message === 'string' ? err.message : 'Erro desconhecido'
-    return NextResponse.json({ error: message }, { status: 500 })
+    console.error('Erro em pieces/describe:', error)
+    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
   }
 }

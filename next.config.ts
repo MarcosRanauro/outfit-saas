@@ -12,7 +12,18 @@ function getSupabaseHostname(): string | undefined {
   }
 }
 
+function getSupabaseOrigin(): string | undefined {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!url) return undefined;
+  try {
+    return new URL(url).origin;
+  } catch {
+    return undefined;
+  }
+}
+
 const supabaseHostname = getSupabaseHostname();
+const supabaseOrigin = getSupabaseOrigin();
 
 const nextConfig: NextConfig = {
   experimental: {
@@ -37,6 +48,53 @@ const nextConfig: NextConfig = {
         pathname: '/storage/v1/object/public/**',
       },
     ],
+  },
+  async headers() {
+    // Report-Only de propósito: coleta violações sem bloquear tráfego legítimo.
+    // Trocar para Content-Security-Policy (bloqueante) só após revisar relatórios em produção.
+    const cspReportOnly = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.googletagmanager.com https://www.google-analytics.com",
+      "style-src 'self' 'unsafe-inline'",
+      [
+        "img-src 'self' data: blob:",
+        supabaseOrigin,
+        'https://*.supabase.co',
+        'https://www.google-analytics.com',
+        'https://www.googletagmanager.com',
+      ].filter(Boolean).join(' '),
+      [
+        "connect-src 'self'",
+        supabaseOrigin,
+        'https://*.supabase.co',
+        'wss://*.supabase.co',
+        'https://api.stripe.com',
+        'https://www.google-analytics.com',
+        'https://region1.google-analytics.com',
+        'https://www.googletagmanager.com',
+      ].filter(Boolean).join(' '),
+      "frame-src 'self' https://js.stripe.com https://checkout.stripe.com",
+      "font-src 'self' data:",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join('; ');
+
+    const securityHeaders = [
+      { key: 'X-Frame-Options', value: 'DENY' },
+      { key: 'X-Content-Type-Options', value: 'nosniff' },
+      { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+      { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+      { key: 'Permissions-Policy', value: 'camera=(self), geolocation=(self), microphone=()' },
+      { key: 'Content-Security-Policy-Report-Only', value: cspReportOnly },
+    ];
+
+    return [
+      {
+        source: '/:path*',
+        headers: securityHeaders,
+      },
+    ];
   },
 };
 

@@ -8,10 +8,10 @@
 ## 1. Estado atual do projeto
 
 **Status:** Em produção
-**Versão:** 1.7.3
+**Versão:** 1.7.4
 **Última atualização:** 2026-06-12
 **Domínio:** miaoutfitai.com.br
-**Próxima ação recomendada:** Aplicar manualmente `0003_secure_increment_usage.sql` no banco. Depois: email transacional (Resend) ou finalizar Virtual Try-On.
+**Próxima ação recomendada:** Revisar relatórios CSP Report-Only em produção; depois fail-closed da moderação ou Zod (Etapa 3 restante).
 
 ---
 
@@ -129,6 +129,9 @@
 - [x] Nenhuma chave exposta no client bundle
 - [x] Webhook Stripe com HMAC, SSRF protection, moderação OpenAI
 - [x] Tabela tryon_predictions com RLS e ownership
+- [x] Erros 500 sanitizados em describe/studio/moderate/tryon — cliente recebe mensagem genérica; detalhe só em `console.error`
+- [x] Security headers em `next.config.ts` (X-Frame-Options, HSTS, nosniff, Referrer-Policy, Permissions-Policy)
+- [x] CSP em `Content-Security-Policy-Report-Only` (monitoramento; ainda não bloqueante)
 
 ### Qualidade
 - [x] npm run lint: 0 erros
@@ -155,7 +158,10 @@
 | Alta | Email transacional (Resend) | Boas-vindas, trial expirando, cobrança |
 | Alta | Aplicar migration 0003 no banco | `0003_secure_increment_usage.sql` — criada no repo, pendente de aplicação manual |
 | Alta | Finalizar Virtual Try-On | Migration 0001_tryon_predictions.sql pendente no Supabase |
-| Média | Build depende de env Supabase no CI | `/cadastro` e `/auth/reset-password` criam cliente Supabase na pré-renderização — CI injeta `NEXT_PUBLIC_SUPABASE_*` via secrets (públicas, RLS). **Correção de raiz futura:** tornar essas páginas dinâmicas (`export const dynamic = 'force-dynamic'`) ou garantir que `createClient` só rode no browser, removendo a dependência de env no build. Não feito agora para não misturar escopo com a Etapa 2. |
+| Média | CSP Report-Only → bloqueante | Revisar violações reportadas; trocar header para `Content-Security-Policy` quando estável |
+| Média | Moderação fail-closed | Etapa 3 restante — fora do escopo mecânico desta sessão |
+| Média | Zod nos bodies das rotas | Etapa 3 restante — fora do escopo desta sessão |
+| Média | Build depende de env Supabase no CI | `/cadastro` e `/auth/reset-password` pré-renderizam com `createClient` — CI injeta `NEXT_PUBLIC_SUPABASE_*` via secrets. **Correção de raiz futura:** `force-dynamic` ou `createClient` só no browser |
 | Média | Regenerar tipos após migration tryon | npx supabase gen types typescript --linked > src/types/database.ts |
 | Média | Comprar créditos Photoroom API | Trial com marca d'água; $0.10/imagem no plano Plus |
 | Baixa | Renomear middleware.ts → proxy.ts | Deprecado no Next 15 |
@@ -335,6 +341,22 @@ stripe_subscription_id   text
 ---
 
 ## 12. Histórico de implementações
+
+### 2026-06-12 — v1.7.4 — Auditoria Etapa 3 (mecânica)
+
+**O que foi feito:**
+- Erros 500 sanitizados: `pieces/describe`, `pieces/studio`, `pieces/moderate` e `tryon` retornam `{ error: 'Erro interno' }` ao cliente; `console.error` mantém detalhe no servidor; removido `detail` da resposta FASHN em tryon
+- Security headers globais em `next.config.ts`: X-Frame-Options, X-Content-Type-Options, Referrer-Policy, HSTS, Permissions-Policy
+- CSP inicial em `Content-Security-Policy-Report-Only` (Supabase storage, Stripe, GA/GTM, inline Next) — comentário no código: virar bloqueante só após validar relatórios
+
+**Pendente (auditoria Etapa 3):**
+- Moderação fail-closed (decisão de produto, tratado à parte)
+- Zod nos bodies e na saída da IA
+- Promover CSP de Report-Only para bloqueante
+
+**Próximo passo:** revisar CSP em produção → fail-closed moderação ou Zod
+
+---
 
 ### 2026-06-12 — v1.7.3 — Auditoria Etapa 2: Vitest + CI
 
