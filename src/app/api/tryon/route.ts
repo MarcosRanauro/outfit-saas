@@ -60,7 +60,7 @@ export async function POST(request: Request) {
       console.error('[tryon] erro FASHN status:', response.status)
       console.error('[tryon] erro FASHN body:', JSON.stringify(data))
       return NextResponse.json(
-        { error: 'Erro ao processar imagem', detail: data },
+        { error: 'Erro interno' },
         { status: 500 }
       )
     }

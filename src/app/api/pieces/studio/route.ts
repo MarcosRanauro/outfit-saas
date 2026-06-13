@@ -360,13 +360,7 @@ export async function POST(request: Request) {
     // ─── FIM FASHN ───
 
   } catch (error: unknown) {
-    const err = error as Record<string, unknown>
-    console.error('Studio error full:', JSON.stringify({
-      message: err?.message,
-      status: err?.status,
-      code: err?.code,
-    }, null, 2))
-    const message = err?.message && typeof err.message === 'string' ? err.message : 'Erro desconhecido'
-    return NextResponse.json({ error: message }, { status: 500 })
+    console.error('Erro em pieces/studio:', error)
+    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
   }
 }
