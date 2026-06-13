@@ -5,7 +5,7 @@ import NextImage from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Piece, WishlistItem } from '@/types/app'
-import { toBase64, moderateImage } from '@/lib/image'
+import { toBase64, moderateImage, MODERATION_CONTENT_MESSAGE } from '@/lib/image'
 import ClosetOnboarding from '@/components/closet/ClosetOnboarding'
 import ClosetTour from '@/components/closet/ClosetTour'
 import WishlistSuggestionsModal, { WishlistSuggestion } from '@/components/closet/WishlistSuggestionsModal'
@@ -278,9 +278,9 @@ export default function ClosetPage() {
     const file = e.target.files?.[0]
     if (!file) return
     const base64 = await toBase64(file)
-    const approved = await moderateImage(base64)
-    if (!approved) {
-      alert('Esta imagem não é permitida. Por favor, envie uma foto de roupa ou acessório.')
+    const moderation = await moderateImage(base64)
+    if (!moderation.approved) {
+      alert(moderation.message ?? MODERATION_CONTENT_MESSAGE)
       return
     }
     setPhoto(file)

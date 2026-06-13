@@ -1,6 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { piecesAnalyzeBodySchema } from "@/lib/api-schemas";
+import { parseRequestBody } from "@/lib/parse-request-body";
 import { checkRateLimit, incrementUsage, rateLimitResponse } from "@/lib/rate-limit";
 
 export const maxDuration = 30
@@ -38,14 +40,17 @@ export async function POST(request: Request) {
     return rateLimitResponse(rateCheck)
   }
 
+  const parsed = await parseRequestBody(request, piecesAnalyzeBodySchema)
+  if (!parsed.success) return parsed.response
+
   try {
-    const { imageBase64: rawBase64, mimeType: rawMimeType } = await request.json();
+    const { imageBase64: rawBase64, mimeType: rawMimeType } = parsed.data
 
     const imageBase64 = typeof rawBase64 === "string" && rawBase64.includes(",")
       ? rawBase64.split(",")[1]
       : rawBase64;
 
-    const mimeType: ValidMimeType = (VALID_MIME as readonly string[]).includes(rawMimeType)
+    const mimeType: ValidMimeType = rawMimeType && (VALID_MIME as readonly string[]).includes(rawMimeType)
       ? rawMimeType as ValidMimeType
       : "image/jpeg";
 

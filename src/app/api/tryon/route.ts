@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { tryonBodySchema } from '@/lib/api-schemas'
+import { parseRequestBody } from '@/lib/parse-request-body'
 
 export async function POST(request: Request) {
   try {
@@ -12,6 +14,9 @@ export async function POST(request: Request) {
         { status: 401 }
       )
     }
+
+    const parsed = await parseRequestBody(request, tryonBodySchema)
+    if (!parsed.success) return parsed.response
 
     const { data: profile } = await supabase
       .from('profiles')
@@ -29,14 +34,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const { modelImage, garmentImage, category } = await request.json()
-
-    if (!modelImage || !garmentImage) {
-      return NextResponse.json(
-        { error: 'Imagens obrigatórias' },
-        { status: 400 }
-      )
-    }
+    const { modelImage, garmentImage, category } = parsed.data
 
     const response = await fetch('https://api.fashn.ai/v1/run', {
       method: 'POST',

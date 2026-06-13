@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { toBase64, moderateImage } from '@/lib/image'
+import { toBase64, moderateImage, MODERATION_CONTENT_MESSAGE } from '@/lib/image'
 import TrialExpiredModal from '@/components/ui/TrialExpiredModal'
 import StudioScannerOverlay from '@/components/studio/StudioScannerOverlay'
 import './nova-peca.css'
@@ -149,13 +149,11 @@ export default function NovaPecaPage() {
     let blocked = false
     try {
       const base64 = await toBase64(file)
-      const approved = await moderateImage(base64)
-      if (!approved) {
+      const moderation = await moderateImage(base64)
+      if (!moderation.approved) {
         blocked = true
-        setModerationError('Esta imagem não é permitida. Por favor, envie uma foto de roupa ou acessório.')
+        setModerationError(moderation.message ?? MODERATION_CONTENT_MESSAGE)
       }
-    } catch {
-      // se moderação falhar, permite continuar
     } finally {
       setModerating(false)
       setPendingPreview(null)
