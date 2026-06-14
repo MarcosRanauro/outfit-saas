@@ -87,6 +87,8 @@ export default function PerfilPage() {
   const [editCustomStyle, setEditCustomStyle] = useState('')
   const [saving, setSaving] = useState(false)
   const [cropOpen, setCropOpen] = useState(false)
+  const [upgradeLoading, setUpgradeLoading] = useState(false)
+  const [manageLoading, setManageLoading] = useState(false)
   const [avatarVersion] = useState(() => Date.now())
 
   const inlineInputRef = useRef<HTMLInputElement>(null)
@@ -267,22 +269,51 @@ export default function PerfilPage() {
   }
 
   async function handleUpgrade() {
+    setUpgradeLoading(true)
     try {
       const res = await fetch('/api/stripe/checkout', { method: 'POST' })
       const data = await res.json()
-      if (data.url) window.location.href = data.url
+
+      if (res.ok && data.url) {
+        window.location.href = data.url
+        return
+      }
+
+      alert(
+        res.status === 400 && data.error
+          ? data.error
+          : 'Não foi possível iniciar o pagamento agora. Tente novamente em instantes.'
+      )
     } catch {
-      alert('Erro ao iniciar pagamento. Tente novamente.')
+      alert('Não foi possível iniciar o pagamento agora. Tente novamente em instantes.')
+    } finally {
+      setUpgradeLoading(false)
     }
   }
 
   async function handleManageSubscription() {
+    setManageLoading(true)
     try {
       const res = await fetch('/api/stripe/portal', { method: 'POST' })
       const data = await res.json()
-      if (data.url) window.location.href = data.url
+
+      if (res.ok && data.url) {
+        window.location.href = data.url
+        return
+      }
+
+      if (res.status === 400) {
+        alert(
+          'Não encontramos uma assinatura ativa vinculada à sua conta. Se você acabou de assinar, aguarde alguns minutos.'
+        )
+        return
+      }
+
+      alert('Não foi possível abrir o gerenciamento de assinatura agora. Tente novamente em instantes.')
     } catch {
-      alert('Erro ao abrir portal. Tente novamente.')
+      alert('Não foi possível abrir o gerenciamento de assinatura agora. Tente novamente em instantes.')
+    } finally {
+      setManageLoading(false)
     }
   }
 
@@ -633,12 +664,22 @@ export default function PerfilPage() {
           </div>
 
           {isPro ? (
-            <button type="button" className="perfil-manage-btn" onClick={handleManageSubscription}>
-              Gerenciar assinatura
+            <button
+              type="button"
+              className="perfil-manage-btn"
+              onClick={handleManageSubscription}
+              disabled={manageLoading}
+            >
+              {manageLoading ? 'Abrindo...' : 'Gerenciar assinatura'}
             </button>
           ) : (
-            <button type="button" className="perfil-upgrade-btn" onClick={handleUpgrade}>
-              Assinar Pro — {PRECO_PRO_MENSAL}
+            <button
+              type="button"
+              className="perfil-upgrade-btn"
+              onClick={handleUpgrade}
+              disabled={upgradeLoading}
+            >
+              {upgradeLoading ? 'Redirecionando...' : `Assinar Pro — ${PRECO_PRO_MENSAL}`}
             </button>
           )}
         </div>
