@@ -345,7 +345,7 @@ export default function LandingPage() {
             <div className="plan-card scroll-animate">
               <div className="plan-badge">ACESSO COMPLETO</div>
               <div className="plan-price">
-                <span className="plan-amount">R$19,90</span>
+                <span className="plan-amount">R$19,00</span>
               </div>
               <p className="plan-period">/mês após o período de teste</p>
               <div className="plan-divider" />

@@ -1,10 +1,12 @@
 # Mia Outfit AI — Documentação do Projeto
 
+> **Documento histórico.** Este arquivo registra decisões e marcos até v1.2.0. Para o estado **atual** do produto (v1.7.5, em produção), use [`CONTEXT.md`](./CONTEXT.md) como fonte viva.
+
 ## Stack
 
 | Camada | Tecnologia |
 |---|---|
-| Frontend | Next.js 15 (App Router) + TypeScript |
+| Frontend | Next.js 16.2.6 (App Router) + TypeScript |
 | Estilo | Tailwind CSS v4 + CSS customizado por página |
 | Banco | Supabase (PostgreSQL) — região São Paulo (`sa-east-1`) |
 | Auth | Supabase Auth (email/senha + Google OAuth) |
@@ -64,27 +66,31 @@
 | Plano | Preço | Acesso |
 |---|---|---|
 | Free | R$ 0 | Limites por ação/mês |
-| Pro | R$ 29/mês | 999 por ação (ilimitado) |
-| Stylist | R$ 79/mês | Multi-closet + ilimitado |
+| Pro | R$ 19,00/mês | Ilimitado |
 
-> Trial de 15 dias com acesso ilimitado. Após expirar, usuário é bloqueado independente dos contadores.
+> Só existem os planos `free` e `pro` — o plano Stylist foi descontinuado. Trial de 15 dias com acesso ilimitado. Após expirar, usuário `free` é bloqueado nas rotas de IA; usuário Pro nunca é bloqueado.
 
 ---
 
 ## Variáveis de Ambiente
 
+Lista completa e comentada em [`.env.example`](./.env.example). Resumo:
+
 | Variável | Descrição | Escopo |
 |---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | URL do projeto Supabase | Client + Server |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Chave pública Supabase | Client + Server |
-| `SUPABASE_SERVICE_ROLE_KEY` | Chave admin Supabase | Apenas webhook Stripe |
-| `ANTHROPIC_API_KEY` | Chave Anthropic (Mia) | Server-side only |
-| `OPENAI_API_KEY` | Chave OpenAI (moderação) | Server-side only |
-| `REMOVE_BG_API_KEY` | Chave Remove.bg (estúdio) | Server-side only |
-| `FASHN_API_KEY` | Chave FASHN.ai (try-on) | Server-side only |
-| `STRIPE_SECRET_KEY` | Chave secreta Stripe | Server-side only |
-| `STRIPE_WEBHOOK_SECRET` | Secret HMAC webhook Stripe | Server-side only |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Chave pública Stripe | Client |
+| `NEXT_PUBLIC_SUPABASE_URL` | URL pública do projeto Supabase | Client + Server |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Chave anônima pública do Supabase | Client + Server |
+| `SUPABASE_SERVICE_ROLE_KEY` | Chave privada do Supabase — nunca expor no frontend | Apenas webhook Stripe |
+| `ANTHROPIC_API_KEY` | Chave da API do Claude (análise, chat, descrição) | Server-side only |
+| `REMOVE_BG_API_KEY` | Chave Remove.bg (remoção de fundo) | Server-side only |
+| `OPENAI_API_KEY` | Moderação de imagens (`omni-moderation-latest`) | Server-side only |
+| `PHOTOROOM_API_KEY` | Photoroom Ghost Mannequin | Server-side only |
+| `FASHN_API_KEY` | FASHN.ai (try-on + product-to-model) | Server-side only |
+| `STRIPE_SECRET_KEY` | Chave secreta do Stripe | Server-side only |
+| `STRIPE_WEBHOOK_SECRET` | Segredo de validação do webhook Stripe | Server-side only |
+| `STRIPE_PRICE_ID` | Price ID do plano Pro no Stripe | Server-side only |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Chave pública do Stripe (checkout client-side) | Client |
+| `NEXT_PUBLIC_APP_URL` | URL pública da aplicação | Client + Server |
 
 ---
 
@@ -123,7 +129,9 @@
 - Página `/sobre` com história e missão do produto
 - FAQ com accordion — 4 categorias, 12 perguntas
 
-### v1.2.0 — 2026-05-23 ✅ (atual)
+### v1.2.0 — 2026-05-23 ✅
+
+> Versões posteriores (redesigns, CI, moderação fail-closed, Zod, etc.) estão documentadas em [`CONTEXT.md`](./CONTEXT.md) — seção 12 (Histórico de implementações). Estado atual: **v1.7.5**, em produção em miaoutfitai.com.br.
 
 - **Foto de estúdio com Remove.bg** — remoção de fundo com fidelidade 100% ao produto original
 - Análise multi-foto via Mia: rota `/api/pieces/describe` envia até 3 fotos, retorna descrição técnica visual em inglês
@@ -134,6 +142,22 @@
 - SSRF protection na rota de estúdio — validação de hostname contra Supabase antes de fetch
 - **Moderação de conteúdo com OpenAI Moderation API** — toda foto passa por moderação antes de upload
 - `.env.example`, `DECISOES.md`, `CHANGELOG.md`, `SECURITY.md` adicionados ao repositório
+
+---
+
+## Fases do projeto
+
+| Fase | Status | Descrição |
+|---|---|---|
+| 0 — Setup | ✅ | Projeto Next.js + TypeScript |
+| 0.1 — Supabase | ✅ | Conexão banco, auth, storage |
+| 1 — Auth | ✅ | Email/senha + Google OAuth |
+| 2 — Closet | ✅ | CRUD de peças + foto no Storage |
+| 3 — Lookbook | ✅ | Outfits salvos, filtros |
+| 4 — Outfit IA | ✅ | Geração com clima + ocasião |
+| 5 — Perfil | ✅ | Avatar crop, onboarding, logout |
+| 6 — Deploy | ✅ | Vercel — miaoutfitai.com.br |
+| 7 — Monetização | ✅ | Stripe live, checkout, webhook, portal |
 
 ---
 
@@ -223,6 +247,6 @@
 - **`ANTHROPIC_API_KEY`** é a chave de maior valor do projeto — nunca expor no client bundle
 - **`SUPABASE_SERVICE_ROLE_KEY`** usada apenas no webhook do Stripe
 - **Rate limiting lazy**: reset ocorre na primeira chamada após 30 dias (sem cron job)
-- **Moderação falha-aberta**: se a OpenAI Moderation API estiver indisponível, o upload é permitido silenciosamente
+- **Moderação fail-closed com retry**: toda foto passa por OpenAI Moderation API (`omni-moderation-latest`) antes do upload; até 3 tentativas com 500ms de intervalo; se a API não responder, o upload é **bloqueado** (HTTP 503, `reason: moderation_unavailable`) — ver `moderation-server.ts` e `CONTEXT.md`
 - **`maxDuration = 60`** declarado nas rotas de IA (studio, tryon) para evitar timeout na Vercel
 - Blocos anteriores de foto de estúdio (`gpt-image-1`, Photoroom, Fal.ai) mantidos comentados no código para reversão rápida
