@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import AvatarCrop from '@/components/ui/AvatarCrop'
 import { PLAN_LIMITS, getUsagePercent, getUsageClass } from '@/lib/plan-limits'
+import { PRECO_PRO_MENSAL } from '@/lib/pricing'
 import '../../perfil.css'
 
 interface ProfileUpdate {
@@ -637,7 +638,7 @@ export default function PerfilPage() {
             </button>
           ) : (
             <button type="button" className="perfil-upgrade-btn" onClick={handleUpgrade}>
-              Assinar Pro — R$19,00/mês
+              Assinar Pro — {PRECO_PRO_MENSAL}
             </button>
           )}
         </div>

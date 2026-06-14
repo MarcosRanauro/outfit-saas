@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { PRECO_PRO } from '@/lib/pricing'
 import './TrialExpiredModal.css'
 
 interface TrialExpiredModalProps {
@@ -40,7 +41,7 @@ export default function TrialExpiredModal({ isOpen, onClose }: TrialExpiredModal
         </p>
 
         <div className="trial-expired-price">
-          <span className="price-value">R$ 19,00</span>
+          <span className="price-value">{PRECO_PRO}</span>
           <span className="price-period">/mês</span>
         </div>
 

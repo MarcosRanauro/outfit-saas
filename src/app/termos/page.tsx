@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { PRECO_PRO_MENSAL } from '@/lib/pricing'
 
 export default function TermosPage() {
   return (
@@ -102,7 +103,7 @@ export default function TermosPage() {
             content: 'O Mia Outfit AI oferece dois planos:',
             items: [
               'Plano Free (gratuito): acesso limitado às funcionalidades, incluindo 20 mensagens com a Mia, 5 gerações de outfits e 3 análises de peças por mês.',
-              'Plano Pro (R$19,00/mês): acesso ilimitado a todas as funcionalidades do aplicativo.',
+              `Plano Pro (${PRECO_PRO_MENSAL}): acesso ilimitado a todas as funcionalidades do aplicativo.`,
               'Os pagamentos são processados de forma segura pela Stripe. A assinatura é renovada automaticamente a cada 30 dias.'
             ]
           },
