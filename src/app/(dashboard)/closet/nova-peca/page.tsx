@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { toBase64, moderateImage, MODERATION_CONTENT_MESSAGE } from '@/lib/image'
+import { toBase64, compressPiecePhoto, moderateImage, MODERATION_CONTENT_MESSAGE } from '@/lib/image'
 import TrialExpiredModal from '@/components/ui/TrialExpiredModal'
 import StudioScannerOverlay from '@/components/studio/StudioScannerOverlay'
 import './nova-peca.css'
@@ -17,45 +17,6 @@ const PIECE_CATEGORIES = [
 const FIT_OPTIONS = ['Oversized', 'Regular', 'Slim', 'Cropped', 'A-line']
 const SEASON_OPTIONS = ['Todas', 'Verão', 'Inverno', 'Meia estação']
 const STYLE_OPTIONS = ['Casual', 'Elegante', 'Esportivo', 'Streetwear', 'Boho', 'Clássico']
-
-async function compressForUpload(file: File): Promise<Blob> {
-  return new Promise((resolve) => {
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')!
-    const img = new Image()
-    const url = URL.createObjectURL(file)
-    img.onload = () => {
-      const MAX = 1200
-      let { width, height } = img
-      if (width > height && width > MAX) { height = Math.round((height * MAX) / width); width = MAX }
-      else if (height > MAX) { width = Math.round((width * MAX) / height); height = MAX }
-      canvas.width = width; canvas.height = height
-      ctx.drawImage(img, 0, 0, width, height)
-      URL.revokeObjectURL(url)
-      canvas.toBlob((blob) => resolve(blob!), 'image/jpeg', 0.85)
-    }
-    img.src = url
-  })
-}
-
-async function compressForAnalysis(file: File): Promise<{ base64: string; mimeType: string }> {
-  return new Promise((resolve) => {
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')!
-    const img = new Image()
-    img.onload = () => {
-      const MAX = 800
-      let { width, height } = img
-      if (width > height && width > MAX) { height = Math.round((height * MAX) / width); width = MAX }
-      else if (height > MAX) { width = Math.round((width * MAX) / height); height = MAX }
-      canvas.width = width; canvas.height = height
-      ctx.drawImage(img, 0, 0, width, height)
-      const base64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1]
-      resolve({ base64, mimeType: 'image/jpeg' })
-    }
-    img.src = URL.createObjectURL(file)
-  })
-}
 
 export default function NovaPecaPage() {
   const router = useRouter()
@@ -111,11 +72,11 @@ export default function NovaPecaPage() {
   async function analyzeFile(file: File) {
     setAnalyzing(true)
     try {
-      const { base64, mimeType } = await compressForAnalysis(file)
+      const base64 = await toBase64(file)
       const res = await fetch('/api/pieces/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageBase64: base64, mimeType }),
+        body: JSON.stringify({ imageBase64: base64, mimeType: 'image/jpeg' }),
       })
       const data = await res.json().catch(() => ({}))
       if (handleApiError(res, data)) return
@@ -148,12 +109,20 @@ export default function NovaPecaPage() {
 
     let blocked = false
     try {
-      const base64 = await toBase64(file)
+      const compressed = await compressPiecePhoto(file)
+      const base64 = await toBase64(compressed)
       const moderation = await moderateImage(base64)
       if (!moderation.approved) {
         blocked = true
         setModerationError(moderation.message ?? MODERATION_CONTENT_MESSAGE)
+      } else {
+        setPhoto(compressed)
+        setAiSuggestion(null)
+        analyzeFile(compressed)
       }
+    } catch {
+      blocked = true
+      setModerationError('Erro ao processar a foto. Tente novamente.')
     } finally {
       setModerating(false)
       setPendingPreview(null)
@@ -161,10 +130,6 @@ export default function NovaPecaPage() {
     }
 
     if (blocked) return
-
-    setPhoto(file)
-    setAiSuggestion(null)
-    analyzeFile(file)
   }
 
   async function handleGenerateStudio() {
@@ -206,11 +171,10 @@ export default function NovaPecaPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      const compressed = await compressForUpload(photo)
       const tempPath = `studio-input/${user.id}/temp_${Date.now()}.jpg`
       const { error: uploadError } = await supabase.storage
         .from('pieces')
-        .upload(tempPath, compressed, { contentType: 'image/jpeg', upsert: true })
+        .upload(tempPath, photo, { contentType: 'image/jpeg', upsert: true })
       if (uploadError) return
 
       const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(tempPath)
@@ -248,11 +212,10 @@ export default function NovaPecaPage() {
       const ts = Date.now()
 
       if (photo) {
-        const compressed = await compressForUpload(photo)
         const path = `${user.id}/${ts}.jpg`
         const { error: uploadError } = await supabase.storage
           .from('pieces')
-          .upload(path, compressed, { contentType: 'image/jpeg' })
+          .upload(path, photo, { contentType: 'image/jpeg' })
         if (!uploadError) {
           const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(path)
           uploadedUrls.push({
