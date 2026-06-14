@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { PRECO_PRO_COMPACTO } from '@/lib/pricing'
 import '../landing.css'
 
 interface BeforeInstallPromptEvent extends Event {
@@ -345,7 +346,7 @@ export default function LandingPage() {
             <div className="plan-card scroll-animate">
               <div className="plan-badge">ACESSO COMPLETO</div>
               <div className="plan-price">
-                <span className="plan-amount">R$19,00</span>
+                <span className="plan-amount">{PRECO_PRO_COMPACTO}</span>
               </div>
               <p className="plan-period">/mês após o período de teste</p>
               <div className="plan-divider" />

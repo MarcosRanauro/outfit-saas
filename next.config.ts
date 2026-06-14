@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import type { SentryBuildOptions } from "@sentry/nextjs";
 import { withSentryConfig } from "@sentry/nextjs";
 
 // Em produção, definir NEXT_PUBLIC_APP_URL=https://miaoutfitai.com.br no Vercel
@@ -101,7 +102,25 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSentryConfig(nextConfig, {
+const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN;
+const sentryOrg = process.env.SENTRY_ORG;
+const sentryProject = process.env.SENTRY_PROJECT;
+const sentrySourceMapsEnabled = Boolean(
+  sentryAuthToken && sentryOrg && sentryProject
+);
+
+const sentryBuildOptions: SentryBuildOptions = {
   silent: !process.env.CI,
-  // Upload de source maps requer SENTRY_AUTH_TOKEN + org/project — omitido por ora
-});
+  sourcemaps: {
+    disable: !sentrySourceMapsEnabled,
+  },
+};
+
+if (sentrySourceMapsEnabled) {
+  sentryBuildOptions.org = sentryOrg;
+  sentryBuildOptions.project = sentryProject;
+  sentryBuildOptions.authToken = sentryAuthToken;
+  sentryBuildOptions.widenClientFileUpload = true;
+}
+
+export default withSentryConfig(nextConfig, sentryBuildOptions);

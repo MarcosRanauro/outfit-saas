@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { PRECO_PRO_MENSAL } from '@/lib/pricing'
 import '@/app/faq.css'
 
 interface FaqItem {
@@ -54,7 +55,7 @@ const FAQ_DATA: FaqCategory[] = [
     items: [
       {
         q: 'Qual a diferença entre o Free e o Pro?',
-        a: 'O plano Free inclui 10 mensagens com a Mia por mês, 3 análises de peças com IA e 3 sugestões de wishlist. O plano Pro tem tudo ilimitado por R$19,00/mês.',
+        a: `O plano Free inclui 10 mensagens com a Mia por mês, 3 análises de peças com IA e 3 sugestões de wishlist. O plano Pro tem tudo ilimitado por ${PRECO_PRO_MENSAL}.`,
       },
       {
         q: 'Como funciona o cancelamento?',
