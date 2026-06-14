@@ -158,16 +158,23 @@
 | Prioridade | Tarefa | Observação |
 |---|---|---|
 | Alta | Email transacional (Resend) | Boas-vindas, trial expirando, cobrança |
-| Alta | Aplicar migration 0003 no banco | `0003_secure_increment_usage.sql` — criada no repo, pendente de aplicação manual |
+| Alta | Subir Pro para R$ 24,90 | Sem assinantes reais → virada limpa. Criar novo Price no Stripe + arquivar R$19, apontar STRIPE_PRICE_ID, trocar PRO_VALOR em pricing.ts, atualizar docs. Líquido ~R$23,52 |
+| Alta | Limite de geração do modelo humano | 15/mês no Pro (custo R$0,38/ger, vilão da margem). Manequim (R$0,10) e Mia (R$0,01) livres. Contadores separados |
+| Alta | Feature apagar conta (LGPD) | Apagar auth + dados + storage (fotos órfãs) + cancelar Stripe antes |
 | Alta | Finalizar Virtual Try-On | Migration 0001_tryon_predictions.sql pendente no Supabase |
 | Média | Zod na saída da IA | IMPORTANTE-3 — validar JSON retornado pelo modelo |
 | Média | CSP Report-Only → bloqueante | Revisar violações reportadas; trocar header para `Content-Security-Policy` quando estável |
 | Média | Build depende de env Supabase no CI | `/cadastro` e `/auth/reset-password` pré-renderizam com `createClient` — CI injeta `NEXT_PUBLIC_SUPABASE_*` via secrets. **Correção de raiz futura:** `force-dynamic` ou `createClient` só no browser |
 | Média | Regenerar tipos após migration tryon | npx supabase gen types typescript --linked > src/types/database.ts |
 | Média | Comprar créditos Photoroom API | Trial com marca d'água; $0.10/imagem no plano Plus |
+| Média | Landing com imagens reais do app | Substituir mockups/placeholders por screenshots reais (closet, manequim, Mia analisando). Usar conta demo limpa — sem vazar email/nome/dados nas imagens |
+| Média | Etapa 4 auditoria — refatorar monolitos | closet/page.tsx (757 linhas) e outros 4 componentes, um por vez. Começar pelo useMemo no closet |
+| Média | Reconciliar histórico de migrations | migration list dessincronizado (0001/0002 não registrados, 20260508041628 órfã) |
 | Baixa | Renomear middleware.ts → proxy.ts | Deprecado no Next 15 |
 | Baixa | Histórico de outfits usados com UI | Tabela outfit_history existe, sem UI |
 | Baixa | Play Store via TWA/Capacitor | — |
+| Baixa | Limpar contas teste "Pro sem stripe_customer_id" | Inconsistência que gera 400 no botão Gerenciar assinatura |
+| Baixa | Secrets de produção fora do ambiente Preview na Vercel | Melhoria de segurança |
 
 ---
 
@@ -210,7 +217,7 @@
 | `supabase/schema.sql` | Fotografia do schema de produção (`supabase db dump`) — referência versionada |
 | `supabase/migrations/0001_tryon_predictions.sql` | Migration pendente de rodar |
 | `supabase/migrations/0002_piece_photos.sql` | Migration rodada ✅ |
-| `supabase/migrations/0003_secure_increment_usage.sql` | Corrige `increment_usage` — criada, pendente de aplicação manual no banco |
+| `supabase/migrations/0003_secure_increment_usage.sql` | Corrige `increment_usage` — aplicada no banco via SQL Editor ✅ |
 | `public/logos-mia-ai/Hero-principal.png` | Ilustração aquarela — landing e login |
 
 ---
@@ -341,6 +348,12 @@ stripe_subscription_id   text
 - font-size: 16px nos inputs — evita zoom iOS
 - maxDuration = 60 nas rotas de IA
 - piece_photos.is_cover + pieces.photo_url mantidos em sincronia
+
+### Custos e margem
+
+- **Custos por geração** (dólar ~R$5,06): Mia R$0,01/peça; manequim fantasma R$0,10/ger (US$20/1000cr); modelo humano R$0,38/ger (US$7,50/100cr)
+- **Pro R$19:** líquido ~R$17,85 após Stripe | **Pro R$24,90:** líquido ~R$23,52
+- Custos em USD → risco cambial
 
 ---
 
