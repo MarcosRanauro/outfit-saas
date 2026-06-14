@@ -5,7 +5,7 @@ import NextImage from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Piece, WishlistItem } from '@/types/app'
-import { toBase64, moderateImage, MODERATION_CONTENT_MESSAGE } from '@/lib/image'
+import { toBase64, compressPiecePhoto, moderateImage, MODERATION_CONTENT_MESSAGE } from '@/lib/image'
 import ClosetOnboarding from '@/components/closet/ClosetOnboarding'
 import ClosetTour from '@/components/closet/ClosetTour'
 import WishlistSuggestionsModal, { WishlistSuggestion } from '@/components/closet/WishlistSuggestionsModal'
@@ -66,34 +66,6 @@ function isProfileBodyIncomplete(profile: ClosetProfile): boolean {
   const heightMissing = profile.height == null || String(profile.height).trim() === ''
   const weightMissing = profile.weight == null || String(profile.weight).trim() === ''
   return heightMissing || weightMissing
-}
-
-async function compressImageForUpload(file: File): Promise<Blob> {
-  return new Promise((resolve) => {
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')!
-    const img = new Image()
-    const url = URL.createObjectURL(file)
-
-    img.onload = () => {
-      const MAX_SIZE = 1200
-      let { width, height } = img
-      if (width > height && width > MAX_SIZE) {
-        height = Math.round((height * MAX_SIZE) / width)
-        width = MAX_SIZE
-      } else if (height > MAX_SIZE) {
-        width = Math.round((width * MAX_SIZE) / height)
-        height = MAX_SIZE
-      }
-      canvas.width = width
-      canvas.height = height
-      ctx.drawImage(img, 0, 0, width, height)
-      URL.revokeObjectURL(url)
-      canvas.toBlob((blob) => resolve(blob!), 'image/jpeg', 0.85)
-    }
-
-    img.src = url
-  })
 }
 
 export default function ClosetPage() {
@@ -277,44 +249,30 @@ export default function ClosetPage() {
   async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    const base64 = await toBase64(file)
-    const moderation = await moderateImage(base64)
-    if (!moderation.approved) {
-      alert(moderation.message ?? MODERATION_CONTENT_MESSAGE)
-      return
-    }
-    setPhoto(file)
-    setPhotoPreview(URL.createObjectURL(file))
-  }
-
-  async function compressImage(file: File): Promise<{ base64: string; mimeType: string }> {
-    return new Promise((resolve) => {
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')!
-      const img = new Image()
-      img.onload = () => {
-        const MAX_SIZE = 800
-        let { width, height } = img
-        if (width > height && width > MAX_SIZE) { height = Math.round((height * MAX_SIZE) / width); width = MAX_SIZE }
-        else if (height > MAX_SIZE) { width = Math.round((width * MAX_SIZE) / height); height = MAX_SIZE }
-        canvas.width = width; canvas.height = height
-        ctx.drawImage(img, 0, 0, width, height)
-        const base64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1]
-        resolve({ base64, mimeType: 'image/jpeg' })
+    try {
+      const compressed = await compressPiecePhoto(file)
+      const base64 = await toBase64(compressed)
+      const moderation = await moderateImage(base64)
+      if (!moderation.approved) {
+        alert(moderation.message ?? MODERATION_CONTENT_MESSAGE)
+        return
       }
-      img.src = URL.createObjectURL(file)
-    })
+      setPhoto(compressed)
+      setPhotoPreview(URL.createObjectURL(compressed))
+    } catch {
+      alert('Erro ao processar a foto. Tente novamente.')
+    }
   }
 
   async function handleAnalyze() {
     if (!photo) return
     setAnalyzing(true)
     try {
-      const { base64, mimeType } = await compressImage(photo)
+      const base64 = await toBase64(photo)
       const res = await fetch('/api/pieces/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageBase64: base64, mimeType }),
+        body: JSON.stringify({ imageBase64: base64, mimeType: 'image/jpeg' }),
       })
       const data = await res.json()
       if (!res.ok) { alert(data.error || 'Erro ao analisar a foto. Tente novamente.'); return }
@@ -352,8 +310,7 @@ export default function ClosetPage() {
       let photo_url = null
       if (photo) {
         const path = `${user.id}/${Date.now()}.jpg`
-        const compressedPhoto = await compressImageForUpload(photo)
-        const { error: uploadError } = await supabase.storage.from('pieces').upload(path, compressedPhoto, { contentType: 'image/jpeg' })
+        const { error: uploadError } = await supabase.storage.from('pieces').upload(path, photo, { contentType: 'image/jpeg' })
         if (!uploadError) {
           const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(path)
           photo_url = urlData.publicUrl
