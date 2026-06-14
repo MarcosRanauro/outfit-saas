@@ -25,23 +25,51 @@ nuvem e integração com IA de visão computacional.
 
 | Camada | Tecnologia |
 |---|---|
-| Frontend | Next.js 15 (App Router) + TypeScript |
+| Frontend | Next.js 16.2.6 (App Router) + TypeScript |
 | Estilo | Tailwind CSS v4 + CSS customizado |
 | Banco | Supabase (PostgreSQL) |
 | Auth | Supabase Auth (email/senha + Google OAuth) |
 | Storage | Supabase Storage |
 | IA | Anthropic API (claude-sonnet-4-6) |
 | Clima | Open-Meteo (gratuito, sem API key) |
-| Deploy | Vercel |
+| Deploy | Vercel — miaoutfitai.com.br |
 
 ## Variáveis de ambiente
 
-Crie um arquivo `.env.local` na raiz do projeto:
+Crie um arquivo `.env.local` na raiz do projeto. Use `.env.example` como referência completa — **nunca commite valores reais**.
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=sua_url_aqui
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_aqui
-ANTHROPIC_API_KEY=sua_chave_aqui
+# ─── Supabase ──────────────────────────────────────────────────────────────────
+NEXT_PUBLIC_SUPABASE_URL=           # URL pública do projeto Supabase (ex: https://xxxx.supabase.co)
+NEXT_PUBLIC_SUPABASE_ANON_KEY=      # Chave anônima pública do Supabase
+SUPABASE_SERVICE_ROLE_KEY=          # Chave privada do Supabase — nunca expor no frontend
+
+# ─── Anthropic (Mia) ───────────────────────────────────────────────────────────
+ANTHROPIC_API_KEY=                  # Chave da API do Claude para análise de peças, chat e descrição de fotos
+
+# ─── Remove.bg (Foto de estúdio — ativo) ───────────────────────────────────────
+REMOVE_BG_API_KEY=                  # Chave da API Remove.bg para remoção de fundo com fundo branco
+
+# ─── OpenAI (Moderação de conteúdo — ativo + Foto de estúdio — disponível para reverter) ──
+OPENAI_API_KEY=                     # Chave da API OpenAI — moderação de imagens (omni-moderation-latest, ativo) e foto de estúdio gpt-image-1 (comentado)
+
+# ─── Fal.ai (Foto de estúdio — comentado, disponível para reverter) ────────────
+# FAL_API_KEY=                      # Chave da API Fal.ai para BRIA RMBG
+
+# ─── Photoroom (Ghost Mannequin — foto de estúdio) ─────────────────────────────
+PHOTOROOM_API_KEY=                  # Chave da API Photoroom (Ghost Mannequin — image-api.photoroom.com)
+
+# ─── FASHN.ai (Virtual Try-On + Foto de estúdio product-to-model) ───────────────
+FASHN_API_KEY=                      # Chave da API FASHN.ai (tryon-v1.6 + product-to-model)
+
+# ─── Stripe ────────────────────────────────────────────────────────────────────
+STRIPE_SECRET_KEY=                  # Chave secreta do Stripe (sk_live_... ou sk_test_...)
+STRIPE_WEBHOOK_SECRET=              # Segredo de validação do webhook Stripe (whsec_...)
+STRIPE_PRICE_ID=                    # Price ID do plano Pro no Stripe (price_...)
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY= # Chave pública do Stripe (pk_live_... ou pk_test_...) — usada no checkout client-side
+
+# ─── App ───────────────────────────────────────────────────────────────────────
+NEXT_PUBLIC_APP_URL=                # URL pública da aplicação (ex: https://www.miaoutfitai.com.br)
 ```
 
 ## Rodando localmente
@@ -71,8 +99,9 @@ src/
 | Plano | Preço | Limite |
 |---|---|---|
 | Free | R$ 0 | Limitado |
-| Pro | R$ 29/mês | Ilimitado |
-| Stylist | R$ 79/mês | Multi-closet |
+| Pro | R$ 19,00/mês | Ilimitado |
+
+> Trial de 15 dias com acesso ilimitado. Após expirar, usuário `free` é bloqueado nas rotas de IA até assinar o Pro.
 
 ---
 

@@ -31,6 +31,20 @@ Vulnerabilidades confirmadas serão corrigidas em até 7 dias úteis. Você ser�
 - **Rate limiting** por usuário e por ação em todas as rotas de IA — limites armazenados na tabela `profiles` com reset mensal
 - **Webhook Stripe**: assinatura HMAC validada via `stripe.webhooks.constructEvent()` antes de processar qualquer evento
 
+### Moderação de conteúdo (upload de imagens)
+
+Toda foto enviada pelo usuário (peças, avatar) passa pela **OpenAI Moderation API** (`omni-moderation-latest`) na rota `/api/pieces/moderate` **antes** de qualquer upload ou análise.
+
+**Comportamento fail-closed com retry** (desde v1.7.5):
+
+1. O servidor chama a API de moderação com a imagem em base64 (`moderation-server.ts`).
+2. Em caso de erro ou timeout, **repete até 3 tentativas** com intervalo de 500ms entre elas.
+3. Se a imagem for sinalizada (`flagged: true`), o upload é bloqueado e o usuário vê mensagem de conteúdo impróprio.
+4. Se as 3 tentativas falharem (API indisponível), o upload é **bloqueado** — resposta HTTP 503 com `reason: moderation_unavailable`. O cliente exibe mensagem pedindo para tentar novamente.
+5. O erro é registrado no servidor via `console.error` — nunca há fail-open silencioso.
+
+> **Importante:** indisponibilidade da OpenAI **não** permite upload. O produto prefere bloquear temporariamente a submissão a aceitar conteúdo não moderado.
+
 ### Variáveis de ambiente
 
 | Variável | Exposição permitida | Observação |
@@ -39,7 +53,9 @@ Vulnerabilidades confirmadas serão corrigidas em até 7 dias úteis. Você ser�
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Frontend + Backend | Prefixo `NEXT_PUBLIC_` — exposta no bundle. Protegida por RLS |
 | `SUPABASE_SERVICE_ROLE_KEY` | Apenas backend | **Nunca** usar em Client Components. Usada apenas no webhook do Stripe |
 | `ANTHROPIC_API_KEY` | Apenas backend | Usada em rotas de API — nunca exposta ao browser |
+| `OPENAI_API_KEY` | Apenas backend | Moderação de imagens (`omni-moderation-latest`) — nunca exposta ao browser |
 | `REMOVE_BG_API_KEY` | Apenas backend | Usada em rotas de API — nunca exposta ao browser |
+| `PHOTOROOM_API_KEY` | Apenas backend | Ghost Mannequin (Photoroom) — nunca exposta ao browser |
 | `FASHN_API_KEY` | Apenas backend | Usada em rotas de API — nunca exposta ao browser |
 | `STRIPE_SECRET_KEY` | Apenas backend | Usada em rotas de API — nunca exposta ao browser |
 | `STRIPE_WEBHOOK_SECRET` | Apenas backend | Usado para validar assinaturas do webhook |
@@ -100,6 +116,6 @@ Para excluir todos os dados, o usuário deve entrar em contato via e-mail. A exc
 
 | Versão | Suportada |
 |---|---|
-| 1.2.x (atual) | ✅ |
-| 1.1.x | ⚠️ Atualize para 1.2.x |
-| < 1.1.0 | ❌ |
+| 1.7.x (atual) | ✅ |
+| 1.2.x – 1.6.x | ⚠️ Atualize para 1.7.x |
+| < 1.2.0 | ❌ |

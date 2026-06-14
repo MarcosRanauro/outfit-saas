@@ -637,7 +637,7 @@ export default function PerfilPage() {
             </button>
           ) : (
             <button type="button" className="perfil-upgrade-btn" onClick={handleUpgrade}>
-              Assinar Pro — R$19,90/mês
+              Assinar Pro — R$19,00/mês
             </button>
           )}
         </div>

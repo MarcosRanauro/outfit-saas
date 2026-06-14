@@ -40,7 +40,7 @@ export default function TrialExpiredModal({ isOpen, onClose }: TrialExpiredModal
         </p>
 
         <div className="trial-expired-price">
-          <span className="price-value">R$ 19,90</span>
+          <span className="price-value">R$ 19,00</span>
           <span className="price-period">/mês</span>
         </div>
 
