@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 // Em produção, definir NEXT_PUBLIC_APP_URL=https://miaoutfitai.com.br no Vercel
 
@@ -72,6 +73,8 @@ const nextConfig: NextConfig = {
         'https://www.google-analytics.com',
         'https://region1.google-analytics.com',
         'https://www.googletagmanager.com',
+        'https://*.sentry.io',
+        'https://*.ingest.sentry.io',
       ].filter(Boolean).join(' '),
       "frame-src 'self' https://js.stripe.com https://checkout.stripe.com",
       "font-src 'self' data:",
@@ -98,4 +101,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  silent: !process.env.CI,
+  // Upload de source maps requer SENTRY_AUTH_TOKEN + org/project — omitido por ora
+});
