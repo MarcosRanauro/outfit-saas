@@ -8,10 +8,10 @@
 ## 1. Estado atual do projeto
 
 **Status:** Em produção
-**Versão:** 1.7.5
+**Versão:** 1.7.6
 **Última atualização:** 2026-06-13
 **Domínio:** miaoutfitai.com.br
-**Próxima ação recomendada:** Revisar relatórios CSP Report-Only; validar saída da IA com Zod (IMPORTANTE-3).
+**Próxima ação recomendada:** Configurar `NEXT_PUBLIC_SENTRY_DSN` na Vercel; revisar relatórios CSP Report-Only.
 
 ---
 
@@ -23,6 +23,7 @@
 - [x] Vercel — domínio miaoutfitai.com.br com redirect www → sem www (308)
 - [x] PWA completo (service worker, manifest, instalação Android e iOS)
 - [x] Google Analytics (G-BE79RBHKKT)
+- [x] Sentry — monitoramento de erros client + server (`@sentry/nextjs`, DSN via `NEXT_PUBLIC_SENTRY_DSN`)
 
 ### Autenticação
 - [x] Login email/senha + Google OAuth
@@ -132,7 +133,7 @@
 - [x] Tabela tryon_predictions com RLS e ownership
 - [x] Erros 500 sanitizados em describe/studio/moderate/tryon — cliente recebe mensagem genérica; detalhe só em `console.error`
 - [x] Security headers em `next.config.ts` (X-Frame-Options, HSTS, nosniff, Referrer-Policy, Permissions-Policy)
-- [x] CSP em `Content-Security-Policy-Report-Only` (monitoramento; ainda não bloqueante)
+- [x] CSP em `Content-Security-Policy-Report-Only` (monitoramento; ainda não bloqueante; inclui domínios Sentry em `connect-src`)
 
 ### Qualidade
 - [x] npm run lint: 0 erros
@@ -184,6 +185,11 @@
 | `src/app/(public)/page.tsx` | Landing page |
 | `src/app/(auth)/login/page.tsx` | Login — split screen |
 | `src/lib/moderation-server.ts` | Moderação OpenAI com retry + fail-closed |
+| `src/instrumentation.ts` | Registro Sentry server/edge + `onRequestError` |
+| `src/instrumentation-client.ts` | Inicialização Sentry no navegador |
+| `src/sentry.server.config.ts` | Config Sentry Node.js (rotas de API) |
+| `src/sentry.edge.config.ts` | Config Sentry Edge (middleware) |
+| `src/app/global-error.tsx` | Captura erros de render React no client |
 | `src/lib/api-schemas.ts` | Schemas Zod dos bodies das rotas de IA |
 | `src/lib/parse-request-body.ts` | Helper `parseRequestBody` / `parseOptionalRequestBody` |
 | `src/lib/image.ts` | Cliente de moderação — fail-closed, mensagens por motivo |
@@ -316,6 +322,9 @@ stripe_subscription_id   text
 | `STRIPE_SECRET_KEY` | Server-side only |
 | `STRIPE_WEBHOOK_SECRET` | Server-side only |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Client |
+| `NEXT_PUBLIC_SENTRY_DSN` | Client + Server (Sentry — obrigatório em `.env.local` e na Vercel para ativar monitoramento) |
+
+> **Sentry:** sem `NEXT_PUBLIC_SENTRY_DSN` o SDK fica desabilitado (`enabled: false`). Configurar no `.env.local` para dev e nas Environment Variables da Vercel para produção.
 
 ---
 
@@ -345,6 +354,23 @@ stripe_subscription_id   text
 ---
 
 ## 12. Histórico de implementações
+
+### 2026-06-13 — v1.7.6 — Auditoria Etapa 5: Sentry
+
+**O que foi feito:**
+- `@sentry/nextjs` integrado manualmente (sem wizard): `instrumentation.ts`, `instrumentation-client.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts`, `global-error.tsx`
+- DSN via `NEXT_PUBLIC_SENTRY_DSN` (nunca hardcoded); SDK desabilitado quando ausente
+- `tracesSampleRate: 0.1` para preservar cota do plano free
+- `next.config.ts` envolvido com `withSentryConfig` preservando `headers()` e CSP intactos; adicionados `https://*.sentry.io` e `https://*.ingest.sentry.io` em `connect-src`
+- `.env.example` atualizado com `NEXT_PUBLIC_SENTRY_DSN`
+
+**Pendente:**
+- Configurar `NEXT_PUBLIC_SENTRY_DSN` na Vercel (produção)
+- Opcional: `SENTRY_AUTH_TOKEN` + org/project para upload de source maps
+
+**Próximo passo:** validar eventos no painel Sentry após deploy → Zod na saída da IA (IMPORTANTE-3)
+
+---
 
 ### 2026-06-13 — v1.7.5 — Auditoria Etapa 3: Zod + moderação fail-closed
 
