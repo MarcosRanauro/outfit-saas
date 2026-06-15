@@ -99,7 +99,7 @@ src/
 | Plano | Preço | Limite |
 |---|---|---|
 | Free | R$ 0 | Limitado |
-| Pro | R$ 19,00/mês | Ilimitado |
+| Pro | R$ 24,90/mês | Ilimitado |
 
 > Trial de 15 dias com acesso ilimitado. Após expirar, usuário `free` é bloqueado nas rotas de IA até assinar o Pro.
 

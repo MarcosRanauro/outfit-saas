@@ -94,7 +94,7 @@ src/
 | Plano | Preço | Limite |
 |---|---|---|
 | Free | R$ 0 | limitado (peças e sugestões/mês) |
-| Pro | R$ 19,00/mês | ilimitado |
+| Pro | R$ 24,90/mês | ilimitado |
 
 - **Só existem os planos `free` e `pro`.** O plano `stylist` foi descontinuado e removido do código (tipos, rate limit, webhook).
 - **Trial de 15 dias** (`trial_ends_at`): durante o trial o acesso é ilimitado. Ao expirar, usuário `free` é **bloqueado** nas rotas de IA (HTTP 403, `code: TRIAL_EXPIRED`) e o frontend abre o `TrialExpiredModal` pedindo upgrade. Limite de plano atingido (free sem trial) retorna HTTP 429, `code: RATE_LIMITED`.
