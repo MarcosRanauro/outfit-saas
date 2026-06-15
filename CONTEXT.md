@@ -118,7 +118,7 @@
 ### Monetização
 - [x] Stripe: checkout, webhook HMAC, customer portal
 - [x] Trial 15 dias → expirado + free → TrialExpiredModal
-- [x] Planos: Free e Pro (R$ 19,00/mês)
+- [x] Planos: Free e Pro (R$ 24,90/mês)
 
 ### Rate Limiting
 - [x] Ordem: trial ativo → ilimitado; trial expirado + free → bloqueado; Pro → limites Pro

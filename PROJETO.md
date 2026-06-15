@@ -66,7 +66,7 @@
 | Plano | Preço | Acesso |
 |---|---|---|
 | Free | R$ 0 | Limites por ação/mês |
-| Pro | R$ 19,00/mês | Ilimitado |
+| Pro | R$ 24,90/mês | Ilimitado |
 
 > Só existem os planos `free` e `pro` — o plano Stylist foi descontinuado. Trial de 15 dias com acesso ilimitado. Após expirar, usuário `free` é bloqueado nas rotas de IA; usuário Pro nunca é bloqueado.
 
