@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const rateCheck = await checkRateLimit(user.id, 'studio_generate')
+    const rateCheck = await checkRateLimit(user.id, 'model_generate')
     if (!rateCheck.allowed) {
       return rateLimitResponse(rateCheck)
     }
@@ -355,7 +355,7 @@ export async function POST(request: Request) {
 
     const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(storagePath)
 
-    await incrementUsage(user.id, 'studio_generate')
+    await incrementUsage(user.id, 'model_generate')
     return NextResponse.json({ images: [urlData.publicUrl] })
     // ─── FIM FASHN ───
 

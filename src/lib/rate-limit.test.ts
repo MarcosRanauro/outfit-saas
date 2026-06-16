@@ -10,6 +10,7 @@ function makeProfile(overrides: Partial<RateLimitProfile> = {}): RateLimitProfil
     usage_pieces_analyzed: 0,
     usage_wishlist_generations: 0,
     usage_studio_generations: 0,
+    usage_model_generations: 0,
     usage_reset_at: '2026-06-01T00:00:00.000Z',
     trial_ends_at: null,
     ...overrides,
@@ -18,9 +19,10 @@ function makeProfile(overrides: Partial<RateLimitProfile> = {}): RateLimitProfil
 
 describe('decideRateLimit', () => {
   const now = new Date('2026-06-15T12:00:00.000Z')
+  const trialActiveAt = '2026-06-20T00:00:00.000Z'
 
   it('trial ativo → allowed:true, plan:trial', () => {
-    const profile = makeProfile({ trial_ends_at: '2026-06-20T00:00:00.000Z' })
+    const profile = makeProfile({ trial_ends_at: trialActiveAt })
 
     expect(decideRateLimit(profile, 'pieces_analyze', now)).toMatchObject({
       allowed: true,
@@ -145,5 +147,129 @@ describe('decideRateLimit', () => {
     // Comportamento atual (bug cosmético documentado no CONTEXT): a decisão retorna
     // used=0 no dia 30, mas o UPDATE no banco só ocorre em checkRateLimit — a UI pode
     // ainda exibir o contador antigo até refresh, embora a rota permita a chamada.
+  })
+
+  describe('modelo humano (model_generate)', () => {
+    it('pro: 9 usos → 10º permitido', () => {
+      const profile = makeProfile({
+        plan: 'pro',
+        usage_model_generations: 9,
+      })
+
+      expect(decideRateLimit(profile, 'model_generate', now)).toMatchObject({
+        allowed: true,
+        plan: 'pro',
+        used: 9,
+        limit: PLAN_LIMITS.pro.model_generate,
+      })
+    })
+
+    it('pro: 10 usos → bloqueado', () => {
+      const profile = makeProfile({
+        plan: 'pro',
+        usage_model_generations: PLAN_LIMITS.pro.model_generate,
+      })
+
+      expect(decideRateLimit(profile, 'model_generate', now)).toMatchObject({
+        allowed: false,
+        plan: 'pro',
+        reason: 'rate_limited',
+        used: 10,
+        limit: 10,
+      })
+    })
+
+    it('trial ativo: 10 usos de modelo → bloqueado', () => {
+      const profile = makeProfile({
+        plan: 'free',
+        trial_ends_at: trialActiveAt,
+        usage_model_generations: PLAN_LIMITS.pro.model_generate,
+      })
+
+      expect(decideRateLimit(profile, 'model_generate', now)).toMatchObject({
+        allowed: false,
+        plan: 'trial',
+        reason: 'rate_limited',
+        used: 10,
+        limit: 10,
+      })
+    })
+
+    it('reset de 30 dias zera usage_model_generations na decisão', () => {
+      const profile = makeProfile({
+        plan: 'pro',
+        usage_reset_at: '2026-05-01T00:00:00.000Z',
+        usage_model_generations: PLAN_LIMITS.pro.model_generate,
+      })
+      const resetNow = new Date('2026-06-02T00:00:00.000Z')
+
+      expect(decideRateLimit(profile, 'model_generate', resetNow)).toMatchObject({
+        allowed: true,
+        used: 0,
+        needsReset: true,
+      })
+    })
+  })
+
+  describe('manequim fantasma (studio_generate)', () => {
+    it('pro: 49 usos → permitido', () => {
+      const profile = makeProfile({
+        plan: 'pro',
+        usage_studio_generations: 49,
+      })
+
+      expect(decideRateLimit(profile, 'studio_generate', now)).toMatchObject({
+        allowed: true,
+        plan: 'pro',
+        used: 49,
+        limit: PLAN_LIMITS.pro.studio_generate,
+      })
+    })
+
+    it('pro: 50 usos → bloqueado', () => {
+      const profile = makeProfile({
+        plan: 'pro',
+        usage_studio_generations: PLAN_LIMITS.pro.studio_generate,
+      })
+
+      expect(decideRateLimit(profile, 'studio_generate', now)).toMatchObject({
+        allowed: false,
+        plan: 'pro',
+        reason: 'rate_limited',
+        used: 50,
+        limit: 50,
+      })
+    })
+
+    it('trial ativo: 50 usos de manequim → bloqueado', () => {
+      const profile = makeProfile({
+        plan: 'free',
+        trial_ends_at: trialActiveAt,
+        usage_studio_generations: PLAN_LIMITS.pro.studio_generate,
+      })
+
+      expect(decideRateLimit(profile, 'studio_generate', now)).toMatchObject({
+        allowed: false,
+        plan: 'trial',
+        reason: 'rate_limited',
+        used: 50,
+        limit: 50,
+      })
+    })
+  })
+
+  it('trial ativo: mia_chat continua ilimitado', () => {
+    const profile = makeProfile({
+      plan: 'free',
+      trial_ends_at: trialActiveAt,
+      usage_mia_generations: 500,
+    })
+
+    expect(decideRateLimit(profile, 'mia_chat', now)).toMatchObject({
+      allowed: true,
+      plan: 'trial',
+      limit: 999,
+      used: 0,
+    })
   })
 })
