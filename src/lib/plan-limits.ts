@@ -4,6 +4,7 @@ export type PlanLimits = {
   pieces_analyze: number
   wishlist_generate: number
   studio_generate: number
+  model_generate: number
 }
 
 export const PLAN_LIMITS: Record<'free' | 'pro', PlanLimits> = {
@@ -12,14 +13,16 @@ export const PLAN_LIMITS: Record<'free' | 'pro', PlanLimits> = {
     outfit_generate: 5,
     pieces_analyze: 3,
     wishlist_generate: 3,
-    studio_generate: 10,
+    studio_generate: 0,
+    model_generate: 0,
   },
   pro: {
     mia_chat: 999,
     outfit_generate: 999,
     pieces_analyze: 999,
     wishlist_generate: 999,
-    studio_generate: 999,
+    studio_generate: 50,
+    model_generate: 10,
   },
 }
 

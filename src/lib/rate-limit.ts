@@ -4,6 +4,9 @@ import { PLAN_LIMITS, type PlanLimits } from '@/lib/plan-limits'
 
 type ActionType = keyof PlanLimits
 
+/** Ações com teto mensal mesmo durante trial ativo (modelo humano + manequim). */
+export const TRIAL_LIMITED_ACTIONS: ActionType[] = ['model_generate', 'studio_generate']
+
 export type RateLimitResult = {
   allowed: boolean
   plan: 'free' | 'pro' | 'trial' | 'expired'
@@ -20,6 +23,7 @@ export type RateLimitProfile = {
   usage_pieces_analyzed: number | null
   usage_wishlist_generations: number | null
   usage_studio_generations: number | null
+  usage_model_generations: number | null
   usage_reset_at: string | null
   trial_ends_at: string | null
 }
@@ -32,6 +36,31 @@ const usageColumnMap: Record<ActionType, keyof RateLimitProfile> = {
   pieces_analyze: 'usage_pieces_analyzed',
   wishlist_generate: 'usage_wishlist_generations',
   studio_generate: 'usage_studio_generations',
+  model_generate: 'usage_model_generations',
+}
+
+function evaluateUsageLimit(
+  profile: RateLimitProfile,
+  action: ActionType,
+  plan: 'free' | 'pro',
+  now: Date
+): Pick<DecideRateLimitResult, 'allowed' | 'limit' | 'used' | 'needsReset' | 'reason'> {
+  const resetAt = new Date(profile.usage_reset_at || new Date())
+  const daysSinceReset = (now.getTime() - resetAt.getTime()) / (1000 * 60 * 60 * 24)
+  const needsReset = daysSinceReset >= 30
+
+  const column = usageColumnMap[action]
+  const used = needsReset ? 0 : ((profile[column] as number) ?? 0)
+  const limit = PLAN_LIMITS[plan][action]
+  const allowed = used < limit
+
+  return {
+    allowed,
+    limit,
+    used,
+    reason: allowed ? undefined : 'rate_limited',
+    needsReset,
+  }
 }
 
 export function decideRateLimit(
@@ -49,13 +78,22 @@ export function decideRateLimit(
   const trialExpired = trialEndsAt !== null && trialEndsAt <= now
 
   if (trialActive) {
+    if (!TRIAL_LIMITED_ACTIONS.includes(action)) {
+      return {
+        allowed: true,
+        plan: 'trial',
+        limit: 999,
+        used: 0,
+        trialEndsAt: profile.trial_ends_at,
+        needsReset: false,
+      }
+    }
+
+    const usage = evaluateUsageLimit(profile, action, 'pro', now)
     return {
-      allowed: true,
+      ...usage,
       plan: 'trial',
-      limit: 999,
-      used: 0,
       trialEndsAt: profile.trial_ends_at,
-      needsReset: false,
     }
   }
 
@@ -71,23 +109,11 @@ export function decideRateLimit(
     }
   }
 
-  const resetAt = new Date(profile.usage_reset_at || new Date())
-  const daysSinceReset = (now.getTime() - resetAt.getTime()) / (1000 * 60 * 60 * 24)
-  const needsReset = daysSinceReset >= 30
-
-  const column = usageColumnMap[action]
-  const used = needsReset ? 0 : ((profile[column] as number) ?? 0)
-  const limit = PLAN_LIMITS[plan][action]
-  const allowed = used < limit
-
+  const usage = evaluateUsageLimit(profile, action, plan, now)
   return {
-    allowed,
+    ...usage,
     plan,
-    limit,
-    used,
-    reason: allowed ? undefined : 'rate_limited',
     trialEndsAt: profile.trial_ends_at,
-    needsReset,
   }
 }
 
@@ -100,7 +126,7 @@ export async function checkRateLimit(
   const { data: profile } = await supabase
     .from('profiles')
     .select(
-      'plan, usage_mia_generations, usage_outfit_generations, usage_pieces_analyzed, usage_wishlist_generations, usage_studio_generations, usage_reset_at, trial_ends_at'
+      'plan, usage_mia_generations, usage_outfit_generations, usage_pieces_analyzed, usage_wishlist_generations, usage_studio_generations, usage_model_generations, usage_reset_at, trial_ends_at'
     )
     .eq('id', userId)
     .single()
@@ -117,6 +143,7 @@ export async function checkRateLimit(
         usage_pieces_analyzed: 0,
         usage_wishlist_generations: 0,
         usage_studio_generations: 0,
+        usage_model_generations: 0,
         usage_reset_at: now.toISOString(),
       })
       .eq('id', userId)

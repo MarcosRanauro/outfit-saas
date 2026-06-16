@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getUsageClass, getUsagePercent } from '@/lib/plan-limits'
+import { getUsageClass, getUsagePercent, PLAN_LIMITS } from '@/lib/plan-limits'
 
 describe('getUsagePercent', () => {
   it('plano ilimitado (limit >= 999) usa escala used/50', () => {
@@ -39,5 +39,17 @@ describe('getUsageClass', () => {
 
   it('limite zero trata pct como infinito → limit', () => {
     expect(getUsageClass(1, 0)).toBe('limit')
+  })
+})
+
+describe('PLAN_LIMITS', () => {
+  it('pro: model_generate 10/mês, studio_generate (manequim) 50/mês', () => {
+    expect(PLAN_LIMITS.pro.model_generate).toBe(10)
+    expect(PLAN_LIMITS.pro.studio_generate).toBe(50)
+  })
+
+  it('free: model_generate e studio_generate conservadores (0) até reformulação', () => {
+    expect(PLAN_LIMITS.free.model_generate).toBe(0)
+    expect(PLAN_LIMITS.free.studio_generate).toBe(0)
   })
 })
