@@ -8,17 +8,17 @@
 ## 1. Estado atual do projeto
 
 **Status:** Em produção
-**Versão:** 1.7.6
-**Última atualização:** 2026-06-13
+**Versão:** 1.7.7
+**Última atualização:** 2026-10-16
 **Domínio:** miaoutfitai.com.br
-**Próxima ação recomendada:** Configurar `NEXT_PUBLIC_SENTRY_DSN` na Vercel; revisar relatórios CSP Report-Only.
+**Próxima ação recomendada:** Finalizar Virtual Try-On (migration 0001), feature apagar conta (LGPD) e e-mails transacionais (Resend); revisar relatórios CSP Report-Only.
 
 ---
 
 ## 2. O que já está funcionando
 
 ### Infraestrutura
-- [x] Next.js 15 App Router + TypeScript + Tailwind CSS v4
+- [x] Next.js 16 App Router + TypeScript + Tailwind CSS v4
 - [x] Supabase (PostgreSQL + Auth + Storage) — região São Paulo
 - [x] Vercel — domínio miaoutfitai.com.br com redirect www → sem www (308)
 - [x] PWA completo (service worker, manifest, instalação Android e iOS)
@@ -27,7 +27,7 @@
 
 ### Autenticação
 - [x] Login email/senha + Google OAuth
-- [x] Recuperação de senha e confirmação de e-mail
+- [x] Recuperação de senha e confirmação de e-mail (**"Confirm email" ligado** em 2026-10-16; SMTP próprio via Resend, remetente `noreply@miaoutfitai.com.br`; fluxo e-mail/senha testado em produção)
 - [x] Trigger automático de criação de perfil no cadastro
 - [x] Middleware de proteção de rotas autenticadas
 
@@ -118,10 +118,11 @@
 ### Monetização
 - [x] Stripe: checkout, webhook HMAC, customer portal
 - [x] Trial 15 dias → expirado + free → TrialExpiredModal
-- [x] Planos: Free e Pro (R$ 24,90/mês)
+- [x] Planos: Free e Pro (R$ 24,90/mês — novo Price no Stripe, `PRO_VALOR` em `pricing.ts`)
 
 ### Rate Limiting
-- [x] Ordem: trial ativo → ilimitado; trial expirado + free → bloqueado; Pro → limites Pro
+- [x] Ordem: trial ativo → ilimitado, **exceto** `model_generate` e `studio_generate` (sempre limitados); trial expirado + free → bloqueado; Pro → limites Pro
+- [x] Limites Pro: modelo humano (`model_generate`) 10/mês, manequim (`studio_generate`) 50/mês; Mia, outfit, análise e wishlist ilimitados. Contadores separados (`usage_model_generations`, `usage_studio_generations`)
 - [x] rateLimitResponse() — HTTP 403 TRIAL_EXPIRED / 429 RATE_LIMITED
 - [x] TrialExpiredModal em mia, closet, nova-peca
 
@@ -130,7 +131,8 @@
 - [x] Nenhuma chave exposta no client bundle
 - [x] Moderação OpenAI fail-closed com retry (3 tentativas, 500ms) — `moderation-server.ts`
 - [x] Validação Zod nos bodies das rotas de IA (8 rotas + moderate)
-- [x] Tabela tryon_predictions com RLS e ownership
+- [x] Tabela tryon_predictions com RLS e ownership (definida no repo; **ainda não existe no banco de produção**)
+- [x] Grants das funções do banco restritos (migration 0005): `handle_new_user` e `set_trial_on_signup` sem EXECUTE para anon/authenticated; `increment_usage` só para `authenticated`; `search_path` fixo
 - [x] Erros 500 sanitizados em describe/studio/moderate/tryon — cliente recebe mensagem genérica; detalhe só em `console.error`
 - [x] Security headers em `next.config.ts` (X-Frame-Options, HSTS, nosniff, Referrer-Policy, Permissions-Policy)
 - [x] CSP em `Content-Security-Policy-Report-Only` (monitoramento; ainda não bloqueante; inclui domínios Sentry em `connect-src`)
@@ -158,8 +160,6 @@
 | Prioridade | Tarefa | Observação |
 |---|---|---|
 | Alta | Email transacional (Resend) | Boas-vindas, trial expirando, cobrança |
-| Alta | Subir Pro para R$ 24,90 | Sem assinantes reais → virada limpa. Criar novo Price no Stripe + arquivar R$19, apontar STRIPE_PRICE_ID, trocar PRO_VALOR em pricing.ts, atualizar docs. Líquido ~R$23,52 |
-| Alta | Limite de geração do modelo humano | 15/mês no Pro (custo R$0,38/ger, vilão da margem). Manequim (R$0,10) e Mia (R$0,01) livres. Contadores separados |
 | Alta | Feature apagar conta (LGPD) | Apagar auth + dados + storage (fotos órfãs) + cancelar Stripe antes |
 | Alta | Finalizar Virtual Try-On | Migration 0001_tryon_predictions.sql pendente no Supabase |
 | Média | Zod na saída da IA | IMPORTANTE-3 — validar JSON retornado pelo modelo |
@@ -173,7 +173,9 @@
 | Baixa | Renomear middleware.ts → proxy.ts | Deprecado no Next 15 |
 | Baixa | Histórico de outfits usados com UI | Tabela outfit_history existe, sem UI |
 | Baixa | Play Store via TWA/Capacitor | — |
-| Baixa | Limpar contas teste "Pro sem stripe_customer_id" | Inconsistência que gera 400 no botão Gerenciar assinatura |
+| Baixa | Limpar contas teste "Pro sem stripe_customer_id" | Inconsistência que gera 400 no botão Gerenciar assinatura (1 conta em 2026-10-16) |
+| Baixa | Proteção contra senhas vazadas (Supabase Auth) | Exige plano pago do Supabase; org está no Free. Único aviso restante do advisor além do `increment_usage` (intencional) |
+| Baixa | Configurar "Enviar como" `contato@` no Gmail via SMTP Resend | Opcional; `contato@` e `suporte@` já encaminham para o Gmail (Cloudflare Email Routing) |
 | Baixa | Secrets de produção fora do ambiente Preview na Vercel | Melhoria de segurança |
 
 ---
@@ -218,6 +220,8 @@
 | `supabase/migrations/0001_tryon_predictions.sql` | Migration pendente de rodar |
 | `supabase/migrations/0002_piece_photos.sql` | Migration rodada ✅ |
 | `supabase/migrations/0003_secure_increment_usage.sql` | Corrige `increment_usage` — aplicada no banco via SQL Editor ✅ |
+| `supabase/migrations/0004_usage_model_generations.sql` | Coluna `usage_model_generations` + RPC com 6 colunas — aplicada ✅ |
+| `supabase/migrations/0005_harden_function_grants.sql` | Restringe EXECUTE e fixa `search_path` das funções — aplicada via SQL ✅ |
 | `public/logos-mia-ai/Hero-principal.png` | Ilustração aquarela — landing e login |
 
 ---
@@ -274,7 +278,7 @@
 | `piece_photos` | Sim | múltiplas fotos por peça, is_cover, is_studio |
 | `outfits` | Sim | — |
 | `outfit_history` | Sim | sem UI ainda |
-| `tryon_predictions` | Sim | migration pendente de rodar |
+| `tryon_predictions` | Sim (no repo) | **tabela não existe em produção** — migration 0001 pendente |
 
 ### Colunas relevantes em profiles
 
@@ -286,6 +290,7 @@ usage_outfit_generations int
 usage_pieces_analyzed    int
 usage_wishlist_generations int
 usage_studio_generations int
+usage_model_generations  int
 usage_reset_at           timestamptz
 stripe_customer_id       text
 stripe_subscription_id   text
@@ -352,7 +357,7 @@ stripe_subscription_id   text
 ### Custos e margem
 
 - **Custos por geração** (dólar ~R$5,06): Mia R$0,01/peça; manequim fantasma R$0,10/ger (US$20/1000cr); modelo humano R$0,38/ger (US$7,50/100cr)
-- **Pro R$19:** líquido ~R$17,85 após Stripe | **Pro R$24,90:** líquido ~R$23,52
+- **Pro R$24,90 (vigente):** líquido ~R$23,52 após Stripe (antes: R$19, líquido ~R$17,85)
 - Custos em USD → risco cambial
 
 ---
@@ -362,11 +367,30 @@ stripe_subscription_id   text
 | Bug | Impacto | Status |
 |---|---|---|
 | Migration tryon_predictions não rodada no Supabase | Try-on não funciona em produção | Pendente |
-| middleware.ts deprecado no Next 15 | Aviso no build | Baixo |
+| middleware.ts deprecado no Next 16 | Aviso no build | Baixo |
 
 ---
 
 ## 12. Histórico de implementações
+
+### 2026-10-16 — v1.7.7 — Retomada: Supabase, e-mail e hardening do banco
+
+**O que foi feito:**
+- Projeto Supabase estava pausado (INACTIVE) após ~4 meses sem atividade; restaurado. Dados íntegros (5 perfis, 71 peças)
+- Confirmado no banco: migration 0004 aplicada; `tryon_predictions` ausente
+- Migration 0005: `REVOKE`/`GRANT` nas funções (`handle_new_user`, `set_trial_on_signup`, `increment_usage`) e `search_path` fixo. Advisor de segurança: 7 → 2 avisos (PR #48)
+- E-mail do domínio: MX trocado de `smtp.google.com` (Workspace sem uso) para Cloudflare Email Routing; `contato@` e `suporte@` encaminham para o Gmail. SPF mantém `spf.resend.com`
+- "Confirm email" religado no Supabase Auth; SMTP Resend (`noreply@`) validado com cadastro por e-mail/senha
+- Estado local verificado: lint 0 erros (31 warnings `set-state-in-effect`), 26 testes passando, `tsc` limpo
+
+**Observações:**
+- Todas as 5 contas existentes entraram por Google; o fluxo e-mail/senha só foi exercitado em produção neste dia
+- Supabase Free pausa projeto inativo: manter atividade ou migrar para plano pago antes de campanhas
+- Migrations aplicadas via SQL direto; `migration list` do Supabase segue dessincronizado
+
+**Próximo passo:** Virtual Try-On (migration 0001) → apagar conta (LGPD) → e-mails transacionais (Resend)
+
+---
 
 ### 2026-06-13 — v1.7.6 — Auditoria Etapa 5: Sentry
 

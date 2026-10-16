@@ -8,60 +8,65 @@ App de outfits multi-usuário. Cada pessoa cadastra suas peças, monta combinaç
 - **Node.js:** v20.20.2 (obrigatório — Next.js 16 exige >=20.9.0)
 - **Estilo:** Tailwind v4 (via `@import`) + CSS customizado em arquivos por página
 - **Banco:** Supabase (PostgreSQL, região São Paulo)
-- **Auth:** Supabase Auth (email/senha + Google OAuth)
+- **Auth:** Supabase Auth (email/senha com confirmação + Google OAuth); SMTP próprio via Resend (`noreply@miaoutfitai.com.br`)
 - **Storage:** Supabase Storage — buckets `pieces` e `avatars`
 - **IA:** Anthropic API, modelo `claude-sonnet-4-6`
+- **Imagens de estúdio:** FASHN.ai (modelo humano / try-on), Photoroom (manequim fantasma); Remove.bg mantido comentado
+- **Moderação:** OpenAI Moderation API (`omni-moderation-latest`), fail-closed
 - **Clima:** Open-Meteo (gratuito, sem API key)
 - **Geolocalização:** browser API + Nominatim (nome da cidade)
-- **Deploy:** Vercel (pendente)
-- **Pagamentos:** Stripe (pendente)
+- **Deploy:** Vercel — miaoutfitai.com.br (DNS na Cloudflare; e-mail `contato@`/`suporte@` via Cloudflare Email Routing → Gmail)
+- **Pagamentos:** Stripe (live)
+- **Observabilidade:** Sentry (`@sentry/nextjs`, ativo só com `NEXT_PUBLIC_SENTRY_DSN`)
+- **Testes/CI:** Vitest + GitHub Actions (lint + test + build)
 
 ## Mapa do código
 
 ```
 src/
 ├── app/
-│   ├── (auth)/
-│   │   ├── login/page.tsx
-│   │   ├── cadastro/page.tsx
-│   │   └── callback/route.ts       # Google OAuth (duplicata de auth/callback)
+│   ├── (auth)/                     # login, cadastro, esqueci-senha
 │   ├── (dashboard)/
 │   │   ├── layout.tsx              # bottom nav + proteção de rota
-│   │   ├── closet/page.tsx         # closet + modal onboarding de perfil
-│   │   ├── lookbook/page.tsx
-│   │   ├── outfit-ia/page.tsx      # geração de outfits com IA
-│   │   └── perfil/page.tsx         # perfil completo com avatar crop
+│   │   ├── closet/                 # page.tsx (grid), [id]/ (detalhe), nova-peca/
+│   │   ├── lookbook/               # page.tsx + [id]/ (detalhe do outfit)
+│   │   ├── mia/page.tsx            # chat com a Mia (inclui wishlist)
+│   │   ├── outfit-ia/page.tsx      # só redireciona para /mia
+│   │   └── perfil/page.tsx         # perfil, plano, avatar crop
 │   ├── api/
-│   │   ├── weather/route.ts        # Open-Meteo
-│   │   └── outfit/generate/route.ts # Anthropic API
-│   ├── auth/callback/route.ts      # Google OAuth (rota principal)
-│   ├── layout.tsx
-│   ├── page.tsx                    # redirect automático (logado → /closet, não → /login)
-│   ├── globals.css
-│   ├── auth.css
-│   ├── dashboard.css
-│   ├── closet.css                  # também importado em perfil/page.tsx (style-chips do onboarding)
-│   ├── lookbook.css
-│   ├── outfit-ia.css
-│   └── perfil.css
-├── components/
-│   ├── layout/BottomNav.tsx        # navegação inferior (Closet, Lookbook, Outfit IA, Perfil)
-│   └── ui/AvatarCrop.tsx           # crop circular de foto de perfil (react-easy-crop)
-├── lib/supabase/
-│   ├── client.ts                   # client-side
-│   └── server.ts                   # server-side
-├── types/database.ts               # tipos: Profile, Piece, Outfit, OutfitHistory
+│   │   ├── mia/                    # chat, extract-date
+│   │   ├── outfit/generate/        # geração de outfits
+│   │   ├── pieces/                 # analyze, describe, moderate, studio (FASHN), ghost-mannequin (Photoroom)
+│   │   ├── tryon/                  # FASHN try-on + status (ownership)
+│   │   ├── wishlist/generate/
+│   │   ├── stripe/                 # checkout, portal, webhook
+│   │   └── weather/route.ts        # Open-Meteo
+│   ├── auth/                       # callback (OAuth/confirmação de e-mail), reset-password
+│   ├── landing, sobre, faq, termos, privacidade, offline  # páginas públicas
+│   ├── layout.tsx, page.tsx        # page.tsx redireciona (logado → /closet, não → /login)
+│   └── *.css                       # um por área (auth, dashboard, closet, lookbook, mia, perfil, wishlist, landing, faq…)
+├── components/                     # closet/, layout/ (BottomNav, DashboardTopBanner), lookbook/, studio/, ui/ (AvatarCrop, TrialExpiredModal, ModeToggle)
+├── lib/
+│   ├── supabase/client.ts, server.ts
+│   ├── rate-limit.ts, plan-limits.ts, pricing.ts   # limites por plano; preço do Pro em `pricing.ts`
+│   ├── api-schemas.ts, parse-request-body.ts       # Zod nos bodies das rotas
+│   └── moderation-server.ts, image.ts, piece-photos.ts
+├── types/database.ts               # gerado pelo Supabase — não editar à mão
+├── types/app.ts                    # tipos manuais (Plan, Profile, Piece, PiecePhoto…)
 └── middleware.ts                   # proteção de rotas (⚠ deprecado no Next.js 16 — renomear para proxy)
 ```
 
 ## Banco de dados
 
-- `profiles` — id, name, height, weight, style, avatar_url, plan (`free` | `pro`), closet_tour_completed, stripe_customer_id, stripe_subscription_id, plan_expires_at, usage_mia_generations, usage_outfit_generations, usage_pieces_analyzed, usage_wishlist_generations, usage_studio_generations, usage_reset_at, trial_ends_at, created_at, updated_at
+- `profiles` — id, name, height, weight, style, avatar_url, plan (`free` | `pro`), closet_tour_completed, stripe_customer_id, stripe_subscription_id, plan_expires_at, usage_mia_generations, usage_outfit_generations, usage_pieces_analyzed, usage_wishlist_generations, usage_studio_generations, usage_model_generations, usage_reset_at, trial_ends_at, created_at, updated_at
 - `pieces` — id, user_id, code, name, category, color, brand, photo_url, fit, style_type, season, created_at
 - `outfits` — id, user_id, name, subtitle, style_tags[], occasion_tags[], period, occasion, why, pieces (IDs[]), notes, created_at
 - `outfit_history` — id, user_id, outfit_id, worn_at, occasion, created_at
 - `wishlist_items` — id, user_id, name, category, color, reason, priority (`high` | `medium` | `low`), purchased, created_at
-- `tryon_predictions` — id, user_id, prediction_id (unique), piece_id, status, created_at (valida ownership no `/api/tryon/status`)
+- `piece_photos` — múltiplas fotos por peça (is_cover, is_studio); `pieces.photo_url` fica em sincronia com a capa
+- `tryon_predictions` — id, user_id, prediction_id (unique), piece_id, status, created_at (valida ownership no `/api/tryon/status`). **Migration 0001 ainda não aplicada em produção — tabela não existe no banco**
+- Migrations em `supabase/migrations/` (0001–0005) são aplicadas **à mão via SQL**; o histórico do Supabase está dessincronizado. `supabase/schema.sql` é o dump de referência
+- Funções `handle_new_user` e `set_trial_on_signup` (triggers) não são executáveis via API; `increment_usage` só por `authenticated`
 - Trigger `on_auth_user_created` cria perfil automaticamente no signup
 - **RLS ativado em todas as tabelas** — toda query precisa respeitar `auth.uid()`
 
@@ -93,11 +98,13 @@ src/
 
 | Plano | Preço | Limite |
 |---|---|---|
-| Free | R$ 0 | limitado (peças e sugestões/mês) |
-| Pro | R$ 24,90/mês | ilimitado |
+| Free | R$ 0 | Mia 10, outfits 5, análise de peça 3, wishlist 3 por mês; sem estúdio |
+| Pro | R$ 24,90/mês | Mia/outfits/análise/wishlist ilimitados; modelo humano 10/mês; manequim 50/mês |
+
+Limites em `src/lib/plan-limits.ts`; preço em `src/lib/pricing.ts` (`PRO_VALOR`).
 
 - **Só existem os planos `free` e `pro`.** O plano `stylist` foi descontinuado e removido do código (tipos, rate limit, webhook).
-- **Trial de 15 dias** (`trial_ends_at`): durante o trial o acesso é ilimitado. Ao expirar, usuário `free` é **bloqueado** nas rotas de IA (HTTP 403, `code: TRIAL_EXPIRED`) e o frontend abre o `TrialExpiredModal` pedindo upgrade. Limite de plano atingido (free sem trial) retorna HTTP 429, `code: RATE_LIMITED`.
+- **Trial de 15 dias** (`trial_ends_at`): durante o trial o acesso é ilimitado, **exceto modelo humano e manequim, que seguem limitados mesmo no trial** (custo por geração). Ao expirar, usuário `free` é **bloqueado** nas rotas de IA (HTTP 403, `code: TRIAL_EXPIRED`) e o frontend abre o `TrialExpiredModal` pedindo upgrade. Limite de plano atingido (free sem trial) retorna HTTP 429, `code: RATE_LIMITED`.
 
 ## Convenções de código
 
@@ -143,6 +150,14 @@ npx supabase gen types typescript --linked > src/types/database.ts  # regenerar 
 - [x] Fase 5 — Perfil (nome, altura, peso, estilo, avatar crop, logout, onboarding)
 - [x] Fase 6 — Deploy (Vercel) — miaoutfitai.com.br em produção
 - [x] Fase 7 — Monetização (Stripe live, checkout, webhook, portal)
+- [x] Auditoria — schema versionado, Zod, moderação fail-closed, Vitest + CI, Sentry, hardening de funções do banco
+- [ ] Em aberto: Virtual Try-On (migration 0001), apagar conta (LGPD), e-mails transacionais (Resend). Backlog completo em `CONTEXT.md` seção 4
+
+## Operação
+
+- **Supabase Free pausa o projeto após ~1 semana sem atividade** (já aconteceu: ficou INACTIVE por ~4 meses). Se o site abrir mas login/dados falharem, checar o status no dashboard
+- Sem `.env.local` o `npm run build` falha localmente (o CI injeta as variáveis do Supabase)
+- Avisos restantes do advisor de segurança: `increment_usage` executável por `authenticated` (intencional) e proteção contra senhas vazadas (exige plano pago)
 
 ## Dívidas técnicas conhecidas
 
