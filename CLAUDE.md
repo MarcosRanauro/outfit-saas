@@ -41,6 +41,7 @@ src/
 │   │   ├── tryon/                  # FASHN try-on + status (ownership)
 │   │   ├── wishlist/generate/
 │   │   ├── stripe/                 # checkout, portal, webhook
+│   │   ├── cron/trial-reminder/    # cron Vercel (vercel.json) — protegido por CRON_SECRET
 │   │   └── weather/route.ts        # Open-Meteo
 │   ├── auth/                       # callback (OAuth/confirmação de e-mail), reset-password
 │   ├── landing, sobre, faq, termos, privacidade, offline  # páginas públicas
@@ -51,6 +52,7 @@ src/
 │   ├── supabase/client.ts, server.ts, admin.ts   # admin = service role, só no servidor
 │   ├── rate-limit.ts, plan-limits.ts, pricing.ts   # limites por plano; preço do Pro em `pricing.ts`
 │   ├── api-schemas.ts, parse-request-body.ts       # Zod nos bodies das rotas
+│   ├── email.ts, email-templates.ts, trial-reminder.ts   # e-mails transacionais (Resend)
 │   └── moderation-server.ts, image.ts, piece-photos.ts
 ├── types/database.ts               # gerado pelo Supabase — não editar à mão
 ├── types/app.ts                    # tipos manuais (Plan, Profile, Piece, PiecePhoto…)
@@ -154,7 +156,8 @@ npx supabase gen types typescript --linked > src/types/database.ts  # regenerar 
 - [x] Auditoria — schema versionado, Zod, moderação fail-closed, Vitest + CI, Sentry, hardening de funções do banco
 - [x] Apagar conta (LGPD) — `DELETE /api/account` + botão em Perfil (cancela Stripe → apaga Storage → apaga Auth; o banco limpa por cascade)
 - [x] Virtual Try-On **pausado** pré-lançamento: rotas `/api/tryon*` retornam 503 `FEATURE_DISABLED` via `TRYON_ENABLED=false` em `lib/feature-flags.ts`. Para retomar: migration 0001, regenerar tipos, criar a tela, limite em `plan-limits.ts`, ligar a flag
-- [ ] Em aberto: e-mails transacionais (Resend). Backlog completo em `CONTEXT.md` seção 4
+- [x] E-mails transacionais (Resend, via fetch em `lib/email.ts`): boas-vindas (`auth/callback`), trial acabando (cron diário `/api/cron/trial-reminder`, 3 dias antes) e falha de cobrança (webhook). Recibo = e-mails nativos do Stripe. Envio único em `profiles.welcome_email_sent_at` / `trial_reminder_sent_at` (migration 0006)
+- [ ] Em aberto: backlog completo em `CONTEXT.md` seção 4
 
 ## Operação
 

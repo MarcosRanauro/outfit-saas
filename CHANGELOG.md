@@ -13,6 +13,8 @@ e este projeto segue [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 - Virtual Try-On pausado: `/api/tryon` e `/api/tryon/status` retornam 503 (`FEATURE_DISABLED`) enquanto `TRYON_ENABLED` for `false` (`lib/feature-flags.ts`). Código mantido para retomada futura
 
 ### Added
+- E-mails transacionais via Resend (`lib/email.ts`, fetch, sem dependência nova): boas-vindas, trial acabando (cron diário `/api/cron/trial-reminder`, 3 dias antes) e falha de cobrança (webhook do Stripe). Envio único garantido por `profiles.welcome_email_sent_at` e `trial_reminder_sent_at` (migration 0006) + Idempotency-Key
+- `vercel.json` com o primeiro cron do projeto; `RESEND_API_KEY` e `CRON_SECRET` em `.env.example`
 - Apagar conta (LGPD): `DELETE /api/account` e botão "Apagar minha conta" em Perfil. Cancela a assinatura no Stripe, remove fotos do Storage e apaga o usuário no Auth (cascade limpa o banco)
 - `lib/supabase/admin.ts` (cliente service role compartilhado com o webhook do Stripe)
 
@@ -22,7 +24,6 @@ e este projeto segue [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 ### Planned
 - Redesign do Lookbook
 - Redesign do Chat Mia
-- Email transacional personalizado (Resend)
 - Histórico de outfits usados com UI (`outfit_history`)
 - Notificações push
 - Publicação na Play Store via TWA/Capacitor
