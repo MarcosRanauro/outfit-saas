@@ -11,7 +11,7 @@
 **Versão:** 1.7.7
 **Última atualização:** 2026-10-16
 **Domínio:** miaoutfitai.com.br
-**Próxima ação recomendada:** Finalizar Virtual Try-On (migration 0001) e e-mails transacionais (Resend); revisar relatórios CSP Report-Only.
+**Próxima ação recomendada:** e-mails transacionais (Resend) (Virtual Try-On pausado — ver `lib/feature-flags.ts`); revisar relatórios CSP Report-Only.
 
 ---
 
@@ -160,7 +160,7 @@
 | Prioridade | Tarefa | Observação |
 |---|---|---|
 | Alta | Email transacional (Resend) | Boas-vindas, trial expirando, cobrança |
-| Alta | Finalizar Virtual Try-On | Migration 0001_tryon_predictions.sql pendente no Supabase |
+| Futuro | Retomar Virtual Try-On | Rotas travadas por `TRYON_ENABLED` (`lib/feature-flags.ts`). Falta: migration 0001, regenerar tipos, tela, limite mensal por plano (custo FASHN), ligar a flag |
 | Média | Zod na saída da IA | IMPORTANTE-3 — validar JSON retornado pelo modelo |
 | Média | CSP Report-Only → bloqueante | Revisar violações reportadas; trocar header para `Content-Security-Policy` quando estável |
 | Média | Build depende de env Supabase no CI | `/cadastro` e `/auth/reset-password` pré-renderizam com `createClient` — CI injeta `NEXT_PUBLIC_SUPABASE_*` via secrets. **Correção de raiz futura:** `force-dynamic` ou `createClient` só no browser |
@@ -391,7 +391,7 @@ stripe_subscription_id   text
 - Supabase Free pausa projeto inativo: manter atividade ou migrar para plano pago antes de campanhas
 - Migrations aplicadas via SQL direto; `migration list` do Supabase segue dessincronizado
 
-**Próximo passo:** Virtual Try-On (migration 0001) → e-mails transacionais (Resend)
+**Próximo passo:** e-mails transacionais (Resend). Virtual Try-On pausado (`TRYON_ENABLED=false`)
 
 ---
 

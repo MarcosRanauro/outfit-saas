@@ -153,7 +153,8 @@ npx supabase gen types typescript --linked > src/types/database.ts  # regenerar 
 - [x] Fase 7 — Monetização (Stripe live, checkout, webhook, portal)
 - [x] Auditoria — schema versionado, Zod, moderação fail-closed, Vitest + CI, Sentry, hardening de funções do banco
 - [x] Apagar conta (LGPD) — `DELETE /api/account` + botão em Perfil (cancela Stripe → apaga Storage → apaga Auth; o banco limpa por cascade)
-- [ ] Em aberto: Virtual Try-On (migration 0001), e-mails transacionais (Resend). Backlog completo em `CONTEXT.md` seção 4
+- [x] Virtual Try-On **pausado** pré-lançamento: rotas `/api/tryon*` retornam 503 `FEATURE_DISABLED` via `TRYON_ENABLED=false` em `lib/feature-flags.ts`. Para retomar: migration 0001, regenerar tipos, criar a tela, limite em `plan-limits.ts`, ligar a flag
+- [ ] Em aberto: e-mails transacionais (Resend). Backlog completo em `CONTEXT.md` seção 4
 
 ## Operação
 
