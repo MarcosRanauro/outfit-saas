@@ -156,7 +156,7 @@ npx supabase gen types typescript --linked > src/types/database.ts  # regenerar 
 - [x] Auditoria — schema versionado, Zod, moderação fail-closed, Vitest + CI, Sentry, hardening de funções do banco
 - [x] Apagar conta (LGPD) — `DELETE /api/account` + botão em Perfil (cancela Stripe → apaga Storage → apaga Auth; o banco limpa por cascade)
 - [x] Virtual Try-On **pausado** pré-lançamento: rotas `/api/tryon*` retornam 503 `FEATURE_DISABLED` via `TRYON_ENABLED=false` em `lib/feature-flags.ts`. Para retomar: migration 0001, regenerar tipos, criar a tela, limite em `plan-limits.ts`, ligar a flag
-- [x] E-mails transacionais (Resend, via fetch em `lib/email.ts`): boas-vindas (`auth/callback`), trial acabando (cron diário `/api/cron/trial-reminder`, 3 dias antes) e falha de cobrança (webhook). Recibo = e-mails nativos do Stripe. Envio único em `profiles.welcome_email_sent_at` / `trial_reminder_sent_at` (migration 0006)
+- [x] E-mails transacionais (Resend, via fetch em `lib/email.ts`): boas-vindas (`lib/welcome-email.ts`, disparado no layout do dashboard e no `auth/callback`), trial acabando (cron diário `/api/cron/trial-reminder`, 3 dias antes) e falha de cobrança (webhook). Recibo = e-mails nativos do Stripe. Envio único em `profiles.welcome_email_sent_at` / `trial_reminder_sent_at` (migration 0006)
 - [ ] Em aberto: backlog completo em `CONTEXT.md` seção 4
 
 ## Operação

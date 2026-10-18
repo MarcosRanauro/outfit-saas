@@ -9,6 +9,9 @@ e este projeto segue [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+### Fixed
+- Boas-vindas agora também disparam no layout do dashboard: o `signUp` não define `emailRedirectTo`, então a confirmação por e-mail nem sempre passava pelo `auth/callback` e o e-mail não saía (`lib/welcome-email.ts`)
+
 ### Changed
 - Virtual Try-On pausado: `/api/tryon` e `/api/tryon/status` retornam 503 (`FEATURE_DISABLED`) enquanto `TRYON_ENABLED` for `false` (`lib/feature-flags.ts`). Código mantido para retomada futura
 
