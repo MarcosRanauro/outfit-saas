@@ -262,6 +262,7 @@ export type Database = {
           stripe_subscription_id: string | null
           style: string | null
           trial_ends_at: string | null
+          trial_reminder_sent_at: string | null
           updated_at: string | null
           usage_mia_generations: number | null
           usage_outfit_generations: number | null
@@ -270,6 +271,7 @@ export type Database = {
           usage_studio_generations: number | null
           usage_wishlist_generations: number | null
           weight: number | null
+          welcome_email_sent_at: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -284,6 +286,7 @@ export type Database = {
           stripe_subscription_id?: string | null
           style?: string | null
           trial_ends_at?: string | null
+          trial_reminder_sent_at?: string | null
           updated_at?: string | null
           usage_mia_generations?: number | null
           usage_outfit_generations?: number | null
@@ -292,6 +295,7 @@ export type Database = {
           usage_studio_generations?: number | null
           usage_wishlist_generations?: number | null
           weight?: number | null
+          welcome_email_sent_at?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -306,6 +310,7 @@ export type Database = {
           stripe_subscription_id?: string | null
           style?: string | null
           trial_ends_at?: string | null
+          trial_reminder_sent_at?: string | null
           updated_at?: string | null
           usage_mia_generations?: number | null
           usage_outfit_generations?: number | null
@@ -314,6 +319,7 @@ export type Database = {
           usage_studio_generations?: number | null
           usage_wishlist_generations?: number | null
           weight?: number | null
+          welcome_email_sent_at?: string | null
         }
         Relationships: []
       }
