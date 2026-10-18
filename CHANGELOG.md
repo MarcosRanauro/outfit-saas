@@ -9,6 +9,9 @@ e este projeto segue [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+### Changed
+- Virtual Try-On pausado: `/api/tryon` e `/api/tryon/status` retornam 503 (`FEATURE_DISABLED`) enquanto `TRYON_ENABLED` for `false` (`lib/feature-flags.ts`). Código mantido para retomada futura
+
 ### Added
 - Apagar conta (LGPD): `DELETE /api/account` e botão "Apagar minha conta" em Perfil. Cancela a assinatura no Stripe, remove fotos do Storage e apaga o usuário no Auth (cascade limpa o banco)
 - `lib/supabase/admin.ts` (cliente service role compartilhado com o webhook do Stripe)
