@@ -9,6 +9,13 @@ e este projeto segue [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+### Added
+- Apagar conta (LGPD): `DELETE /api/account` e botão "Apagar minha conta" em Perfil. Cancela a assinatura no Stripe, remove fotos do Storage e apaga o usuário no Auth (cascade limpa o banco)
+- `lib/supabase/admin.ts` (cliente service role compartilhado com o webhook do Stripe)
+
+### Changed
+- Política de privacidade: exclusão de dados agora é feita direto em Perfil
+
 ### Planned
 - Redesign do Lookbook
 - Redesign do Chat Mia

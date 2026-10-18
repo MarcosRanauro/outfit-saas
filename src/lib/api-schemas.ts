@@ -77,3 +77,7 @@ export const tryonBodySchema = z.object({
 export const moderateBodySchema = z.object({
   photo_base64: z.string().min(1),
 })
+
+export const deleteAccountBodySchema = z.object({
+  confirm: z.literal('APAGAR'),
+})

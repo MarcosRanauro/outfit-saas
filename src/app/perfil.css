@@ -548,6 +548,115 @@ html.mode-dark .perfil-logout:hover {
   border-color: #3A1010;
 }
 
+/* ─── APAGAR CONTA ───────────────────────────── */
+
+.perfil-delete-link {
+  align-self: center;
+  background: none;
+  border: none;
+  padding: 4px;
+  font-family: var(--font-inter), 'Inter', sans-serif;
+  font-size: 12px;
+  color: var(--ec-text-muted);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.perfil-delete-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.perfil-delete-modal {
+  width: 100%;
+  max-width: 400px;
+  padding: 24px 20px;
+  border-radius: 16px;
+  background: var(--ec-bg-secondary);
+  border: 0.5px solid rgba(224, 92, 92, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.perfil-delete-title {
+  margin: 0;
+  font-family: var(--font-bebas), 'Bebas Neue', sans-serif;
+  font-size: 24px;
+  letter-spacing: 0.04em;
+  color: var(--ec-text-primary);
+}
+
+.perfil-delete-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ec-text-secondary);
+}
+
+.perfil-delete-label {
+  font-size: 12px;
+  color: var(--ec-text-muted);
+}
+
+.perfil-delete-input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 0.5px solid var(--ec-border);
+  background: var(--ec-bg-primary);
+  color: var(--ec-text-primary);
+  font-family: var(--font-inter), 'Inter', sans-serif;
+  font-size: 16px;
+}
+
+.perfil-delete-error {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(224, 92, 92, 0.8);
+}
+
+.perfil-delete-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.perfil-delete-cancel,
+.perfil-delete-confirm {
+  flex: 1;
+  padding: 12px;
+  border-radius: 999px;
+  font-family: var(--font-inter), 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.perfil-delete-cancel {
+  background: transparent;
+  border: 0.5px solid var(--ec-border);
+  color: var(--ec-text-secondary);
+}
+
+.perfil-delete-confirm {
+  background: transparent;
+  border: 0.5px solid rgba(224, 92, 92, 0.3);
+  color: rgba(224, 92, 92, 0.8);
+}
+
+.perfil-delete-confirm:disabled,
+.perfil-delete-cancel:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .perfil-links {
   display: flex;
   justify-content: center;
