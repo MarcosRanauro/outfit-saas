@@ -11,7 +11,7 @@
 **Versão:** 1.7.7
 **Última atualização:** 2026-10-16
 **Domínio:** miaoutfitai.com.br
-**Próxima ação recomendada:** e-mails transacionais (Resend) (Virtual Try-On pausado — ver `lib/feature-flags.ts`); revisar relatórios CSP Report-Only.
+**Próxima ação recomendada:** Virtual Try-On pausado (ver `lib/feature-flags.ts`); e-mails transacionais prontos (aguardando deploy); revisar relatórios CSP Report-Only.
 
 ---
 
@@ -159,7 +159,6 @@
 
 | Prioridade | Tarefa | Observação |
 |---|---|---|
-| Alta | Email transacional (Resend) | Boas-vindas, trial expirando, cobrança |
 | Futuro | Retomar Virtual Try-On | Rotas travadas por `TRYON_ENABLED` (`lib/feature-flags.ts`). Falta: migration 0001, regenerar tipos, tela, limite mensal por plano (custo FASHN), ligar a flag |
 | Média | Zod na saída da IA | IMPORTANTE-3 — validar JSON retornado pelo modelo |
 | Média | CSP Report-Only → bloqueante | Revisar violações reportadas; trocar header para `Content-Security-Policy` quando estável |
@@ -318,6 +317,7 @@ stripe_subscription_id   text
 | POST | `/api/stripe/checkout` | Sim | Criar checkout |
 | POST | `/api/stripe/webhook` | HMAC | Webhook Stripe |
 | POST | `/api/stripe/portal` | Sim | Portal de assinatura |
+| GET | `/api/cron/trial-reminder` | Bearer `CRON_SECRET` | Cron diário (12:00 UTC): e-mail de trial acabando (3 dias antes) |
 | DELETE | `/api/account` | Sim | Apagar conta: cancela Stripe → apaga Storage → apaga Auth (body `{confirm:'APAGAR'}`) |
 
 ---
@@ -337,6 +337,8 @@ stripe_subscription_id   text
 | `STRIPE_SECRET_KEY` | Server-side only |
 | `STRIPE_WEBHOOK_SECRET` | Server-side only |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Client |
+| `RESEND_API_KEY` | Server-side only (e-mails transacionais; chave de envio, separada da do SMTP do Supabase) |
+| `CRON_SECRET` | Server-side only (Bearer enviado pela Vercel nos crons) |
 | `NEXT_PUBLIC_SENTRY_DSN` | Client + Server (Sentry — obrigatório em `.env.local` e na Vercel para ativar monitoramento) |
 
 > **Sentry:** sem `NEXT_PUBLIC_SENTRY_DSN` o SDK fica desabilitado (`enabled: false`). Configurar no `.env.local` para dev e nas Environment Variables da Vercel para produção.
@@ -391,7 +393,7 @@ stripe_subscription_id   text
 - Supabase Free pausa projeto inativo: manter atividade ou migrar para plano pago antes de campanhas
 - Migrations aplicadas via SQL direto; `migration list` do Supabase segue dessincronizado
 
-**Próximo passo:** e-mails transacionais (Resend). Virtual Try-On pausado (`TRYON_ENABLED=false`)
+**Próximo passo:** revisar backlog (seção 4). Virtual Try-On pausado (`TRYON_ENABLED=false`). E-mails transacionais: boas-vindas, trial acabando e falha de cobrança (recibo = Stripe)
 
 ---
 

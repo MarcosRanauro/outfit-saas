@@ -1,6 +1,8 @@
 import Stripe from 'stripe'
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient, getUserEmail } from '@/lib/supabase/admin'
+import { sendEmail } from '@/lib/email'
+import { paymentFailedEmail } from '@/lib/email-templates'
 
 export async function POST(request: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -66,7 +68,7 @@ export async function POST(request: Request) {
 
         const { data: profile } = await supabase
           .from('profiles')
-          .select('id')
+          .select('id, name')
           .eq('stripe_customer_id', customerId)
           .single()
 
@@ -79,6 +81,15 @@ export async function POST(request: Request) {
               plan_expires_at: null,
             })
             .eq('id', profile.id)
+
+          if (event.type === 'invoice.payment_failed') {
+            const invoice = obj as Stripe.Invoice
+            const to = (await getUserEmail(supabase, profile.id)) ?? invoice.customer_email
+            if (to) {
+              const { subject, html } = paymentFailedEmail(profile.name)
+              await sendEmail({ to, subject, html, idempotencyKey: `payment-failed/${invoice.id}` })
+            }
+          }
         }
         break
       }

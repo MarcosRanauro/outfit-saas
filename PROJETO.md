@@ -165,7 +165,7 @@ Lista completa e comentada em [`.env.example`](./.env.example). Resumo:
 
 - [ ] Redesign do Lookbook
 - [ ] Redesign do Chat Mia
-- [ ] Email transacional personalizado (Resend)
+- [x] Email transacional personalizado (Resend)
 - [ ] Histórico de outfits usados com UI (`outfit_history`)
 - [ ] Notificações push
 - [ ] Publicação na Play Store via TWA/Capacitor
