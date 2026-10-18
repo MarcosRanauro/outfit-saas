@@ -89,6 +89,10 @@ export default function PerfilPage() {
   const [cropOpen, setCropOpen] = useState(false)
   const [upgradeLoading, setUpgradeLoading] = useState(false)
   const [manageLoading, setManageLoading] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState('')
+  const [deleteLoading, setDeleteLoading] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
   const [avatarVersion] = useState(() => Date.now())
 
   const inlineInputRef = useRef<HTMLInputElement>(null)
@@ -195,6 +199,31 @@ export default function PerfilPage() {
   async function handleLogout() {
     await supabase.auth.signOut()
     router.push('/login')
+  }
+
+  async function handleDeleteAccount() {
+    setDeleteLoading(true)
+    setDeleteError('')
+    try {
+      const res = await fetch('/api/account', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirm: deleteConfirm }),
+      })
+      if (!res.ok) throw new Error('delete_failed')
+      await supabase.auth.signOut()
+      router.push('/login')
+    } catch {
+      setDeleteError('Não foi possível apagar a conta. Tente novamente ou fale com suporte@miaoutfitai.com.br.')
+      setDeleteLoading(false)
+    }
+  }
+
+  function closeDeleteModal() {
+    if (deleteLoading) return
+    setDeleteOpen(false)
+    setDeleteConfirm('')
+    setDeleteError('')
   }
 
   function startEditing() {
@@ -689,6 +718,9 @@ export default function PerfilPage() {
         <button type="button" className="perfil-logout" onClick={handleLogout}>
           Sair da conta
         </button>
+        <button type="button" className="perfil-delete-link" onClick={() => setDeleteOpen(true)}>
+          Apagar minha conta
+        </button>
         <nav className="perfil-links">
           <a href="/sobre" className="perfil-link">Sobre a Mia Outfit AI</a>
           <a href="/faq" className="perfil-link">FAQ</a>
@@ -696,6 +728,55 @@ export default function PerfilPage() {
           <a href="/privacidade" className="perfil-link">Privacidade</a>
         </nav>
       </footer>
+
+      {deleteOpen && (
+        <div className="perfil-delete-overlay" onClick={closeDeleteModal}>
+          <div
+            className="perfil-delete-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="perfil-delete-title"
+            onClick={e => e.stopPropagation()}
+          >
+            <h2 id="perfil-delete-title" className="perfil-delete-title">Apagar conta</h2>
+            <p className="perfil-delete-text">
+              Esta ação é <strong>irreversível</strong>. Vamos apagar suas peças, outfits, wishlist e fotos
+              {isPro ? ' e cancelar sua assinatura Pro imediatamente' : ''}.
+            </p>
+            <label className="perfil-delete-label" htmlFor="perfil-delete-input">
+              Digite APAGAR para confirmar
+            </label>
+            <input
+              id="perfil-delete-input"
+              className="perfil-delete-input"
+              value={deleteConfirm}
+              onChange={e => setDeleteConfirm(e.target.value)}
+              autoComplete="off"
+              autoCapitalize="characters"
+              disabled={deleteLoading}
+            />
+            {deleteError && <p className="perfil-delete-error">{deleteError}</p>}
+            <div className="perfil-delete-actions">
+              <button
+                type="button"
+                className="perfil-delete-cancel"
+                onClick={closeDeleteModal}
+                disabled={deleteLoading}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="perfil-delete-confirm"
+                onClick={handleDeleteAccount}
+                disabled={deleteLoading || deleteConfirm !== 'APAGAR'}
+              >
+                {deleteLoading ? 'Apagando...' : 'Apagar definitivamente'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {cropOpen && profile && (
         <AvatarCrop

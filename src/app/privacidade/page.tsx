@@ -131,7 +131,7 @@ export default function PrivacidadePage() {
               'Fotos de peças: até você excluir ou encerrar a conta',
               'Logs técnicos: até 90 dias',
               'Dados fiscais: conforme exigido pela legislação brasileira',
-              'Após encerramento da conta: exclusão em até 30 dias'
+              'Ao apagar a conta em Perfil, seus dados e fotos são removidos imediatamente; cópias técnicas de segurança podem levar até 30 dias para expirar'
             ]
           },
           {
@@ -140,7 +140,7 @@ export default function PrivacidadePage() {
             items: [
               'Acesso: solicitar cópia dos seus dados pessoais',
               'Correção: atualizar dados incompletos ou incorretos',
-              'Exclusão: solicitar a remoção dos seus dados',
+              'Exclusão: apague sua conta e todos os seus dados direto em Perfil → Apagar minha conta',
               'Portabilidade: receber seus dados em formato estruturado',
               'Revogação: revogar o consentimento a qualquer momento',
               'Para exercer esses direitos: suporte@miaoutfitai.com.br (respondemos em até 15 dias úteis)'

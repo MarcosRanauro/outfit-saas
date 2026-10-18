@@ -11,7 +11,7 @@
 **Versão:** 1.7.7
 **Última atualização:** 2026-10-16
 **Domínio:** miaoutfitai.com.br
-**Próxima ação recomendada:** Finalizar Virtual Try-On (migration 0001), feature apagar conta (LGPD) e e-mails transacionais (Resend); revisar relatórios CSP Report-Only.
+**Próxima ação recomendada:** Finalizar Virtual Try-On (migration 0001) e e-mails transacionais (Resend); revisar relatórios CSP Report-Only.
 
 ---
 
@@ -160,7 +160,6 @@
 | Prioridade | Tarefa | Observação |
 |---|---|---|
 | Alta | Email transacional (Resend) | Boas-vindas, trial expirando, cobrança |
-| Alta | Feature apagar conta (LGPD) | Apagar auth + dados + storage (fotos órfãs) + cancelar Stripe antes |
 | Alta | Finalizar Virtual Try-On | Migration 0001_tryon_predictions.sql pendente no Supabase |
 | Média | Zod na saída da IA | IMPORTANTE-3 — validar JSON retornado pelo modelo |
 | Média | CSP Report-Only → bloqueante | Revisar violações reportadas; trocar header para `Content-Security-Policy` quando estável |
@@ -216,6 +215,9 @@
 | `src/app/api/pieces/moderate/route.ts` | Moderação OpenAI |
 | `src/app/api/tryon/route.ts` | FASHN Virtual Try-On |
 | `src/app/api/stripe/webhook/route.ts` | Webhook Stripe |
+| `src/app/api/account/route.ts` | Apagar conta (LGPD) |
+| `src/lib/delete-account.ts` | Ordem da exclusão (testada em `delete-account.test.ts`) |
+| `src/lib/supabase/admin.ts` | Cliente service role (só servidor) |
 | `supabase/schema.sql` | Fotografia do schema de produção (`supabase db dump`) — referência versionada |
 | `supabase/migrations/0001_tryon_predictions.sql` | Migration pendente de rodar |
 | `supabase/migrations/0002_piece_photos.sql` | Migration rodada ✅ |
@@ -316,6 +318,7 @@ stripe_subscription_id   text
 | POST | `/api/stripe/checkout` | Sim | Criar checkout |
 | POST | `/api/stripe/webhook` | HMAC | Webhook Stripe |
 | POST | `/api/stripe/portal` | Sim | Portal de assinatura |
+| DELETE | `/api/account` | Sim | Apagar conta: cancela Stripe → apaga Storage → apaga Auth (body `{confirm:'APAGAR'}`) |
 
 ---
 
@@ -388,7 +391,7 @@ stripe_subscription_id   text
 - Supabase Free pausa projeto inativo: manter atividade ou migrar para plano pago antes de campanhas
 - Migrations aplicadas via SQL direto; `migration list` do Supabase segue dessincronizado
 
-**Próximo passo:** Virtual Try-On (migration 0001) → apagar conta (LGPD) → e-mails transacionais (Resend)
+**Próximo passo:** Virtual Try-On (migration 0001) → e-mails transacionais (Resend)
 
 ---
 

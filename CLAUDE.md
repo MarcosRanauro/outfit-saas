@@ -34,6 +34,7 @@ src/
 │   │   ├── outfit-ia/page.tsx      # só redireciona para /mia
 │   │   └── perfil/page.tsx         # perfil, plano, avatar crop
 │   ├── api/
+│   │   ├── account/                # DELETE: apagar conta (LGPD)
 │   │   ├── mia/                    # chat, extract-date
 │   │   ├── outfit/generate/        # geração de outfits
 │   │   ├── pieces/                 # analyze, describe, moderate, studio (FASHN), ghost-mannequin (Photoroom)
@@ -47,7 +48,7 @@ src/
 │   └── *.css                       # um por área (auth, dashboard, closet, lookbook, mia, perfil, wishlist, landing, faq…)
 ├── components/                     # closet/, layout/ (BottomNav, DashboardTopBanner), lookbook/, studio/, ui/ (AvatarCrop, TrialExpiredModal, ModeToggle)
 ├── lib/
-│   ├── supabase/client.ts, server.ts
+│   ├── supabase/client.ts, server.ts, admin.ts   # admin = service role, só no servidor
 │   ├── rate-limit.ts, plan-limits.ts, pricing.ts   # limites por plano; preço do Pro em `pricing.ts`
 │   ├── api-schemas.ts, parse-request-body.ts       # Zod nos bodies das rotas
 │   └── moderation-server.ts, image.ts, piece-photos.ts
@@ -151,7 +152,8 @@ npx supabase gen types typescript --linked > src/types/database.ts  # regenerar 
 - [x] Fase 6 — Deploy (Vercel) — miaoutfitai.com.br em produção
 - [x] Fase 7 — Monetização (Stripe live, checkout, webhook, portal)
 - [x] Auditoria — schema versionado, Zod, moderação fail-closed, Vitest + CI, Sentry, hardening de funções do banco
-- [ ] Em aberto: Virtual Try-On (migration 0001), apagar conta (LGPD), e-mails transacionais (Resend). Backlog completo em `CONTEXT.md` seção 4
+- [x] Apagar conta (LGPD) — `DELETE /api/account` + botão em Perfil (cancela Stripe → apaga Storage → apaga Auth; o banco limpa por cascade)
+- [ ] Em aberto: Virtual Try-On (migration 0001), e-mails transacionais (Resend). Backlog completo em `CONTEXT.md` seção 4
 
 ## Operação
 
