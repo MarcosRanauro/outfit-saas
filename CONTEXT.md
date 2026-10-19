@@ -199,6 +199,8 @@
 | `src/app/global-error.tsx` | Captura erros de render React no client |
 | `src/lib/api-schemas.ts` | Schemas Zod dos bodies das rotas de IA |
 | `src/lib/ai-schemas.ts` | Schemas Zod da saída da IA + `parseAiJson` |
+| `src/lib/image-upload.ts`, `src/lib/storage-url.ts` | Upload seguro: tipo real + re-encode (sharp); URLs só da pasta do usuário |
+| `src/app/api/storage/upload/route.ts` | Único caminho de escrita no Storage: modera e grava via service role |
 | `src/lib/parse-request-body.ts` | Helper `parseRequestBody` / `parseOptionalRequestBody` |
 | `src/lib/image.ts` | Cliente de moderação — fail-closed, mensagens por motivo |
 | `src/lib/rate-limit.ts` | Rate limiting — `decideRateLimit()` (pura) + `checkRateLimit()` (Supabase) |

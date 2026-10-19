@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { piecesAnalyzeBodySchema } from "@/lib/api-schemas";
 import { parseAiJson, pieceAnalysisSchema } from "@/lib/ai-schemas";
+import { moderatePhotoBase64 } from "@/lib/moderation-server";
 import { parseRequestBody } from "@/lib/parse-request-body";
 import { checkRateLimit, incrementUsage, rateLimitResponse } from "@/lib/rate-limit";
 
@@ -54,6 +55,15 @@ export async function POST(request: Request) {
     const mimeType: ValidMimeType = rawMimeType && (VALID_MIME as readonly string[]).includes(rawMimeType)
       ? rawMimeType as ValidMimeType
       : "image/jpeg";
+
+    // a checagem do navegador é contornável: modera de novo antes de enviar ao Claude
+    const moderation = await moderatePhotoBase64(imageBase64, mimeType);
+    if (moderation.status === "flagged") {
+      return NextResponse.json({ error: "Imagem não permitida", code: "CONTENT_FLAGGED" }, { status: 422 });
+    }
+    if (moderation.status === "unavailable") {
+      return NextResponse.json({ error: "Moderação indisponível", code: "MODERATION_UNAVAILABLE" }, { status: 503 });
+    }
 
     const message = await anthropic.messages.create({
       model: "claude-sonnet-4-6",

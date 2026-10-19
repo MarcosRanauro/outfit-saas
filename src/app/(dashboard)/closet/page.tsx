@@ -5,7 +5,7 @@ import NextImage from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Piece, WishlistItem } from '@/types/app'
-import { toBase64, compressPiecePhoto, moderateImage, MODERATION_CONTENT_MESSAGE } from '@/lib/image'
+import { toBase64, compressPiecePhoto, moderateImage, uploadImage, MODERATION_CONTENT_MESSAGE } from '@/lib/image'
 import ClosetOnboarding from '@/components/closet/ClosetOnboarding'
 import ClosetTour from '@/components/closet/ClosetTour'
 import WishlistSuggestionsModal, { WishlistSuggestion } from '@/components/closet/WishlistSuggestionsModal'
@@ -309,12 +309,12 @@ export default function ClosetPage() {
       if (!user) return
       let photo_url = null
       if (photo) {
-        const path = `${user.id}/${Date.now()}.jpg`
-        const { error: uploadError } = await supabase.storage.from('pieces').upload(path, photo, { contentType: 'image/jpeg' })
-        if (!uploadError) {
-          const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(path)
-          photo_url = urlData.publicUrl
+        const uploaded = await uploadImage(photo, 'piece')
+        if (!uploaded.ok) {
+          alert(uploaded.message)
+          return
         }
+        photo_url = uploaded.url
       }
       const { data, error } = await supabase.from('pieces').insert({
         user_id: user.id, code: `P${Date.now()}`, name, category,
