@@ -160,7 +160,7 @@
 | Prioridade | Tarefa | Observação |
 |---|---|---|
 | Futuro | Retomar Virtual Try-On | Rotas travadas por `TRYON_ENABLED` (`lib/feature-flags.ts`). Falta: migration 0001, regenerar tipos, tela, limite mensal por plano (custo FASHN), ligar a flag |
-| Média | Zod na saída da IA | IMPORTANTE-3 — validar JSON retornado pelo modelo |
+| ~~Média~~ | ~~Zod na saída da IA~~ | Feito — `lib/ai-schemas.ts` |
 | Média | CSP Report-Only → bloqueante | Revisar violações reportadas; trocar header para `Content-Security-Policy` quando estável |
 | Média | Build depende de env Supabase no CI | `/cadastro` e `/auth/reset-password` pré-renderizam com `createClient` — CI injeta `NEXT_PUBLIC_SUPABASE_*` via secrets. **Correção de raiz futura:** `force-dynamic` ou `createClient` só no browser |
 | Média | Regenerar tipos após migration tryon | npx supabase gen types typescript --linked > src/types/database.ts |
@@ -198,6 +198,7 @@
 | `src/sentry.edge.config.ts` | Config Sentry Edge (middleware) |
 | `src/app/global-error.tsx` | Captura erros de render React no client |
 | `src/lib/api-schemas.ts` | Schemas Zod dos bodies das rotas de IA |
+| `src/lib/ai-schemas.ts` | Schemas Zod da saída da IA + `parseAiJson` |
 | `src/lib/parse-request-body.ts` | Helper `parseRequestBody` / `parseOptionalRequestBody` |
 | `src/lib/image.ts` | Cliente de moderação — fail-closed, mensagens por motivo |
 | `src/lib/rate-limit.ts` | Rate limiting — `decideRateLimit()` (pura) + `checkRateLimit()` (Supabase) |

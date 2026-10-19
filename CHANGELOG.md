@@ -9,6 +9,10 @@ e este projeto segue [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+### Changed
+- Saída da IA validada com Zod (`lib/ai-schemas.ts`) em outfit/generate, wishlist/generate, pieces/analyze, mia/extract-date e mia/chat: resposta malformada vira erro tratado (sem consumir cota) em vez de quebrar a tela; `piece_ids` ausente não derruba mais o `.includes`
+- Limites no chat da Mia: `message` até 2000 caracteres (também no textarea) e `history` aparado para as últimas 20 mensagens de até 4000 caracteres (`lib/api-schemas.ts`), contra abuso de tokens
+
 ### Fixed
 - Boas-vindas agora também disparam no layout do dashboard: o `signUp` não define `emailRedirectTo`, então a confirmação por e-mail nem sempre passava pelo `auth/callback` e o e-mail não saía (`lib/welcome-email.ts`)
 

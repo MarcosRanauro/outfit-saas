@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import sharp from 'sharp'
 import { outfitGenerateBodySchema } from "@/lib/api-schemas";
+import { parseAiJson, aiOutfitsSchema } from "@/lib/ai-schemas";
 import { parseRequestBody } from "@/lib/parse-request-body";
 import { checkRateLimit, incrementUsage, rateLimitResponse } from "@/lib/rate-limit";
 
@@ -311,21 +312,20 @@ Regras técnicas:
     return NextResponse.json({ error: "Erro na IA" }, { status: 500 });
   }
 
-  try {
-    const clean = responseContent.text.replace(/```json|```/g, "").trim();
-    const parsed = JSON.parse(clean);
-
-    const outfitsWithPieces = (parsed.outfits as Array<Record<string, unknown> & { piece_ids: string[] }>).map((outfit) => ({
-      ...outfit,
-      pieces: pieces.filter((p) => outfit.piece_ids.includes(p.id)),
-    }));
-
-    await incrementUsage(user.id, 'outfit_generate')
-    return NextResponse.json({ outfits: outfitsWithPieces });
-  } catch {
+  const aiResult = parseAiJson(responseContent.text, aiOutfitsSchema)
+  if (!aiResult.success) {
+    console.error('[outfit/generate] resposta da IA fora do formato')
     return NextResponse.json(
       { error: "Erro ao processar resposta" },
       { status: 500 },
     );
   }
+
+  const outfitsWithPieces = aiResult.data.outfits.map((outfit) => ({
+    ...outfit,
+    pieces: pieces.filter((p) => outfit.piece_ids.includes(p.id)),
+  }));
+
+  await incrementUsage(user.id, 'outfit_generate')
+  return NextResponse.json({ outfits: outfitsWithPieces });
 }

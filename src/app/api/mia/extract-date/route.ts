@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk"
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { miaExtractDateBodySchema } from "@/lib/api-schemas"
+import { parseAiJson, eventDateSchema } from "@/lib/ai-schemas"
 import { parseRequestBody } from "@/lib/parse-request-body"
 import { checkRateLimit } from "@/lib/rate-limit"
 
@@ -65,9 +66,10 @@ Retorne APENAS o JSON, sem texto adicional.`,
       return NextResponse.json({ event_date: null, event_hour: null })
     }
 
-    const clean = content.text.replace(/```json|```/g, "").trim()
-    const eventData = JSON.parse(clean)
-    return NextResponse.json(eventData)
+    const eventData = parseAiJson(content.text, eventDateSchema)
+    return NextResponse.json(
+      eventData.success ? eventData.data : { event_date: null, event_hour: null }
+    )
 
   } catch {
     return NextResponse.json({ event_date: null, event_hour: null })

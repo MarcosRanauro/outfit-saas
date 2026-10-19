@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { miaChatBodySchema } from "@/lib/api-schemas";
+import { parseAiJson, aiOutfitsSchema, aiWishlistSchema } from "@/lib/ai-schemas";
 import { parseRequestBody } from "@/lib/parse-request-body";
 import { checkRateLimit, incrementUsage, rateLimitResponse } from "@/lib/rate-limit";
 
@@ -396,28 +397,24 @@ Mensagem do usuário: ${message}`
 
     const outfitsMatch = text.match(/\[MIA_OUTFITS\]([\s\S]*?)\[\/MIA_OUTFITS\]/);
     if (outfitsMatch) {
-      try {
-        const parsed = JSON.parse(outfitsMatch[1].trim());
-        outfits = parsed.outfits.map((outfit: { piece_ids?: string[] } & Record<string, unknown>) => ({
+      const parsed = parseAiJson(outfitsMatch[1], aiOutfitsSchema);
+      // parse falhou — retorna o texto bruto
+      if (parsed.success) {
+        outfits = parsed.data.outfits.map((outfit) => ({
           ...outfit,
-          pieces: (pieces || []).filter((p) =>
-            Array.isArray(outfit.piece_ids) && outfit.piece_ids.includes(p.id)
-          ),
+          pieces: (pieces || []).filter((p) => outfit.piece_ids.includes(p.id)),
         }));
         cleanText = text.replace(/\[MIA_OUTFITS\][\s\S]*?\[\/MIA_OUTFITS\]/, "").trim();
-      } catch {
-        // parse falhou — retorna o texto bruto
       }
     }
 
     const wishlistMatch = text.match(/\[MIA_WISHLIST\]([\s\S]*?)\[\/MIA_WISHLIST\]/);
     if (wishlistMatch) {
-      try {
-        const parsed = JSON.parse(wishlistMatch[1].trim());
-        wishlist = parsed.suggestions;
+      const parsed = parseAiJson(wishlistMatch[1], aiWishlistSchema);
+      // parse falhou — retorna o texto bruto
+      if (parsed.success) {
+        wishlist = parsed.data.suggestions;
         cleanText = cleanText.replace(/\[MIA_WISHLIST\][\s\S]*?\[\/MIA_WISHLIST\]/, "").trim();
-      } catch {
-        // parse falhou — retorna o texto bruto
       }
     }
 

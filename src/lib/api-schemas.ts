@@ -9,10 +9,26 @@ const anchorPieceSchema = z.object({
   photo_url: z.string().nullable().optional(),
 })
 
+export const MAX_MESSAGE_CHARS = 2000
+const MAX_HISTORY_MESSAGES = 20
+const MAX_HISTORY_CHARS = 4000
+
 const chatMessageSchema = z.object({
   role: z.enum(['user', 'assistant']),
-  content: z.string(),
+  // histórico longo não é rejeitado (quebraria conversas antigas): é aparado
+  content: z.string().transform((c) => c.slice(0, MAX_HISTORY_CHARS)),
 })
+
+/** Mantém só as últimas mensagens e garante que comece pelo usuário (alternância exigida pela API). */
+const chatHistorySchema = z
+  .array(chatMessageSchema)
+  .optional()
+  .default([])
+  .transform((h) => {
+    const recent = h.slice(-MAX_HISTORY_MESSAGES)
+    const firstUser = recent.findIndex((m) => m.role === 'user')
+    return firstUser === -1 ? [] : recent.slice(firstUser)
+  })
 
 export const outfitGenerateBodySchema = z.object({
   period: z.string().optional(),
@@ -29,8 +45,8 @@ export const outfitGenerateBodySchema = z.object({
 export const wishlistGenerateBodySchema = z.object({}).strict()
 
 export const miaChatBodySchema = z.object({
-  message: z.string().min(1),
-  history: z.array(chatMessageSchema).optional().default([]),
+  message: z.string().min(1).max(MAX_MESSAGE_CHARS),
+  history: chatHistorySchema,
   weather: z
     .object({
       temp: z.number(),
@@ -45,16 +61,8 @@ export const miaChatBodySchema = z.object({
 })
 
 export const miaExtractDateBodySchema = z.object({
-  message: z.string().min(1),
-  history: z
-    .array(
-      z.object({
-        role: z.enum(['user', 'assistant']),
-        content: z.string(),
-      })
-    )
-    .optional()
-    .default([]),
+  message: z.string().min(1).max(MAX_MESSAGE_CHARS),
+  history: chatHistorySchema,
 })
 
 export const piecesAnalyzeBodySchema = z.object({

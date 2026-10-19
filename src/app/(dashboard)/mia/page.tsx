@@ -514,6 +514,7 @@ ${weatherMsg}Já dei uma olhadinha no seu closet e tenho várias ideias pra voc�
         <textarea
           ref={inputRef}
           className="mia-input"
+          maxLength={2000}
           placeholder="Fala com a Mia..."
           value={input}
           onChange={(e) => {
