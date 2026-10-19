@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { wishlistGenerateBodySchema } from "@/lib/api-schemas";
+import { parseAiJson, aiWishlistSchema } from "@/lib/ai-schemas";
 import { parseOptionalRequestBody } from "@/lib/parse-request-body";
 import { checkRateLimit, incrementUsage, rateLimitResponse } from "@/lib/rate-limit";
 
@@ -264,15 +265,15 @@ Foque em peças que genuinamente transformam o guarda-roupa existente.`;
     return NextResponse.json({ error: "Erro na IA" }, { status: 500 });
   }
 
-  try {
-    const clean = responseContent.text.replace(/```json|```/g, "").trim();
-    const parsed = JSON.parse(clean);
-    await incrementUsage(user.id, 'wishlist_generate')
-    return NextResponse.json({ suggestions: parsed.suggestions });
-  } catch {
+  const aiResult = parseAiJson(responseContent.text, aiWishlistSchema)
+  if (!aiResult.success) {
+    console.error('[wishlist/generate] resposta da IA fora do formato')
     return NextResponse.json(
       { error: "Erro ao processar resposta" },
       { status: 500 },
     );
   }
+
+  await incrementUsage(user.id, 'wishlist_generate')
+  return NextResponse.json({ suggestions: aiResult.data.suggestions });
 }

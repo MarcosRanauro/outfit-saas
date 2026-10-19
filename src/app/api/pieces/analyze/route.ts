@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { piecesAnalyzeBodySchema } from "@/lib/api-schemas";
+import { parseAiJson, pieceAnalysisSchema } from "@/lib/ai-schemas";
 import { parseRequestBody } from "@/lib/parse-request-body";
 import { checkRateLimit, incrementUsage, rateLimitResponse } from "@/lib/rate-limit";
 
@@ -75,10 +76,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Erro na análise" }, { status: 500 });
     }
 
-    const clean = content.text.replace(/```json|```/g, "").trim();
-    const suggestion = JSON.parse(clean);
+    const analysis = parseAiJson(content.text, pieceAnalysisSchema);
+    if (!analysis.success) {
+      console.error("Análise: resposta da IA fora do formato");
+      return NextResponse.json({ error: "Erro na análise" }, { status: 500 });
+    }
     await incrementUsage(user.id, 'pieces_analyze')
-    return NextResponse.json({ suggestion });
+    return NextResponse.json({ suggestion: analysis.data });
   } catch (error) {
     console.error("Erro na análise:", error);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });
