@@ -11,6 +11,8 @@ import ClosetTour from '@/components/closet/ClosetTour'
 import WishlistSuggestionsModal, { WishlistSuggestion } from '@/components/closet/WishlistSuggestionsModal'
 import WishlistSavedModal from '@/components/closet/WishlistSavedModal'
 import ClosetFiltersDrawer from '@/components/closet/ClosetFiltersDrawer'
+import InteractiveWardrobe from '@/components/closet/InteractiveWardrobe'
+import type { ClosetViewMode } from '@/components/closet/wardrobe.types'
 import ModeToggle from '@/components/ui/ModeToggle'
 import TrialExpiredModal from '@/components/ui/TrialExpiredModal'
 import '../../closet.css'
@@ -89,6 +91,7 @@ export default function ClosetPage() {
   const [showUpgradeBanner, setShowUpgradeBanner] = useState(false)
 
   // Layout
+  const [viewMode, setViewMode] = useState<ClosetViewMode>('interactive')
   const [cols, setCols] = useState(4)
   const [showColsMenu, setShowColsMenu] = useState(false)
   const [search, setSearch] = useState('')
@@ -183,6 +186,10 @@ export default function ClosetPage() {
     if (saved) {
       const parsed = parseInt(saved, 10)
       if ([1, 2, 3, 4, 5].includes(parsed)) setCols(parsed)
+    }
+    const savedMode = localStorage.getItem('mia-closet-view-mode') as ClosetViewMode | null
+    if (savedMode === 'interactive' || savedMode === 'grid') {
+      setViewMode(savedMode)
     }
   }, [])
 
@@ -419,6 +426,34 @@ export default function ClosetPage() {
           <span className="closet-count">{pieces.length}</span>
         </div>
         <div className="closet-header-right">
+          {/* Toggle Visão Armário vs Grid */}
+          <div className="closet-view-toggle">
+            <button
+              type="button"
+              className={`closet-view-btn ${viewMode === 'interactive' ? 'active' : ''}`}
+              onClick={() => {
+                setViewMode('interactive')
+                localStorage.setItem('mia-closet-view-mode', 'interactive')
+              }}
+              title="Visão Armário"
+            >
+              <span className="closet-view-icon">🚪</span>
+              <span className="closet-view-label">Armário</span>
+            </button>
+            <button
+              type="button"
+              className={`closet-view-btn ${viewMode === 'grid' ? 'active' : ''}`}
+              onClick={() => {
+                setViewMode('grid')
+                localStorage.setItem('mia-closet-view-mode', 'grid')
+              }}
+              title="Visão Grid"
+            >
+              <span className="closet-view-icon">⊞</span>
+              <span className="closet-view-label">Grid</span>
+            </button>
+          </div>
+
           <button
             ref={suggestBtnRef}
             className="closet-col-btn"
@@ -520,40 +555,52 @@ export default function ClosetPage() {
         </div>
       )}
 
-      {/* ─── GRID ─── */}
-      <div
-        className={cols === 1 ? 'closet-list' : 'closet-grid'}
-        style={cols > 1 ? { gridTemplateColumns: `repeat(${cols}, 1fr)` } : undefined}
-      >
-        {loading ? (
-          <div className="closet-grid-placeholder">Carregando...</div>
-        ) : filteredPieces.length === 0 ? (
-          <div className="closet-grid-placeholder">
-            {search || activeGroup !== 'Todos' || activeFilterCount > 0
-              ? 'Nenhuma peça encontrada.'
-              : 'Seu closet está vazio.\nToque em + para adicionar.'}
-          </div>
+      {/* ─── CONTEÚDO: VISÃO ARMÁRIO OU VISÃO GRID ─── */}
+      {viewMode === 'interactive' ? (
+        loading ? (
+          <div className="closet-grid-placeholder">Carregando armário...</div>
         ) : (
-          filteredPieces.map(piece => (
-            <div key={piece.id} className="closet-piece-card" onClick={() => router.push(`/closet/${piece.id}`)}>
-              <div className="closet-piece-photo">
-                {piece.photo_url ? (
-                  <NextImage src={piece.photo_url} alt={piece.name} fill sizes="(max-width: 768px) 25vw, 20vw" />
-                ) : (
-                  <div className="closet-piece-no-photo"><span>👗</span></div>
-                )}
-                {anchorPieceId === piece.id && (
-                  <div className="closet-anchor-badge">✦</div>
-                )}
-              </div>
-              <div className="closet-piece-overlay">
-                <span className="closet-piece-cat">{piece.category}</span>
-                <span className="closet-piece-name">{piece.name}</span>
-              </div>
+          <InteractiveWardrobe
+            pieces={filteredPieces}
+            anchorPieceId={anchorPieceId}
+          />
+        )
+      ) : (
+        /* ─── GRID ORIGINAL ─── */
+        <div
+          className={cols === 1 ? 'closet-list' : 'closet-grid'}
+          style={cols > 1 ? { gridTemplateColumns: `repeat(${cols}, 1fr)` } : undefined}
+        >
+          {loading ? (
+            <div className="closet-grid-placeholder">Carregando...</div>
+          ) : filteredPieces.length === 0 ? (
+            <div className="closet-grid-placeholder">
+              {search || activeGroup !== 'Todos' || activeFilterCount > 0
+                ? 'Nenhuma peça encontrada.'
+                : 'Seu closet está vazio.\nToque em + para adicionar.'}
             </div>
-          ))
-        )}
-      </div>
+          ) : (
+            filteredPieces.map(piece => (
+              <div key={piece.id} className="closet-piece-card" onClick={() => router.push(`/closet/${piece.id}`)}>
+                <div className="closet-piece-photo">
+                  {piece.photo_url ? (
+                    <NextImage src={piece.photo_url} alt={piece.name} fill sizes="(max-width: 768px) 25vw, 20vw" />
+                  ) : (
+                    <div className="closet-piece-no-photo"><span>👗</span></div>
+                  )}
+                  {anchorPieceId === piece.id && (
+                    <div className="closet-anchor-badge">✦</div>
+                  )}
+                </div>
+                <div className="closet-piece-overlay">
+                  <span className="closet-piece-cat">{piece.category}</span>
+                  <span className="closet-piece-name">{piece.name}</span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
 
       {/* ─── FAB ─── */}
       <button

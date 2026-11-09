@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import LookbookFiltersDrawer, { LookbookFilters } from '@/components/lookbook/LookbookFiltersDrawer'
+import OutfitRack from '@/components/lookbook/OutfitRack'
+
+type LookbookViewMode = 'rack' | 'cards'
 
 const QUICK_OCCASION_CHIPS = [
   'Dia a Dia', 'Shopping', 'Amigos', 'Viagem', 'Faculdade', 'Trabalho', 'Reunião',
@@ -23,6 +26,7 @@ type Outfit = {
   name: string
   subtitle: string | null
   style_tags: string[]
+  occasion_tags?: string[] | null
   period: string
   occasion: string | null
   why: string | null
@@ -36,6 +40,8 @@ type Piece = {
   category: string
   season: string | null
   photo_url: string | null
+  color?: string | null
+  brand?: string | null
 }
 
 function formatPeriod(period: string): string {
@@ -126,6 +132,7 @@ export default function LookbookPage() {
   const router = useRouter()
   const supabase = createClient()
 
+  const [viewMode, setViewMode] = useState<LookbookViewMode>('rack')
   const [outfits, setOutfits] = useState<Outfit[]>([])
   const [pieces, setPieces] = useState<Record<string, Piece>>({})
   const [loading, setLoading] = useState(true)
@@ -148,7 +155,7 @@ export default function LookbookPage() {
 
     const { data: piecesData } = await supabase
       .from('pieces')
-      .select('id, name, category, season, photo_url')
+      .select('id, name, category, season, photo_url, color, brand')
       .eq('user_id', user.id)
 
     if (outfitsData) setOutfits(outfitsData)
@@ -164,6 +171,10 @@ export default function LookbookPage() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData()
+    const savedMode = localStorage.getItem('mia-lookbook-view-mode') as LookbookViewMode | null
+    if (savedMode === 'rack' || savedMode === 'cards') {
+      setViewMode(savedMode)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -247,7 +258,35 @@ export default function LookbookPage() {
         <h1 className="lookbook-title">
           Look<span>book</span>
         </h1>
-        <span className="lookbook-count">{outfits.length} outfits</span>
+        <div className="lookbook-header-right">
+          <div className="lookbook-view-toggle">
+            <button
+              type="button"
+              className={`lookbook-view-btn ${viewMode === 'rack' ? 'active' : ''}`}
+              onClick={() => {
+                setViewMode('rack')
+                localStorage.setItem('mia-lookbook-view-mode', 'rack')
+              }}
+              title="Visão Arara"
+            >
+              <span>🧥</span>
+              <span className="lookbook-view-label">Arara</span>
+            </button>
+            <button
+              type="button"
+              className={`lookbook-view-btn ${viewMode === 'cards' ? 'active' : ''}`}
+              onClick={() => {
+                setViewMode('cards')
+                localStorage.setItem('mia-lookbook-view-mode', 'cards')
+              }}
+              title="Visão Cards"
+            >
+              <span>⊞</span>
+              <span className="lookbook-view-label">Cards</span>
+            </button>
+          </div>
+          <span className="lookbook-count">{outfits.length} outfits</span>
+        </div>
       </div>
 
       <div className="lookbook-search-row">
@@ -303,6 +342,13 @@ export default function LookbookPage() {
             Tente outro termo de busca ou ajuste os filtros.
           </p>
         </div>
+      ) : viewMode === 'rack' ? (
+        <OutfitRack
+          outfits={filtered}
+          pieces={pieces}
+          onDelete={confirmDelete}
+          onNavigate={(id) => router.push(`/lookbook/${id}`)}
+        />
       ) : (
         <div className="lookbook-list">
           {filtered.map(outfit => {
