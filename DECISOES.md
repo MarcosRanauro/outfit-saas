@@ -124,18 +124,24 @@ Formato baseado em [Architecture Decision Records (ADR)](https://adr.github.io/)
 
 ---
 
-## [2026-05-23] — Moderação de conteúdo com OpenAI Moderation API
+## [2026-11-08] — Visualização Arquitetônica de Guarda-Roupas e Arara de Lookbook com Toggles e Isolamento de CSS
 
-**Contexto:** O app aceita upload de fotos de usuários sem validação de conteúdo — risco de armazenamento de imagens impróprias (nudez, conteúdo sexual, violência) no Supabase Storage e envio para Anthropic API e Remove.bg.
+**Contexto:** O Closet e o Lookbook eram exibidos exclusivamente como grids tradicionais de cards estáticos. Havia a necessidade de trazer uma experiência visual e tátil inspirada no design nórdico de luxo do protótipo (`prototipo.html`), simulando a arquitetura real de um guarda-roupas organizado e uma arara de boutique suspensa para os looks da Mia, sem romper o fluxo de dados existente do Supabase.
 
 **Opções consideradas:**
-1. AWS Rekognition (paga, requer SDK extra e configuração IAM)
-2. Moderação manual (inviável — produto não tem time de moderação)
-3. Terms of Service apenas (sem proteção técnica)
-4. OpenAI Moderation API (`omni-moderation-latest`) com suporte a imagens
+1. Substituir integralmente o grid tradicional pelas novas visualizações vetoriais.
+2. Criar páginas separadas (ex: `/closet/wardrobe` e `/lookbook/rack`).
+3. Manter as rotas originais (`/closet` e `/lookbook`) e introduzir componentes visuais modulares (`InteractiveWardrobe` e `OutfitRack`) alternáveis por toggles de visualização persistidos em `localStorage`.
 
-**Decisão:** OpenAI Moderation API com `omni-moderation-latest` na rota `/api/pieces/moderate`, chamada em base64 antes de qualquer upload ou análise.
+**Decisão:** Opção 3. Introduzidos `InteractiveWardrobe.tsx` e `OutfitRack.tsx` com toggles `[ 🚪 Armário | ⊞ Grid ]` e `[ 🧥 Arara | ⊞ Cards ]` com `localStorage`. Para evitar colisão com o CSS legado de `closet.css` (onde `.modal-overlay` possuía `opacity: 0` e animações conflitantes), o modal de detalhes do armário adotou a classe isolada `.wardrobe-modal-overlay` com validação de `e.target === e.currentTarget` e `z-index: 1000`.
 
-**Motivo:** A API de moderação da OpenAI é gratuita para uso em APIs pagas. O modelo `omni-moderation-latest` aceita imagens em base64 (via `data:image/jpeg;base64,...`), sem necessidade de URL pública — compatível com o fluxo antes do upload. A `OPENAI_API_KEY` já estava no projeto (para reverter foto de estúdio com gpt-image-1). Latência estimada ~200ms — aceitável no fluxo de seleção de foto. Em caso de erro da API, a moderação falha-aberta (permite o upload) para não bloquear o usuário por instabilidade externa.
+**Motivo:**
+- Preserva a flexibilidade do usuário (quem prefere escanear em grid rápido pode continuar no grid).
+- Não altera o schema de dados do Supabase nem a lógica de filtros e busca existentes.
+- O isolamento de classe CSS (`wardrobe-modal-overlay`) resolveu definitivamente o problema de fechamento precoce do modal de detalhes, garantindo transições suaves nos temas Édition Claire e Dark Edition.
+- `framer-motion` adicionado para gerenciar o balanço e a física suave dos cabides na arara.
 
-**Consequências:** Toda foto selecionada pelo usuário passa por moderação antes de ser exibida como preview, antes da análise da Mia e antes de qualquer upload. Adiciona ~200ms ao fluxo de seleção. Requer `OPENAI_API_KEY` ativa — sem ela, a moderação falha-aberta silenciosamente. Fotos adicionais ("+") na galeria da Nova Peça não passam por moderação (somente a foto principal passa).
+**Consequências:**
+- Instalação da dependência `framer-motion` no projeto.
+- Armazenamento das preferências de exibição do usuário no navegador (`mia-closet-view-mode` e `mia-lookbook-view-mode`).
+- A ordem arquitetônica do armário prioriza a experiência de uso diário do vestuário: 1º Cabideiro (blusas/camisas), 2º Gaveteiro (calças/shorts), 3º Sapateira (calçados) e 4º Acessórios/Bolsas por último.

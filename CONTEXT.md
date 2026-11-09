@@ -8,10 +8,10 @@
 ## 1. Estado atual do projeto
 
 **Status:** Em produção
-**Versão:** 1.7.7
-**Última atualização:** 2026-10-16
+**Versão:** 1.8.0
+**Última atualização:** 2026-11-08
 **Domínio:** miaoutfitai.com.br
-**Próxima ação recomendada:** Virtual Try-On pausado (ver `lib/feature-flags.ts`); e-mails transacionais prontos (aguardando deploy); revisar relatórios CSP Report-Only.
+**Próxima ação recomendada:** Virtual Try-On pausado (ver `lib/feature-flags.ts`); e-mails transacionais operacionais; expansão dos novos modos interativos (armário e arara).
 
 ---
 
@@ -46,12 +46,18 @@
 - [x] Seleção de capa — atualiza `is_cover` em `piece_photos` e `photo_url` em `pieces`
 - [x] Análise automática com visão computacional (Mia) — badge MIA nos campos
 - [x] Campos: categoria, cor primária/secundária, descrição, notas, fit, estação, estilo
+- [x] **Visão Armário Interativo (`InteractiveWardrobe.tsx`)**:
+  - Armário nórdico arquitetônico com 4 compartimentos organizados (1º Cabideiro de Blusas/Casacos, 2º Gaveteiro de Calças/Saias, 3º Sapateira iluminada, 4º Prateleira de Bolsas/Acessórios)
+  - Hotspots interativos com contagem de peças e badge pulsante
+  - Bandeja rápida de inspeção/drawer de categoria (`compartment-focus-panel`)
+  - Modal dividido de detalhe da peça (`.wardrobe-modal-overlay`): galeria de fotos com badge de capa e Estúdio IA (`✦`), tabela de specs, tags, análise de visão Mia e botões de ação (Peça Âncora, Gerar Look e Foto Estúdio IA)
+- [x] Toggle de visualização `[ 🚪 Armário | ⊞ Grid ]` com persistência em `localStorage`
 - [x] Grid 1–5 colunas com persistência via localStorage
 - [x] Drawer de filtros (desktop) / bottom sheet (mobile)
 - [x] Chips de grupo: Todos / Roupas / Calçados / Acessórios
 - [x] Peça âncora
 - [x] object-position: top nos cards (não corta colarinho/ombros)
-- [x] Sistema visual --ec-* aplicado
+- [x] Sistema visual --ec-* aplicado nos dois modos (Édition Claire / Dark Edition)
 
 ### Nova Peça (`/closet/nova-peca`)
 - [x] Foto única — sem botão + para adicionar fotos adicionais
@@ -78,6 +84,12 @@
 - [x] Botão "Excluir peça" com confirmação e hover vermelho
 
 ### Lookbook
+- [x] **Visão Arara Boutique (`OutfitRack.tsx`)**:
+  - Arara metálica horizontal com cabides suspensos animados via `framer-motion`
+  - Hotspot interativo com contagem total de looks cadastrados
+  - Card inferior detalhado com Por que Funciona (análise Mia AI), tags de ocasião e lista de peças que compõem o outfit
+  - Ação rápida para selecionar e acionar a peça no closet ou gerar variação
+- [x] Toggle de visualização `[ 🧥 Arara | ⊞ Cards ]` com persistência em `localStorage`
 - [x] Cards com layout split: foto principal esquerda (42%) + info/thumbs direita
 - [x] Thumbs na base do card (52×52px)
 - [x] Grid 2 colunas no desktop, 1 coluna no mobile
@@ -85,7 +97,7 @@
 - [x] Chips de ocasião + drawer de filtros
 - [x] Página de detalhe do outfit (split 50/50)
 - [x] Thumbs no detalhe trocam foto principal
-- [x] Sistema --ec-* aplicado
+- [x] Sistema --ec-* aplicado nos dois modos (Édition Claire / Dark Edition)
 
 ### Outfit IA
 - [x] Geração de 5 outfits com clima real
@@ -510,6 +522,26 @@ supabase db pull
 ```
 
 **Próximo passo:** concluir CRÍTICO-1 localmente → revisar IMPORTANTE-1
+
+---
+
+### 2026-11-08 — v1.8.0 — Armário Arquitetônico Interativo & Arara de Outfits
+
+**O que foi feito:**
+- **Armário Interativo (`InteractiveWardrobe.tsx`):**
+  - Armário nórdico ilustrado/vetorial com 4 hotspots interativos: 1º Cabideiro Principal (blusas/camisas/casacos), 2º Gaveteiro Canelado (calças/shorts/saias), 3º Sapateira com luz rasante (calçados), 4º Prateleira de Acessórios & Bolsas.
+  - Gaveta de inspeção rápida/drawer de categoria (`compartment-focus-panel`) que lista as peças do compartimento ativo e permite adicionar novas peças.
+  - Modal de detalhe dividido (`.wardrobe-modal-overlay`) com isolamento total de CSS (evitando conflito com `.modal-overlay` do `closet.css`), galeria de fotos integrada com `sortPiecePhotos`, badges de foto de Capa e Estúdio IA (`✦`), tabela de especificações, tags, box de análise de visão Mia AI e CTAs (Âncora, Gerar Look com a peça e Foto Estúdio IA).
+- **Arara de Outfits no Lookbook (`OutfitRack.tsx`):**
+  - Arara boutique em barra metálica com cabides interativos suspensos e animações suaves via `framer-motion`.
+  - Scroll horizontal suave para navegação entre os looks do usuário.
+  - Card inferior de detalhamento técnico do outfit com análise "Por que funciona", ocasião recomendada e lista de peças vinculadas.
+- **Toggles de Visão com Persistência:**
+  - Header de `/closet` com toggle `[ 🚪 Armário | ⊞ Grid ]` persistido via `localStorage` (`mia-closet-view-mode`).
+  - Header de `/lookbook` com toggle `[ 🧥 Arara | ⊞ Cards ]` persistido via `localStorage` (`mia-lookbook-view-mode`).
+- **Compatibilidade Completa:**
+  - Suporte visual aos temas Édition Claire e Dark Edition.
+  - 100% dos 71 testes automatizados passando sem quebras.
 
 ---
 

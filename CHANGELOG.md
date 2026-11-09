@@ -7,6 +7,28 @@ e este projeto segue [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [1.8.0] — 2026-11-08
+
+### Added
+- **Armário Interativo Arquitetônico (`InteractiveWardrobe.tsx`):**
+  - Armário nórdico de luxo com corte transversal vetorial e 4 seções ordenadas: 1º Cabideiro Principal (blusas/camisas/casacos), 2º Gaveteiro Canelado (calças/shorts/saias), 3º Sapateira iluminada e 4º Prateleira de Acessórios & Bolsas.
+  - Hotspots interativos com contadores de peças reais e badges com animação pulsante.
+  - Bandeja rápida de inspeção/drawer de categoria (`compartment-focus-panel`) para listar peças da seção ativa e atalho de cadastro.
+  - Modal dividido de detalhes da peça (`.wardrobe-modal-overlay`): galeria interativa integrada a `sortPiecePhotos`, troca de fotos com miniaturas clicáveis, badges de foto de Capa e Estúdio IA (`✦`), especificações (marca, cor primária/secundária, fit, estação), tags de estilo, caixa de análise de visão da Mia e CTAs funcionais (Peça Âncora, Gerar Look e Foto Estúdio IA).
+- **Arara de Outfits no Lookbook (`OutfitRack.tsx`):**
+  - Arara metálica boutique com cabides suspensos animados suavemente via `framer-motion`.
+  - Scroll horizontal com silhuetas das peças reais do look.
+  - Card detalhado do outfit selecionado: análise técnica "Por que funciona" da Mia AI, tags de ocasião e lista completa de peças.
+- **Toggles de Visão com Persistência em `localStorage`:**
+  - Header de `/closet`: toggle `[ 🚪 Armário | ⊞ Grid ]` (`mia-closet-view-mode`).
+  - Header de `/lookbook`: toggle `[ 🧥 Arara | ⊞ Cards ]` (`mia-lookbook-view-mode`).
+
+### Fixed
+- **Isolamento de CSS em Modais:** criação da classe `.wardrobe-modal-overlay` com `z-index: 1000`, `opacity: 1 !important` e validação de `e.target === e.currentTarget`, prevenindo colisão com regras globais de `.modal-overlay` em `closet.css` que fechavam o modal precocemente.
+- Isolamento de clique com `e.stopPropagation()` em todos os cards do armário e gaveteiro.
+
+---
+
 ## [Unreleased]
 
 ### Security
