@@ -145,3 +145,32 @@ Formato baseado em [Architecture Decision Records (ADR)](https://adr.github.io/)
 - Instalação da dependência `framer-motion` no projeto.
 - Armazenamento das preferências de exibição do usuário no navegador (`mia-closet-view-mode` e `mia-lookbook-view-mode`).
 - A ordem arquitetônica do armário prioriza a experiência de uso diário do vestuário: 1º Cabideiro (blusas/camisas), 2º Gaveteiro (calças/shorts), 3º Sapateira (calçados) e 4º Acessórios/Bolsas por último.
+
+---
+
+## [2026-11-08] — Unificação Estética do Guarda-Roupa (Opção A), Header de Alta Fidelidade e Controle de Overscroll Mobile
+
+**Contexto:** Após a introdução inicial do armário interativo, os compartimentos inferiores (gaveteiro fechado em caixas, sapateira e prateleira de acessórios) apresentavam contraste visual com o cabideiro principal de boutique. Além disso, o header e as barras de contexto divergiam do design editorial detalhado em `prototipo.html`. Em dispositivos móveis (360px a 414px), o layout sofria com quebras de texto, transbordo horizontal e uma tarja preta lateral quando o usuário arrastava da direita para a esquerda, causada pelo fundo `#080808` fixo no `body` sendo exposto durante o *overscroll*.
+
+**Opções consideradas:**
+1. Manter gaveteiro com caixas fechadas e apenas redimensionar cards para mobile.
+2. Unificar todas as seções sob a estética boutique (Opção A): calceiro com varão de latão e cabides suspensos idênticos ao cabideiro superior, decks/vitrines abertas para calçados com iluminação LED dourada e prateleiras de vidro para acessórios; alinhar o header exatamente ao protótipo; aplicar corte rígido de overflow e controle de encadeamento de rolagem.
+
+**Decisão:** Opção 2.
+- O gaveteiro foi transformado no **Calceiro Tátil** com os mesmos trilhos de latão e silhuetas de cabide do cabideiro superior.
+- A sapateira e os acessórios adotaram o modelo **Boutique Deck** com prateleira iluminada, silhuetas em destaque e badges funcionais de peça âncora.
+- O header de `AppNavbar` e as barras de `.context-bar` e `.filter-chips-bar` foram reescritos em estrita fidelidade visual ao `prototipo.html`.
+- Para eliminar a tarja preta e transbordos mobile:
+  - `html, body` passaram a ter `background-color: var(--ec-bg-primary)` dinâmico, `overflow-x: clip;` e `overscroll-behavior-x: none;`.
+  - Todos os carrosséis de toque adotaram `overscroll-behavior-x: contain;` e `-webkit-overflow-scrolling: touch;`.
+  - Todas as ocorrências de `100vw` foram convertidas em `width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box;`.
+
+**Motivo:**
+- Homogeneidade e elegância arquitetônica em todo o móvel, criando coerência sensorial de boutique de luxo.
+- Fidelidade absoluta ao design system e tipografia definidos no protótipo.
+- Experiência mobile nativa, sem solavancos elásticos, sem corte de texto e sem revelação do fundo escuro em telas claras.
+
+**Consequências:**
+- Eliminação definitiva da rolagem horizontal indesejada no documento no Android e iOS.
+- Layout 100% responsivo para telas desde 360px (smartphones compactos) até grandes monitores desktop.
+- 0 quebras no suite de testes automatizados (71/71 testes passando).

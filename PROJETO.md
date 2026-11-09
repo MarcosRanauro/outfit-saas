@@ -1,6 +1,6 @@
 # Mia Outfit AI — Documentação do Projeto
 
-> **Documento histórico.** Este arquivo registra decisões e marcos até v1.2.0. Para o estado **atual** do produto (v1.8.0, em produção), use [`CONTEXT.md`](./CONTEXT.md) como fonte viva.
+> **Documento histórico.** Este arquivo registra decisões e marcos até v1.2.0. Para o estado **atual** do produto (v1.9.0, em produção), use [`CONTEXT.md`](./CONTEXT.md) como fonte viva.
 
 ## Stack
 

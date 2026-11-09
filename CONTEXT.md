@@ -8,10 +8,10 @@
 ## 1. Estado atual do projeto
 
 **Status:** Em produção
-**Versão:** 1.8.0
+**Versão:** 1.9.0
 **Última atualização:** 2026-11-08
 **Domínio:** miaoutfitai.com.br
-**Próxima ação recomendada:** Virtual Try-On pausado (ver `lib/feature-flags.ts`); e-mails transacionais operacionais; expansão dos novos modos interativos (armário e arara).
+**Próxima ação recomendada:** Virtual Try-On pausado (ver `lib/feature-flags.ts`); e-mails transacionais operacionais; novas visualizações nórdicas ativas e refinadas para mobile.
 
 ---
 
@@ -47,10 +47,18 @@
 - [x] Análise automática com visão computacional (Mia) — badge MIA nos campos
 - [x] Campos: categoria, cor primária/secundária, descrição, notas, fit, estação, estilo
 - [x] **Visão Armário Interativo (`InteractiveWardrobe.tsx`)**:
-  - Armário nórdico arquitetônico com 4 compartimentos organizados (1º Cabideiro de Blusas/Casacos, 2º Gaveteiro de Calças/Saias, 3º Sapateira iluminada, 4º Prateleira de Bolsas/Acessórios)
+  - Armário nórdico arquitetônico com seções unificadas no estilo boutique de luxo (1º Cabideiro Principal com varão de latão para Blusas/Casacos, 2º Calceiro Tátil com varão de latão e cabides suspensos para Calças/Saias, 3º Sapateira vitrine horizontal iluminada por LED dourado, 4º Prateleira Vitrine de Bolsas/Acessórios em deck de vidro)
   - Hotspots interativos com contagem de peças e badge pulsante
   - Bandeja rápida de inspeção/drawer de categoria (`compartment-focus-panel`)
   - Modal dividido de detalhe da peça (`.wardrobe-modal-overlay`): galeria de fotos com badge de capa e Estúdio IA (`✦`), tabela de specs, tags, análise de visão Mia e botões de ação (Peça Âncora, Gerar Look e Foto Estúdio IA)
+- [x] **Header & Barra de Contexto idênticos ao `prototipo.html` (`AppNavbar.tsx`, `closet.css`)**:
+  - Logo editorial `Mia` + `Outfit AI`, abas centrais ("Meu Closet", "Lookbook Arara"), seletor de tema em pílula ("Édition Claire" / "Dark Edition"), botão `+ Nova Peça`
+  - `.context-bar`: título com chip de quantidade, pílula de clima dinâmica com simulação e alternância ao clique, seletor de visualização ("Armário Tátil" / "Visão Grid"), atalhos com IA (`✦` Sugestão, `♡` Wishlist) e botão para Drawer de Filtros com badge
+  - `.filter-chips-bar`: campo de busca arredondado e chips com contadores em tempo real para categorias e peças âncora
+- [x] **Responsividade Mobile & Prevenção de Vazamentos**:
+  - `html, body` com `background-color: var(--ec-bg-primary)` dinâmico, `overflow-x: clip;` e `overscroll-behavior-x: none;` (eliminando a tarja preta de fundo `#080808` no modo claro)
+  - `overscroll-behavior-x: contain;` em todos os carrosséis de toque
+  - Escalonamento fluido de cabides e decks para dispositivos de 360px a 414px
 - [x] Toggle de visualização `[ 🚪 Armário | ⊞ Grid ]` com persistência em `localStorage`
 - [x] Grid 1–5 colunas com persistência via localStorage
 - [x] Drawer de filtros (desktop) / bottom sheet (mobile)
@@ -522,6 +530,29 @@ supabase db pull
 ```
 
 **Próximo passo:** concluir CRÍTICO-1 localmente → revisar IMPORTANTE-1
+
+---
+
+### 2026-11-08 — v1.9.0 — Header de Alta Fidelidade, Unificação das Seções do Armário e Responsividade Mobile
+
+**O que foi feito:**
+- **Header e Barra de Contexto Fiel ao Protótipo (`AppNavbar.tsx`, `src/app/closet.css`):**
+  - Alinhamento de design 100% idêntico a `prototipo.html`.
+  - `AppNavbar`: logo tipográfico editorial com monograma/destaque `Mia` + `Outfit AI`, navegação de abas desktop centralizada, toggle de tema refinado e botão `+ Nova Peça`.
+  - `.context-bar`: título com chip contador de peças, pílula de clima rotativa com cenários de clima e troca ao clique, seletor de visualização ("Armário Tátil" / "Visão Grid"), atalhos com IA (`✦` Sugerir peças, `♡` Wishlist) e botão para Drawer de Filtros com badge de filtros ativos.
+  - `.filter-chips-bar`: campo de busca com ícone de lupa e chips horizontais interativos com contadores dinâmicos por categoria e peças âncora.
+- **Unificação Arquitetônica das Seções do Guarda-Roupa (Opção A - `InteractiveWardrobe.tsx`):**
+  - Calceiro Tátil para calças/shorts/saias com varão de latão e cabides suspensos idênticos ao cabideiro superior.
+  - Sapateira em deck/vitrine horizontal de boutique com prateleira iluminada por LED dourado e silhuetas destacadas de calçados (substituindo gavetas fechadas).
+  - Prateleira Vitrine para bolsas e acessórios com deck de vidro e iluminação suave sobressalente.
+- **Responsividade Mobile em Telas Pequenas ($\le 640px$ e $\le 480px$):**
+  - Escalonamento proporcional de cabides (82px) e itens de vitrine (80px), ajustando alturas mínimas para caber com fluidez em dispositivos de 360px a 414px.
+  - ModeToggle com rótulos compactos "Claire" / "Dark" no mobile e botão circular `+` para nova peça em $\le 480px$.
+- **Eliminação de Tarja Preta e Vazamento Horizontal:**
+  - `html` e `body` agora utilizam `background-color: var(--ec-bg-primary)` dinâmico (eliminando a exibição do `#080808` fixo em modo claro durante gestos de arrasto).
+  - Aplicação de `overflow-x: clip;` e `overscroll-behavior-x: none;` na raiz e contêineres do dashboard.
+  - Aplicação de `overscroll-behavior-x: contain;` e `-webkit-overflow-scrolling: touch` em todos os carrosséis horizontais (`.hangers-rack`, `.boutique-deck`, `.category-chips`, `.context-right`), impedindo o encadeamento de rolagem (*scroll chaining*) para o documento pai.
+  - Substituição de `100vw` por `100%` com `min-width: 0` nos componentes de navegação e filtros.
 
 ---
 

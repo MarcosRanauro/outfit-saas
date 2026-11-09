@@ -7,6 +7,31 @@ e este projeto segue [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [1.9.0] — 2026-11-08
+
+### Added
+- **Header e Barra de Contexto de Alta Fidelidade (`AppNavbar.tsx`, `src/app/closet.css`):**
+  - Alinhamento visual 100% idêntico ao `prototipo.html`.
+  - `AppNavbar`: logo editorial `Mia` + `Outfit AI`, abas de navegação desktop ("Meu Closet", "Lookbook Arara"), seletor de tema em pílula ("Édition Claire" / "Dark Edition") e botão de ação `+ Nova Peça`.
+  - Barra de Contexto (`.context-bar`): título com chip contador de peças, pílula de clima rotativa simulando cenários reais com clique para alternar, seletor de visualização ("Armário Tátil" / "Visão Grid"), atalhos inteligentes com IA (`✦` Sugerir peças, `♡` Minha Wishlist) e botão para abrir o Drawer de Filtros com contador de filtros ativos.
+  - Barra de Busca e Chips (`.filter-chips-bar`): input de busca arredondado e chips com contadores em tempo real para categorias ("Todas", "Blusas & Casacos", "Calças & Saias", "Calçados", "Bolsas & Acessórios" e "📌 Peças Âncora").
+- **Unificação Estética do Guarda-Roupa Interativo — Opção A (`InteractiveWardrobe.tsx`):**
+  - Calceiro Tátil para calças, bermudas e saias com varão de latão e cabides suspensos com silhuetas vetoriais idênticas ao cabideiro superior.
+  - Sapateira em deck/vitrine horizontal de boutique com prateleira iluminada por LED dourado e silhuetas destacadas de calçados (sem caixas fechadas de gaveta).
+  - Prateleira Vitrine para bolsas e acessórios com deck de vidro e iluminação suave sobressalente.
+
+### Fixed
+- **Responsividade Mobile em Telas Pequenas ($\le 640px$ e $\le 480px$):**
+  - Escalonamento proporcional de cabides (82px) e itens de vitrine (80px), ajustando alturas mínimas para caber com fluidez em dispositivos de 360px a 414px.
+  - Alternador de modo (`ModeToggle.tsx`) com rótulos compactos "Claire" / "Dark" no mobile e botão circular `+` para nova peça em $\le 480px$.
+- **Eliminação de Tarja Preta e Vazamento Horizontal:**
+  - `html` e `body` agora utilizam `background-color: var(--ec-bg-primary)` dinâmico (eliminando a exibição do `#080808` fixo em modo claro durante gestos de arrasto).
+  - Aplicação de `overflow-x: clip;` e `overscroll-behavior-x: none;` na raiz e contêineres do dashboard.
+  - Aplicação de `overscroll-behavior-x: contain;` e `-webkit-overflow-scrolling: touch` em todos os carrosséis horizontais (`.hangers-rack`, `.boutique-deck`, `.category-chips`, `.context-right`), impedindo o encadeamento de rolagem (*scroll chaining*) para o documento pai.
+  - Substituição de `100vw` por `100%` com `min-width: 0` nos componentes de navegação e filtros.
+
+---
+
 ## [1.8.0] — 2026-11-08
 
 ### Added
