@@ -5,6 +5,23 @@ Formato baseado em [Architecture Decision Records (ADR)](https://adr.github.io/)
 
 ---
 
+## [2026-11-09] — Recuperação preventiva de Customer no Stripe Checkout
+
+**Contexto:** Perfis no banco Supabase persistiam o campo `stripe_customer_id`. Quando a aplicação alternava entre chaves de teste (`sk_test_...`) e produção (`sk_live_...`), ou quando um cliente era excluído/recriado no dashboard da Stripe, a criação de uma nova sessão de checkout quebrava com HTTP 500 (`No such customer`). Além disso, valores mascarados por ferramentas de CI/CLI (como `"[SENSITIVE]"`) passavam sem validação até o SDK da Stripe.
+
+**Opções consideradas:**
+1. Confiar cegamente no `stripe_customer_id` armazenado no Supabase e esperar que o usuário nunca mude de conta ou ambiente da Stripe.
+2. Sempre recriar um novo customer a cada checkout (aumentaria drasticamente a fragmentação de clientes e faturas na Stripe).
+3. Verificar a existência do `customerId` com `stripe.customers.retrieve()` e só recriar caso a Stripe retorne 404 (`resource_missing`) ou `deleted: true`.
+
+**Decisão:** Opção 3 implementada em `src/app/api/stripe/checkout/route.ts`.
+
+**Motivo:** Mantém a integridade de clientes existentes na Stripe, mas oferece resiliência total e auto-recuperação contra inconsistências de ambiente local, sandboxes ou trocas de conta sem exigir intervenção manual no banco de dados.
+
+**Consequências:** Uma chamada adicional e rápida a `retrieve()` antes de montar a sessão caso o usuário já possua `stripe_customer_id`, garantindo zero falhas 500 por customer inexistente.
+
+---
+
 ## [2026-04-27] — Supabase como banco de dados e storage
 
 **Contexto:** O projeto precisava de banco relacional, autenticação, storage de arquivos e políticas de segurança por linha (RLS) em uma solução única, sem gerenciar infraestrutura.

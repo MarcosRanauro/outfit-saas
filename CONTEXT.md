@@ -8,8 +8,8 @@
 ## 1. Estado atual do projeto
 
 **Status:** Em produção
-**Versão:** 1.9.0
-**Última atualização:** 2026-11-08
+**Versão:** 1.9.1
+**Última atualização:** 2026-11-09
 **Domínio:** miaoutfitai.com.br
 **Próxima ação recomendada:** Avaliar backlog de decisões em [`DECISOES.md`](./DECISOES.md): (1) Retomada do Provador Virtual (Try-On); (2) UI de Histórico de Outfits Usados (`outfit_history`); (3) Landing Page com visuais reais do Armário/Arara v1.9.0.
 
@@ -137,6 +137,9 @@
 
 ### Monetização
 - [x] Stripe: checkout, webhook HMAC, customer portal
+- [x] Recuperação preventiva de `customerId` no checkout (auto-recriação caso cliente não exista na conta/ambiente da Stripe)
+- [x] Validação defensiva de `priceId` em `route.ts` contra valores ausentes ou mascarados por CLI (`[SENSITIVE]`)
+- [x] Pacotes avulsos de fotos (`ADDON_PACKAGES`) com créditos extras somados via `checkout.session.completed`
 - [x] Trial 15 dias → expirado + free → TrialExpiredModal
 - [x] Planos: Free e Pro (R$ 24,90/mês — novo Price no Stripe, `PRO_VALOR` em `pricing.ts`)
 
@@ -159,8 +162,8 @@
 
 ### Qualidade
 - [x] npm run lint: 0 erros
-- [x] npm run build: passa sem erros
-- [x] npm run test: Vitest — 16 testes (rate-limit + plan-limits)
+- [x] npm run build: passa sem erros (42 rotas compiladas no Turbopack)
+- [x] npm run test: Vitest — 100 testes em 16 arquivos (rate-limit, plan-limits, stripe checkout, webhooks, uploads, email, etc.)
 - [x] GitHub Action CI: lint + test + build em PR/push main
 - [x] next/image nos cards
 - [x] Plan = 'free' | 'pro'

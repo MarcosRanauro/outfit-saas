@@ -7,6 +7,20 @@ e este projeto segue [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [1.9.1] — 2026-11-09
+
+### Fixed
+- **Stripe Checkout & Recuperação Automática de Cliente (`src/app/api/stripe/checkout/route.ts`):**
+  - Recuperação preventiva de `customerId`: validação via `stripe.customers.retrieve()`. Se o cliente não existir na conta/ambiente da Stripe atual ou estiver marcado como `deleted`, o customer é recriado no Stripe e atualizado no Supabase automaticamente, eliminando falhas de `No such customer`.
+  - Validação de `priceId`: barreira defensiva contra valores vazios, IDs inválidos ou texto mascarado (`"[SENSITIVE]"`) gerado pelo Vercel CLI.
+  - Exposição de `details` nos erros da API de checkout para facilitar auditoria e depuração.
+- **Feedback na Interface de Usuário (`PerfilPage.tsx`, `StudioCreditsModal.tsx`):**
+  - Exibição de mensagens de erro detalhadas (`data.details || data.error`) no alerta ao invés de mensagens de fallback genéricas.
+- **Conformidade da Suíte de Testes Unitários (`route.test.ts`):**
+  - Alinhamento da mensagem padrão de erro de preço não configurado, garantindo 100% de aprovação (100 de 100 testes) no pipeline de CI do GitHub Actions.
+
+---
+
 ## [1.9.0] — 2026-11-08
 
 ### Added
