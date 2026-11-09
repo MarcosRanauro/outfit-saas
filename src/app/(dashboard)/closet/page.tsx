@@ -15,6 +15,7 @@ import InteractiveWardrobe from '@/components/closet/InteractiveWardrobe'
 import type { ClosetViewMode } from '@/components/closet/wardrobe.types'
 import ModeToggle from '@/components/ui/ModeToggle'
 import TrialExpiredModal from '@/components/ui/TrialExpiredModal'
+import { LayoutTemplate, Grid, SlidersHorizontal, RefreshCw, Search } from 'lucide-react'
 import '../../closet.css'
 import '../../perfil.css'
 import '../../wishlist.css'
@@ -47,6 +48,20 @@ const CATEGORY_GROUPS = {
 }
 
 type GroupKey = keyof typeof CATEGORY_GROUPS
+
+const WEATHER_SCENARIOS = [
+  '⛅ São Paulo · 21°C · Nublado Suave',
+  '☀️ Rio de Janeiro · 28°C · Ensolarado & Quente',
+  '🌧️ Curitiba · 15°C · Chuva & Vento Fresco',
+  '🍂 Belo Horizonte · 23°C · Clima Seco Agradável',
+]
+
+const CABIDEIRO_CATS = ['Camiseta / Blusa', 'Camisa', 'Moletom', 'Casaco / Jaqueta', 'Vestido', 'Macacão']
+const GAVETEIRO_CATS = ['Calça', 'Short / Bermuda', 'Saia']
+const SAPATEIRA_CATS = ['Tênis', 'Sapato / Oxford', 'Bota', 'Sandália / Chinelo']
+const ACESSORIOS_CATS = ['Acessório', 'Relógio', 'Bolsa', 'Chapéu / Boné']
+
+type CategoryChipKey = 'all' | 'cabideiro' | 'gaveteiro' | 'sapateira' | 'acessorios' | 'anchor'
 
 const ALL_CATEGORIES = Object.values(CATEGORY_GROUPS).flat()
 
@@ -96,6 +111,8 @@ export default function ClosetPage() {
   const [showColsMenu, setShowColsMenu] = useState(false)
   const [search, setSearch] = useState('')
   const [activeGroup, setActiveGroup] = useState<GroupKey>('Todos')
+  const [activeCategoryChip, setActiveCategoryChip] = useState<CategoryChipKey>('all')
+  const [weatherIndex, setWeatherIndex] = useState(0)
 
   // Filtros drawer
   const [filterOpen, setFilterOpen] = useState(false)
@@ -227,12 +244,20 @@ export default function ClosetPage() {
   }, [tourStep, tourOpen])
 
   const filteredPieces = pieces.filter(piece => {
+    let matchChip = true
+    if (activeCategoryChip === 'cabideiro') matchChip = CABIDEIRO_CATS.includes(piece.category)
+    else if (activeCategoryChip === 'gaveteiro') matchChip = GAVETEIRO_CATS.includes(piece.category)
+    else if (activeCategoryChip === 'sapateira') matchChip = SAPATEIRA_CATS.includes(piece.category)
+    else if (activeCategoryChip === 'acessorios') matchChip = ACESSORIOS_CATS.includes(piece.category)
+    else if (activeCategoryChip === 'anchor') matchChip = Boolean(anchorPieceId && piece.id === anchorPieceId)
+
     const groupCats = CATEGORY_GROUPS[activeGroup]
     const matchGroup = activeGroup === 'Todos' || groupCats.includes(piece.category)
     const matchSearch = !search ||
       piece.name.toLowerCase().includes(search.toLowerCase()) ||
       piece.category.toLowerCase().includes(search.toLowerCase()) ||
-      (piece.color || '').toLowerCase().includes(search.toLowerCase())
+      (piece.color || '').toLowerCase().includes(search.toLowerCase()) ||
+      (piece.brand || '').toLowerCase().includes(search.toLowerCase())
     const matchCategory = !filterCategory || piece.category === filterCategory
     const matchSeason = filterSeason.length === 0 ||
       filterSeason.some(s => (piece.season || '').toLowerCase().includes(s.toLowerCase()))
@@ -244,9 +269,24 @@ export default function ClosetPage() {
       filterBrand.some(b => (piece.brand || '').toLowerCase().includes(b.toLowerCase()))
     const matchFit = filterFit.length === 0 ||
       filterFit.some(f => (piece.fit || '').toLowerCase().includes(f.toLowerCase()))
-    return matchGroup && matchSearch && matchCategory &&
+    return matchChip && matchGroup && matchSearch && matchCategory &&
       matchSeason && matchStyle && matchColor && matchBrand && matchFit
   })
+
+  const cabideiroCount = pieces.filter(p => CABIDEIRO_CATS.includes(p.category)).length
+  const gaveteiroCount = pieces.filter(p => GAVETEIRO_CATS.includes(p.category)).length
+  const sapateiraCount = pieces.filter(p => SAPATEIRA_CATS.includes(p.category)).length
+  const acessoriosCount = pieces.filter(p => ACESSORIOS_CATS.includes(p.category)).length
+  const anchorCount = anchorPieceId ? pieces.filter(p => p.id === anchorPieceId).length : 0
+
+  const categoryChips = [
+    { key: 'all' as const, label: 'Todas', count: pieces.length },
+    { key: 'cabideiro' as const, label: 'Blusas & Casacos', count: cabideiroCount },
+    { key: 'gaveteiro' as const, label: 'Calças & Saias', count: gaveteiroCount },
+    { key: 'sapateira' as const, label: 'Calçados', count: sapateiraCount },
+    { key: 'acessorios' as const, label: 'Bolsas & Acessórios', count: acessoriosCount },
+    { key: 'anchor' as const, label: '📌 Peças Âncora', count: anchorCount },
+  ]
 
   const activeFilterCount = [
     filterCategory, ...filterSeason, ...filterStyle, ...filterColor, ...filterBrand, ...filterFit,
@@ -414,43 +454,59 @@ export default function ClosetPage() {
     setFilterBrand([])
     setFilterFit([])
     setActiveGroup('Todos')
+    setActiveCategoryChip('all')
   }
 
   return (
     <>
       <div className="closet-page">
-      {/* ─── HEADER ─── */}
-      <div className="closet-header">
-        <div className="closet-header-left">
-          <h1 className="closet-title">MEU <span>CLOSET</span></h1>
-          <span className="closet-count">{pieces.length}</span>
+      {/* ─── 02. CONTEXT BAR (Fiel ao prototipo.html) ─── */}
+      <section className="context-bar">
+        <div className="context-left">
+          <h1 className="page-title" id="main-view-title">
+            <span>Meu Closet</span>
+            <span className="count-chip" id="piece-count-badge">{pieces.length} peças</span>
+          </h1>
+
+          {/* Weather Context Pill */}
+          <button
+            type="button"
+            className="weather-pill"
+            onClick={() => setWeatherIndex(prev => (prev + 1) % WEATHER_SCENARIOS.length)}
+            title="Clique para alternar o clima simulado"
+          >
+            <span className="weather-dot"></span>
+            <span id="weather-text">{WEATHER_SCENARIOS[weatherIndex]}</span>
+            <RefreshCw size={12} style={{ marginLeft: 2 }} />
+          </button>
         </div>
-        <div className="closet-header-right">
-          {/* Toggle Visão Armário vs Grid */}
-          <div className="closet-view-toggle">
+
+        <div className="context-right">
+          {/* Closet View Switcher (Armário Arquitetônico vs Grid) */}
+          <div className="view-mode-pill" id="closet-view-pill">
             <button
               type="button"
-              className={`closet-view-btn ${viewMode === 'interactive' ? 'active' : ''}`}
+              className={`view-btn ${viewMode === 'interactive' ? 'active' : ''}`}
+              id="btn-view-wardrobe"
               onClick={() => {
                 setViewMode('interactive')
                 localStorage.setItem('mia-closet-view-mode', 'interactive')
               }}
-              title="Visão Armário"
             >
-              <span className="closet-view-icon">🚪</span>
-              <span className="closet-view-label">Armário</span>
+              <LayoutTemplate size={14} />
+              <span>Armário Tátil</span>
             </button>
             <button
               type="button"
-              className={`closet-view-btn ${viewMode === 'grid' ? 'active' : ''}`}
+              className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
+              id="btn-view-grid"
               onClick={() => {
                 setViewMode('grid')
                 localStorage.setItem('mia-closet-view-mode', 'grid')
               }}
-              title="Visão Grid"
             >
-              <span className="closet-view-icon">⊞</span>
-              <span className="closet-view-label">Grid</span>
+              <Grid size={14} />
+              <span>Visão Grid</span>
             </button>
           </div>
 
@@ -459,7 +515,7 @@ export default function ClosetPage() {
             className="closet-col-btn"
             onClick={handleGenerateWishlist}
             disabled={wishlistGenerating || pieces.length < 3}
-            title={pieces.length < 3 ? 'Adicione pelo menos 3 peças' : 'Sugerir peças'}
+            title={pieces.length < 3 ? 'Adicione pelo menos 3 peças para sugestões' : 'Sugerir peças com IA'}
           >
             {wishlistGenerating ? '…' : '✦'}
           </button>
@@ -467,78 +523,93 @@ export default function ClosetPage() {
             ref={wishlistBtnRef}
             className="closet-col-btn"
             onClick={() => { loadWishlistItems(); setWishlistSavedOpen(true) }}
-            title="Minha wishlist"
+            title="Minha Wishlist"
           >
             ♡
           </button>
-          <ModeToggle compact />
-        </div>
-      </div>
 
-      {/* ─── SEARCH + FILTROS + COLUNAS ─── */}
-      <div className="closet-search-row">
-        <div className="closet-search-bar">
-          <span className="closet-search-icon">🔍</span>
+          {viewMode === 'grid' && (
+            <div className="closet-cols-wrap">
+              <button className="closet-cols-btn" onClick={() => setShowColsMenu(p => !p)} title="Colunas do Grid">
+                ⊞ ▾
+              </button>
+              {showColsMenu && (
+                <>
+                  <div className="closet-cols-backdrop" onClick={() => setShowColsMenu(false)} />
+                  <div className="closet-cols-menu">
+                    {[
+                      { label: '2 colunas', value: 2 },
+                      { label: '3 colunas', value: 3 },
+                      { label: '4 colunas', value: 4 },
+                      { label: '5 colunas', value: 5 },
+                      { label: 'Lista', value: 1 },
+                    ].map(opt => (
+                      <button
+                        key={opt.value}
+                        className={`closet-cols-option ${cols === opt.value ? 'active' : ''}`}
+                        onClick={() => { setCols(opt.value); localStorage.setItem('mia-closet-cols', String(opt.value)); setShowColsMenu(false) }}
+                      >
+                        <span>{opt.label}</span>
+                        {cols === opt.value && <span>✓</span>}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Filter Drawer Button */}
+          <button
+            type="button"
+            className="filter-drawer-btn"
+            onClick={() => setFilterOpen(true)}
+            aria-label="Abrir Filtros"
+          >
+            <SlidersHorizontal size={14} />
+            <span>Filtros</span>
+            {activeFilterCount > 0 && (
+              <span className="filter-badge" id="active-filters-count">{activeFilterCount}</span>
+            )}
+          </button>
+        </div>
+      </section>
+
+      {/* ─── 03. SEARCH & CATEGORY CHIPS FILTER BAR (Fiel ao prototipo.html) ─── */}
+      <div className="filter-chips-bar" id="category-filter-bar">
+        <div className="search-input-box">
+          <Search size={14} className="search-icon" />
           <input
             type="text"
-            placeholder="Buscar peças..."
+            id="piece-search-input"
+            placeholder="Buscar por peça, cor ou marca..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="closet-search-input"
           />
           {search && (
-            <button onClick={() => setSearch('')} className="closet-search-clear">✕</button>
+            <button
+              type="button"
+              className="search-clear-btn"
+              onClick={() => setSearch('')}
+              aria-label="Limpar busca"
+            >
+              ✕
+            </button>
           )}
         </div>
-        <button
-          className={`closet-filter-btn ${filterOpen || activeFilterCount > 0 ? 'active' : ''}`}
-          onClick={() => setFilterOpen(true)}
-        >
-          ⊟{activeFilterCount > 0 && (
-            <span className="closet-filter-badge">{activeFilterCount}</span>
-          )}
-        </button>
-        <div className="closet-cols-wrap">
-          <button className="closet-cols-btn" onClick={() => setShowColsMenu(p => !p)}>
-            ⊞ ▾
-          </button>
-          {showColsMenu && (
-            <>
-              <div className="closet-cols-backdrop" onClick={() => setShowColsMenu(false)} />
-              <div className="closet-cols-menu">
-                {[
-                  { label: '2 colunas', value: 2 },
-                  { label: '3 colunas', value: 3 },
-                  { label: '4 colunas', value: 4 },
-                  { label: '5 colunas', value: 5 },
-                  { label: 'Lista', value: 1 },
-                ].map(opt => (
-                  <button
-                    key={opt.value}
-                    className={`closet-cols-option ${cols === opt.value ? 'active' : ''}`}
-                    onClick={() => { setCols(opt.value); localStorage.setItem('mia-closet-cols', String(opt.value)); setShowColsMenu(false) }}
-                  >
-                    <span>{opt.label}</span>
-                    {cols === opt.value && <span>✓</span>}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      </div>
 
-      {/* ─── CHIPS DE GRUPO ─── */}
-      <div className="closet-filter-chips">
-        {(Object.keys(CATEGORY_GROUPS) as GroupKey[]).map(group => (
-          <button
-            key={group}
-            className={`closet-chip ${activeGroup === group ? 'active' : ''}`}
-            onClick={() => setActiveGroup(group)}
-          >
-            {group}
-          </button>
-        ))}
+        <div className="category-chips">
+          {categoryChips.map(chip => (
+            <button
+              key={chip.key}
+              type="button"
+              className={`cat-chip ${activeCategoryChip === chip.key ? 'active' : ''}`}
+              onClick={() => setActiveCategoryChip(chip.key)}
+            >
+              {chip.label} ({chip.count})
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* ─── BANNER UPGRADE ─── */}
@@ -575,7 +646,7 @@ export default function ClosetPage() {
             <div className="closet-grid-placeholder">Carregando...</div>
           ) : filteredPieces.length === 0 ? (
             <div className="closet-grid-placeholder">
-              {search || activeGroup !== 'Todos' || activeFilterCount > 0
+              {search || activeCategoryChip !== 'all' || activeGroup !== 'Todos' || activeFilterCount > 0
                 ? 'Nenhuma peça encontrada.'
                 : 'Seu closet está vazio.\nToque em + para adicionar.'}
             </div>

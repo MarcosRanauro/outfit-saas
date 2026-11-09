@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { after } from 'next/server'
 import { sendWelcomeOnce } from '@/lib/welcome-email'
 import BottomNav from '@/components/layout/BottomNav'
+import AppNavbar from '@/components/layout/AppNavbar'
 import '../dashboard.css'
 
 export default async function DashboardLayout({
@@ -33,6 +34,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="dashboard-wrap">
+      <AppNavbar />
       <main className="dashboard-content">
         {children}
       </main>

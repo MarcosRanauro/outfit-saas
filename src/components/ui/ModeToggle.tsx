@@ -27,18 +27,22 @@ export default function ModeToggle({ compact = false }: ModeToggleProps) {
   if (!mounted) return null
 
   return (
-    <div className="mode-toggle">
+    <div className="mode-toggle" role="group" aria-label="Alternar Tema Visual">
       <button
-        className={`toggle-option${mode === 'claire' ? ' active' : ''}`}
+        type="button"
+        id="opt-claire"
+        className={`toggle-opt toggle-option${mode === 'claire' ? ' active' : ''}`}
         onClick={() => handleChange('claire')}
       >
-        {compact ? 'Claire' : 'Édition Claire'}
+        <span>{compact ? 'Claire' : 'Édition Claire'}</span>
       </button>
       <button
-        className={`toggle-option${mode === 'dark' ? ' active' : ''}`}
+        type="button"
+        id="opt-dark"
+        className={`toggle-opt toggle-option${mode === 'dark' ? ' active' : ''}`}
         onClick={() => handleChange('dark')}
       >
-        {compact ? 'Dark' : 'Dark Edition'}
+        <span>{compact ? 'Dark' : 'Dark Edition'}</span>
       </button>
     </div>
   )

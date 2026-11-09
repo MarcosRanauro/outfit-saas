@@ -6,11 +6,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 20px 16px;
+  padding: 16px 24px;
   border-bottom: 0.5px solid var(--ec-border);
   background: var(--ec-bg-primary);
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 10;
 }
 
