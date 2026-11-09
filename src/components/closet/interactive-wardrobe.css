@@ -216,16 +216,11 @@ html.mode-dark .wardrobe-section.focused .hotspot-badge {
   }
 }
 
-/* 1. Prateleira Superior: Acessórios & Bolsas */
+/* 1. Prateleira de Acessórios & Bolsas */
 .accessories-shelf {
-  min-height: 140px;
-}
-
-.accessories-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 14px;
-  align-items: end;
+  min-height: 165px;
+  background: linear-gradient(to bottom, var(--ec-bg-secondary) 0%, var(--ec-bg-primary) 100%);
+  position: relative;
 }
 
 .garment-item {
@@ -354,7 +349,12 @@ html.mode-dark .wardrobe-section.focused .hotspot-badge {
   height: 100%;
 }
 
-/* 3. Gaveteiro / Nichos de Calças & Saias */
+/* 3. Calceiro Tátil / Nichos de Calças & Saias */
+.calceiro-section {
+  min-height: 230px;
+  background: linear-gradient(to bottom, var(--ec-bg-secondary) 0%, var(--ec-bg-primary) 100%);
+}
+
 .drawers-section {
   min-height: 150px;
 }
@@ -386,9 +386,10 @@ html.mode-dark .wardrobe-section.focused .hotspot-badge {
 
 /* 4. Sapateira Inferior Iluminada */
 .shoe-rack-section {
-  min-height: 140px;
+  min-height: 165px;
   background: linear-gradient(to top, var(--ec-bg-secondary) 0%, var(--ec-bg-primary) 100%);
-  box-shadow: inset 0 -4px 16px var(--wb-led-glow);
+  box-shadow: inset 0 -4px 18px var(--wb-led-glow);
+  position: relative;
 }
 
 .shoes-deck {
@@ -396,6 +397,85 @@ html.mode-dark .wardrobe-section.focused .hotspot-badge {
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
   gap: 16px;
   align-items: end;
+}
+
+/* ─── DECK / VITRINE DE BOUTIQUE (Sapatos & Acessórios) ─── */
+.boutique-deck {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 10px 4px 6px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ec-border) transparent;
+}
+
+.shelf-ledge-bar {
+  width: 100%;
+  height: 5px;
+  background: linear-gradient(90deg, #8E8478 0%, var(--wb-brass-rail) 30%, #F5E8D0 50%, var(--wb-brass-rail) 70%, #8E8478 100%);
+  border-radius: 3px;
+  margin-top: 6px;
+  box-shadow: 0 4px 16px var(--wb-led-glow, rgba(193, 127, 90, 0.3));
+}
+
+.glass-shelf-ledge {
+  width: 100%;
+  height: 5px;
+  background: linear-gradient(90deg, rgba(200, 171, 126, 0.4) 0%, var(--wb-brass-rail) 50%, rgba(200, 171, 126, 0.4) 100%);
+  border-radius: 3px;
+  margin-top: 6px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.boutique-shelf-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 115px;
+  cursor: pointer;
+  padding: 8px 6px;
+  border-radius: 8px;
+  position: relative;
+  background: transparent;
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1), background-color 150ms ease;
+}
+
+.boutique-shelf-item:hover {
+  background-color: var(--ec-bg-secondary);
+  transform: translateY(-5px);
+}
+
+.boutique-item-visual {
+  width: 78px;
+  height: 78px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 6px;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.08));
+  transition: filter 200ms ease;
+}
+
+.boutique-shelf-item:hover .boutique-item-visual {
+  filter: drop-shadow(0 8px 14px rgba(193, 127, 90, 0.25));
+}
+
+html.mode-dark .boutique-shelf-item:hover .boutique-item-visual {
+  filter: drop-shadow(0 8px 14px rgba(184, 151, 74, 0.35));
+}
+
+.boutique-item-visual svg {
+  width: 100%;
+  height: 100%;
+}
+
+.boutique-item-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 /* Anchor Mini Badge */

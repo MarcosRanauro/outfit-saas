@@ -292,7 +292,7 @@ export default function InteractiveWardrobe({
 
   const compartmentNames: Record<CompartmentKey, string> = {
     cabideiro: 'Cabideiro Principal de Blusas, Camisas & Casacos',
-    gaveteiro: 'Gaveteiro Canelado de Calças, Bermudas & Saias',
+    gaveteiro: 'Calceiro com Varão de Calças, Bermudas & Saias',
     sapateira: 'Sapateira Rasante de Calçados',
     acessorios: 'Prateleira de Acessórios & Bolsas',
   }
@@ -422,10 +422,10 @@ export default function InteractiveWardrobe({
           </div>
         </div>
 
-        {/* 2. Gaveteiro / Nichos de Calças, Bermudas & Saias */}
+        {/* 2. Calceiro Tátil — Calças, Shorts & Saias (Modelo idêntico ao cabideiro principal) */}
         <div
           id="shelf-gaveteiro"
-          className={`wardrobe-section drawers-section ${activeCompartment === 'gaveteiro' ? 'focused' : ''}`}
+          className={`wardrobe-section hanging-rail-section calceiro-section ${activeCompartment === 'gaveteiro' ? 'focused' : ''}`}
           onClick={() => setActiveCompartment('gaveteiro')}
         >
           <span className="hotspot-badge">
@@ -439,17 +439,19 @@ export default function InteractiveWardrobe({
               <path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65" />
               <path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65" />
             </svg>
-            <span>Gaveteiro Canelado — Calças, Shorts & Saias</span>
+            <span>Calceiro com Varão — Calças, Shorts & Saias</span>
           </div>
 
-          <div className="drawers-grid">
+          <div className="metal-rail-bar" />
+
+          <div className="hangers-rack">
             {groupedPieces.gaveteiro.length === 0 ? (
-              <span className="wardrobe-empty-hint">Nenhuma calça, short ou saia no gaveteiro.</span>
+              <span className="wardrobe-empty-hint">Nenhuma calça, short ou saia pendurada no calceiro.</span>
             ) : (
               groupedPieces.gaveteiro.map(p => (
                 <div
                   key={p.id}
-                  className="folded-piece"
+                  className="hanger-piece"
                   onClick={e => {
                     e.stopPropagation()
                     handlePieceClick(p)
@@ -458,10 +460,13 @@ export default function InteractiveWardrobe({
                   {activeAnchorId === p.id && (
                     <span className="anchor-mini-badge" title="Peça Âncora">📌</span>
                   )}
-                  <div className="garment-icon-svg">
+                  <div className="hanger-hook" />
+                  <div className="hanger-silhouette">
                     {renderPieceThumbnail(p)}
                   </div>
-                  <span className="garment-item-name">{p.name}</span>
+                  <span className="garment-item-name" style={{ marginTop: 4 }}>
+                    {p.name}
+                  </span>
                   <span className="garment-item-brand">{p.brand || p.color || 'Peça'}</span>
                 </div>
               ))
@@ -469,7 +474,7 @@ export default function InteractiveWardrobe({
           </div>
         </div>
 
-        {/* 3. Sapateira Inferior Iluminada */}
+        {/* 3. Sapateira Inferior — Deck Rasante com Iluminação LED */}
         <div
           id="shelf-sapateira"
           className={`wardrobe-section shoe-rack-section ${activeCompartment === 'sapateira' ? 'focused' : ''}`}
@@ -488,14 +493,14 @@ export default function InteractiveWardrobe({
             <span>Sapateira com Luz Rasante — Calçados</span>
           </div>
 
-          <div className="shoes-deck">
+          <div className="boutique-deck">
             {groupedPieces.sapateira.length === 0 ? (
               <span className="wardrobe-empty-hint">Nenhum calçado cadastrado na sapateira.</span>
             ) : (
               groupedPieces.sapateira.map(p => (
                 <div
                   key={p.id}
-                  className="garment-item"
+                  className="boutique-shelf-item"
                   onClick={e => {
                     e.stopPropagation()
                     handlePieceClick(p)
@@ -504,7 +509,7 @@ export default function InteractiveWardrobe({
                   {activeAnchorId === p.id && (
                     <span className="anchor-mini-badge" title="Peça Âncora">📌</span>
                   )}
-                  <div className="garment-icon-svg">
+                  <div className="boutique-item-visual">
                     {renderPieceThumbnail(p)}
                   </div>
                   <span className="garment-item-name">{p.name}</span>
@@ -513,9 +518,10 @@ export default function InteractiveWardrobe({
               ))
             )}
           </div>
+          <div className="shelf-ledge-bar" />
         </div>
 
-        {/* 4. Prateleira de Acessórios & Bolsas (Por Último) */}
+        {/* 4. Prateleira Vitrine — Bolsas & Acessórios */}
         <div
           id="shelf-accessories"
           className={`wardrobe-section accessories-shelf ${activeCompartment === 'acessorios' ? 'focused' : ''}`}
@@ -530,17 +536,17 @@ export default function InteractiveWardrobe({
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--ec-accent)" strokeWidth="2">
               <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
             </svg>
-            <span>Prateleira de Acessórios & Bolsas</span>
+            <span>Prateleira Expositora — Bolsas & Acessórios</span>
           </div>
 
-          <div className="accessories-grid">
+          <div className="boutique-deck">
             {groupedPieces.acessorios.length === 0 ? (
               <span className="wardrobe-empty-hint">Nenhum acessório ou bolsa cadastrado.</span>
             ) : (
               groupedPieces.acessorios.map(p => (
                 <div
                   key={p.id}
-                  className="garment-item"
+                  className="boutique-shelf-item"
                   onClick={e => {
                     e.stopPropagation()
                     handlePieceClick(p)
@@ -549,7 +555,7 @@ export default function InteractiveWardrobe({
                   {activeAnchorId === p.id && (
                     <span className="anchor-mini-badge" title="Peça Âncora">📌</span>
                   )}
-                  <div className="garment-icon-svg">
+                  <div className="boutique-item-visual">
                     {renderPieceThumbnail(p)}
                   </div>
                   <span className="garment-item-name">{p.name}</span>
@@ -558,6 +564,7 @@ export default function InteractiveWardrobe({
               ))
             )}
           </div>
+          <div className="glass-shelf-ledge" />
         </div>
 
       </div>
