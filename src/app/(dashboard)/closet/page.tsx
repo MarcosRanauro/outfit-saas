@@ -15,6 +15,9 @@ import InteractiveWardrobe from '@/components/closet/InteractiveWardrobe'
 import type { ClosetViewMode } from '@/components/closet/wardrobe.types'
 import ModeToggle from '@/components/ui/ModeToggle'
 import TrialExpiredModal from '@/components/ui/TrialExpiredModal'
+import PieceLimitModal from '@/components/closet/PieceLimitModal'
+import StudioCreditsModal from '@/components/closet/StudioCreditsModal'
+import { evaluateGhostCredits } from '@/lib/ghost-credits'
 import { LayoutTemplate, Grid, SlidersHorizontal, RefreshCw, Search } from 'lucide-react'
 import '../../closet.css'
 import '../../perfil.css'
@@ -77,6 +80,9 @@ type ClosetProfile = {
   style: string | null
   closet_tour_completed: boolean | null
   trial_ends_at: string | null
+  usage_studio_generations?: number | null
+  usage_reset_at?: string | null
+  extra_ghost_credits?: number | null
 }
 
 function isProfileBodyIncomplete(profile: ClosetProfile): boolean {
@@ -126,6 +132,8 @@ export default function ClosetPage() {
   // Wishlist
   const [wishlistGenerating, setWishlistGenerating] = useState(false)
   const [showTrialExpired, setShowTrialExpired] = useState(false)
+  const [showPieceLimitModal, setShowPieceLimitModal] = useState(false)
+  const [showStudioCreditsModal, setShowStudioCreditsModal] = useState(false)
   const [wishlistSuggestions, setWishlistSuggestions] = useState<WishlistSuggestion[]>([])
   const [wishlistModalOpen, setWishlistModalOpen] = useState(false)
   const [savedSuggestionIds, setSavedSuggestionIds] = useState<number[]>([])
@@ -178,7 +186,7 @@ export default function ClosetPage() {
           sort_order
         )
       `).eq('user_id', user.id).order('created_at', { ascending: false }),
-      supabase.from('profiles').select('plan, name, height, weight, style, closet_tour_completed, trial_ends_at').eq('id', user.id).single(),
+      supabase.from('profiles').select('plan, name, height, weight, style, closet_tour_completed, trial_ends_at, usage_studio_generations, usage_reset_at, extra_ghost_credits').eq('id', user.id).single(),
     ])
 
     if (piecesResult.data) setPieces(piecesResult.data)
@@ -351,6 +359,7 @@ export default function ClosetPage() {
     if (!name || !category) return
     setSaving(true)
     if (userPlan === 'expired') { setShowUpgradeBanner(true); setSaving(false); resetModal(); return }
+    if (userPlan !== 'pro' && pieces.length >= 20) { setShowPieceLimitModal(true); setSaving(false); resetModal(); return }
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
@@ -575,6 +584,57 @@ export default function ClosetPage() {
         </div>
       </section>
 
+      {/* ─── 02.1 CLOSET BALANCE STRIP (Saldo sutil de peças e fotos) ─── */}
+      {(() => {
+        const ghostStatus = evaluateGhostCredits(profile)
+        const isPro = userPlan === 'pro'
+        return (
+          <div className="closet-balance-strip">
+            {/* Saldo de Peças */}
+            <button
+              type="button"
+              className={`closet-balance-item ${!isPro && pieces.length >= 20 ? 'limit' : ''}`}
+              onClick={() => {
+                if (!isPro && pieces.length >= 20) {
+                  setShowPieceLimitModal(true)
+                }
+              }}
+              title={!isPro ? `${pieces.length} de 20 peças do Trial cadastradas` : 'Peças ilimitadas (Plano Pro)'}
+            >
+              <span className="balance-dot piece-dot" />
+              <span className="balance-label">Peças:</span>
+              <span className="balance-val">
+                {pieces.length}{!isPro ? '/20' : ' (Ilimitadas)'}
+              </span>
+              {!isPro && pieces.length >= 20 && (
+                <span className="balance-tag-action">Upgrade</span>
+              )}
+            </button>
+
+            <span className="closet-balance-divider" />
+
+            {/* Saldo de Fotos de Estúdio (Manequim Fantasma) */}
+            <button
+              type="button"
+              className={`closet-balance-item ${ghostStatus.totalBalance === 0 ? 'empty' : ''}`}
+              onClick={() => setShowStudioCreditsModal(true)}
+              title="Clique para ver ou comprar fotos de estúdio adicionais"
+            >
+              <span className="balance-dot studio-dot" />
+              <span className="balance-label">Fotos de Estúdio:</span>
+              <span className="balance-val">
+                {ghostStatus.totalBalance} {ghostStatus.totalBalance === 1 ? 'disponível' : 'disponíveis'}
+                {isPro ? ' (mês)' : ' (trial)'}
+              </span>
+              {ghostStatus.extraCredits > 0 && (
+                <span className="balance-extra-tag">+{ghostStatus.extraCredits} extras</span>
+              )}
+              <span className="balance-tag-action">+ Créditos</span>
+            </button>
+          </div>
+        )
+      })()}
+
       {/* ─── 03. SEARCH & CATEGORY CHIPS FILTER BAR (Fiel ao prototipo.html) ─── */}
       <div className="filter-chips-bar" id="category-filter-bar">
         <div className="search-input-box">
@@ -679,6 +739,7 @@ export default function ClosetPage() {
         className="closet-fab"
         onClick={() => {
           if (userPlan === 'expired') { setShowUpgradeBanner(true); return }
+          if (userPlan !== 'pro' && pieces.length >= 20) { setShowPieceLimitModal(true); return }
           router.push('/closet/nova-peca')
         }}
       >
@@ -826,6 +887,18 @@ export default function ClosetPage() {
         setFilterBrand={setFilterBrand}
         filterFit={filterFit}
         setFilterFit={setFilterFit}
+      />
+
+      <PieceLimitModal
+        isOpen={showPieceLimitModal}
+        onClose={() => setShowPieceLimitModal(false)}
+        currentCount={pieces.length}
+      />
+
+      <StudioCreditsModal
+        isOpen={showStudioCreditsModal}
+        onClose={() => setShowStudioCreditsModal(false)}
+        isPro={userPlan === 'pro'}
       />
     </>
   )

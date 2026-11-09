@@ -1,6 +1,7 @@
 import Stripe from 'stripe'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { ADDON_PACKAGES } from '@/config/plan-limits'
 
 export async function POST(request: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -18,13 +19,17 @@ export async function POST(request: Request) {
       )
     }
 
+    const body = await request.json().catch(() => ({}))
+    const { package_id } = body || {}
+
     const { data: profile } = await supabase
       .from('profiles')
       .select('name, stripe_customer_id, plan')
       .eq('id', user.id)
       .single()
 
-    if (profile?.plan === 'pro') {
+    // Se não for compra de pacote avulso e já for Pro, bloqueia nova assinatura
+    if (!package_id && profile?.plan === 'pro') {
       return NextResponse.json(
         { error: 'Você já é Pro!' },
         { status: 400 }
@@ -48,6 +53,44 @@ export async function POST(request: Request) {
         .eq('id', user.id)
     }
 
+    // Fluxo 1: Compra de Pacote Avulso de Fotos de Estúdio
+    if (package_id) {
+      const pkg = ADDON_PACKAGES.find(p => p.id === package_id)
+      if (!pkg) {
+        return NextResponse.json({ error: 'Pacote de créditos inválido' }, { status: 400 })
+      }
+
+      const session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: 'brl',
+              product_data: {
+                name: `Pacote Manequim Fantasma (${pkg.label})`,
+                description: `${pkg.photos} fotos de estúdio com fundo branco (créditos avulsos sem validade)`,
+              },
+              unit_amount: Math.round(pkg.price * 100),
+            },
+            quantity: 1,
+          },
+        ],
+        mode: 'payment',
+        success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/closet?addon=success&photos=${pkg.photos}`,
+        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/closet?addon=cancelled`,
+        locale: 'pt-BR',
+        metadata: {
+          supabase_user_id: user.id,
+          addon_package_id: pkg.id,
+          addon_photos: String(pkg.photos),
+        },
+      })
+
+      return NextResponse.json({ url: session.url })
+    }
+
+    // Fluxo 2: Assinatura do Plano Pro
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],

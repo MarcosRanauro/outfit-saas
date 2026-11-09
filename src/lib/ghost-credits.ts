@@ -5,7 +5,7 @@ export type GhostCreditProfile = {
   id?: string
   plan: string | null
   trial_ends_at?: string | null
-  usage_studio_generations: number | null
+  usage_studio_generations?: number | null
   usage_reset_at?: string | null
   extra_ghost_credits?: number | null
 }

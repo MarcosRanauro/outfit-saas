@@ -33,6 +33,29 @@ export async function POST(request: Request) {
   try {
     switch (event.type) {
 
+      // Compra avulsa de fotos finalizada com sucesso
+      case 'checkout.session.completed': {
+        const session = event.data.object as Stripe.Checkout.Session
+        if (session.mode === 'payment' && session.metadata?.addon_photos && session.metadata?.supabase_user_id) {
+          const userId = session.metadata.supabase_user_id
+          const photosToAdd = parseInt(session.metadata.addon_photos, 10) || 0
+          if (photosToAdd > 0) {
+            const { data: p } = await supabase
+              .from('profiles')
+              .select('extra_ghost_credits')
+              .eq('id', userId)
+              .single()
+
+            const current = p?.extra_ghost_credits ?? 0
+            await supabase
+              .from('profiles')
+              .update({ extra_ghost_credits: current + photosToAdd })
+              .eq('id', userId)
+          }
+        }
+        break
+      }
+
       // Assinatura criada ou renovada com sucesso
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice
