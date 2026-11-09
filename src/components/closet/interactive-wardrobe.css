@@ -1,0 +1,965 @@
+/* -------------------------------------------------------------
+   INTERACTIVE WARDROBE — ATELIER / PROTOTYPE DESIGN
+   Replicating exactly prototipo.html
+-------------------------------------------------------------- */
+
+:root {
+  /* Wardrobe Architectural Materials (Claire) */
+  --wb-wood-frame: #E8DFD3;
+  --wb-wood-inner: #F5EFEB;
+  --wb-wood-shelf: #DECFC0;
+  --wb-brass-rail: #C8AB7E;
+  --wb-led-glow: rgba(193, 127, 90, 0.15);
+  --wb-glass-drawer: rgba(255, 255, 255, 0.65);
+}
+
+/* Dark Edition */
+html.mode-dark {
+  /* Wardrobe Architectural Materials (Dark) */
+  --wb-wood-frame: #181818;
+  --wb-wood-inner: #0E0E0E;
+  --wb-wood-shelf: #222222;
+  --wb-brass-rail: #B8974A;
+  --wb-led-glow: rgba(184, 151, 74, 0.22);
+  --wb-glass-drawer: rgba(28, 28, 28, 0.7);
+}
+
+/* -------------------------------------------------------------
+   WARDROBE CONTAINER & NARRATIVE HEADER
+-------------------------------------------------------------- */
+.wardrobe-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 20px 48px;
+  max-width: 1240px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.wardrobe-narrative-header {
+  text-align: center;
+  margin-bottom: 24px;
+  max-width: 680px;
+}
+
+.wardrobe-narrative-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ec-accent);
+  margin-bottom: 4px;
+  font-family: var(--font-inter), sans-serif;
+}
+
+.wardrobe-narrative-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--ec-text-primary);
+  line-height: 1.15;
+  margin-bottom: 4px;
+}
+
+html.mode-dark .wardrobe-narrative-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 20px;
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.wardrobe-narrative-sub {
+  font-size: 14px;
+  color: var(--ec-text-secondary);
+  font-family: var(--font-inter), sans-serif;
+}
+
+/* -------------------------------------------------------------
+   THE SCANDINAVIAN LUXURY CABINET FRAME
+-------------------------------------------------------------- */
+.wardrobe-cabinet {
+  width: 100%;
+  background: var(--wb-wood-inner);
+  border: 1px solid var(--ec-border);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(193, 127, 90, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  transition: all 350ms ease;
+}
+
+html.mode-dark .wardrobe-cabinet {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+@media (max-width: 768px) {
+  .wardrobe-cabinet {
+    padding: 12px;
+  }
+}
+
+/* Common Section Container */
+.wardrobe-section {
+  position: relative;
+  background: var(--ec-bg-primary);
+  border: 0.5px solid var(--ec-border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  transition: all 250ms ease;
+  cursor: pointer;
+  text-align: left;
+}
+
+.wardrobe-section:hover,
+.wardrobe-section.focused {
+  border-color: var(--ec-accent);
+  box-shadow: 0 0 0 1px var(--ec-accent), 0 8px 24px var(--wb-led-glow);
+}
+
+/* Floating Hotspot Badge */
+.hotspot-badge {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background-color: var(--ec-bg-secondary);
+  border: 0.5px solid var(--ec-border);
+  color: var(--ec-accent);
+  z-index: 5;
+  transition: all 150ms ease;
+  font-family: var(--font-inter), sans-serif;
+}
+
+.wardrobe-section:hover .hotspot-badge,
+.wardrobe-section.focused .hotspot-badge {
+  background-color: var(--ec-accent);
+  color: #FAF8F5;
+  border-color: var(--ec-accent);
+}
+
+html.mode-dark .wardrobe-section.focused .hotspot-badge {
+  color: #080808;
+}
+
+.hotspot-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+  animation: pulseGlow 1.8s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.6); opacity: 0.5; }
+}
+
+.section-meta-title {
+  font-family: var(--font-inter), sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ec-text-muted);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 1. Prateleira Superior: Acessórios & Bolsas */
+.accessories-shelf {
+  min-height: 140px;
+}
+
+.accessories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 14px;
+  align-items: end;
+}
+
+.garment-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 10px;
+  border-radius: 6px;
+  border: 0.5px solid transparent;
+  transition: all 180ms ease;
+  cursor: pointer;
+  position: relative;
+  background: transparent;
+}
+
+.garment-item:hover {
+  background-color: var(--ec-bg-secondary);
+  border-color: var(--ec-border);
+  transform: translateY(-2px);
+}
+
+.garment-icon-svg {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.garment-icon-svg svg {
+  width: 100%;
+  height: 100%;
+}
+
+.garment-item-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.garment-item-name {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ec-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+  font-family: var(--font-inter), sans-serif;
+}
+
+.garment-item-brand {
+  font-size: 10px;
+  color: var(--ec-text-muted);
+  font-family: var(--font-inter), sans-serif;
+}
+
+/* 2. Cabideiro / Varão de Blusas, Camisas & Casacos */
+.hanging-rail-section {
+  min-height: 230px;
+  background: linear-gradient(to bottom, var(--ec-bg-secondary) 0%, var(--ec-bg-primary) 100%);
+}
+
+.metal-rail-bar {
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(90deg, #8E8478 0%, var(--wb-brass-rail) 30%, #F5E8D0 50%, var(--wb-brass-rail) 70%, #8E8478 100%);
+  border-radius: 3px;
+  margin-bottom: 8px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.12);
+}
+
+.hangers-rack {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 8px 4px 16px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ec-border) transparent;
+}
+
+.hanger-piece {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 120px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1), background-color 150ms ease;
+  position: relative;
+  background: transparent;
+}
+
+.hanger-piece:hover {
+  background-color: var(--ec-bg-secondary);
+  transform: translateY(-4px) rotate(1.2deg);
+}
+
+.hanger-hook {
+  width: 24px;
+  height: 18px;
+  border-top: 2px solid var(--wb-brass-rail);
+  border-left: 2px solid var(--wb-brass-rail);
+  border-top-left-radius: 12px;
+  margin-bottom: -2px;
+}
+
+.hanger-silhouette {
+  width: 88px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.hanger-silhouette svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* 3. Gaveteiro / Nichos de Calças & Saias */
+.drawers-section {
+  min-height: 150px;
+}
+
+.drawers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 12px;
+}
+
+.folded-piece {
+  background-color: var(--wb-glass-drawer);
+  border: 0.5px solid var(--ec-border);
+  border-radius: 6px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 180ms ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.folded-piece:hover {
+  border-color: var(--ec-accent);
+  background-color: var(--ec-bg-secondary);
+  transform: translateY(-2px);
+}
+
+/* 4. Sapateira Inferior Iluminada */
+.shoe-rack-section {
+  min-height: 140px;
+  background: linear-gradient(to top, var(--ec-bg-secondary) 0%, var(--ec-bg-primary) 100%);
+  box-shadow: inset 0 -4px 16px var(--wb-led-glow);
+}
+
+.shoes-deck {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 16px;
+  align-items: end;
+}
+
+/* Anchor Mini Badge */
+.anchor-mini-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--ec-accent);
+  color: #FAF8F5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  z-index: 2;
+}
+
+html.mode-dark .anchor-mini-badge {
+  color: #080808;
+}
+
+/* Empty notice */
+.wardrobe-empty-hint {
+  font-size: 12px;
+  color: var(--ec-text-muted);
+  font-style: italic;
+  font-family: var(--font-inter), sans-serif;
+  padding: 12px 6px;
+}
+
+/* -------------------------------------------------------------
+   DYNAMIC QUICK-INSPECTION TRAY (COMPARTMENT FOCUS PANEL)
+-------------------------------------------------------------- */
+.compartment-focus-panel {
+  width: 100%;
+  margin-top: 24px;
+  background-color: var(--ec-bg-secondary);
+  border: 0.5px solid var(--ec-border);
+  border-radius: 10px;
+  padding: 20px 24px;
+  transition: all 350ms ease;
+}
+
+.cfp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cfp-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ec-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+html.mode-dark .cfp-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cfp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px;
+}
+
+.cfp-card {
+  background-color: var(--ec-bg-primary);
+  border: 0.5px solid var(--ec-border);
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  cursor: pointer;
+  transition: all 150ms ease;
+  text-align: left;
+}
+
+.cfp-card:hover {
+  border-color: var(--ec-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(193, 127, 90, 0.08);
+}
+
+.cfp-thumb {
+  width: 52px;
+  height: 52px;
+  border-radius: 6px;
+  background-color: var(--ec-bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.cfp-thumb svg {
+  width: 80%;
+  height: 80%;
+}
+
+.cfp-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.cfp-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cfp-cat {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ec-accent);
+  font-family: var(--font-inter), sans-serif;
+}
+
+.cfp-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ec-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-inter), sans-serif;
+}
+
+.cfp-desc {
+  font-size: 11px;
+  color: var(--ec-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-inter), sans-serif;
+}
+
+/* -------------------------------------------------------------
+   SPLIT MODAL: DETALHE DA PEÇA (PIECE DETAIL DIALOG)
+-------------------------------------------------------------- */
+.wardrobe-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  animation: wardrobeModalFadeIn 0.2s ease-out forwards;
+}
+
+@keyframes wardrobeModalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.wardrobe-modal-overlay .piece-detail-dialog,
+.piece-detail-dialog {
+  background-color: var(--ec-bg-primary);
+  border: 0.5px solid var(--ec-border);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 960px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+  position: relative;
+  animation: wardrobeModalScaleUp 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes wardrobeModalScaleUp {
+  from { transform: scale(0.96); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .piece-detail-dialog {
+    flex-direction: column;
+    max-height: 94vh;
+  }
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--ec-bg-secondary);
+  border: 0.5px solid var(--ec-border);
+  color: var(--ec-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: all 150ms ease;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.modal-close-btn:hover {
+  background-color: var(--ec-border);
+  color: var(--ec-text-primary);
+}
+
+/* Left Side: Photo & Thumbnails (55%) */
+.pdd-gallery-side {
+  width: 55%;
+  background-color: var(--ec-bg-secondary);
+  border-right: 0.5px solid var(--ec-border);
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+}
+
+@media (max-width: 768px) {
+  .pdd-gallery-side {
+    width: 100%;
+    border-right: none;
+    border-bottom: 0.5px solid var(--ec-border);
+  }
+}
+
+.pdd-main-photo-box {
+  width: 100%;
+  aspect-ratio: 1;
+  background-color: var(--ec-white);
+  border-radius: 10px;
+  border: 0.5px solid var(--ec-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 16px;
+  padding: 24px;
+}
+
+.pdd-main-photo-box svg {
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+}
+
+.pdd-main-photo-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.pdd-thumbs-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 4px 2px;
+}
+
+.pdd-thumb-card {
+  width: 64px;
+  height: 64px;
+  border-radius: 6px;
+  background-color: var(--ec-white);
+  border: 1.5px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 150ms ease;
+  padding: 6px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.pdd-thumb-card.active {
+  border-color: var(--ec-accent);
+}
+
+.pdd-thumb-card.is-cover::after {
+  content: 'Capa';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--ec-accent);
+  color: #FAF8F5;
+  font-size: 9px;
+  font-weight: 600;
+  text-align: center;
+  padding: 1px 0;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.pdd-thumb-card.is-studio::before {
+  content: '✦';
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  color: var(--ec-accent);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.pdd-main-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background-color: var(--ec-bg-secondary);
+  border: 0.5px solid var(--ec-border);
+  color: var(--ec-accent);
+  backdrop-filter: blur(4px);
+  z-index: 2;
+}
+
+.pdd-thumb-studio-cta {
+  border: 1.5px dashed var(--ec-border);
+  background-color: var(--ec-bg-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.pdd-thumb-studio-cta:hover {
+  border-color: var(--ec-accent);
+  background-color: var(--ec-bg-secondary);
+}
+
+/* Right Side: Information & Action CTA (45%) */
+.pdd-info-side {
+  width: 45%;
+  padding: 36px 32px;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .pdd-info-side {
+    width: 100%;
+    padding: 24px 20px;
+  }
+}
+
+.pdd-cat-badge {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ec-accent);
+  margin-bottom: 6px;
+  font-family: var(--font-inter), sans-serif;
+}
+
+.pdd-piece-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--ec-text-primary);
+  line-height: 1.15;
+  margin-bottom: 18px;
+}
+
+html.mode-dark .pdd-piece-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 20px;
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.pdd-specs-table {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.pdd-spec-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 0.5px solid var(--ec-border);
+  font-size: 13px;
+  font-family: var(--font-inter), sans-serif;
+}
+
+.pdd-spec-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ec-text-muted);
+}
+
+.pdd-spec-val {
+  font-weight: 500;
+  color: var(--ec-text-primary);
+}
+
+.pdd-tags-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.pdd-tag {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background-color: var(--ec-bg-secondary);
+  border: 0.5px solid var(--ec-border);
+  color: var(--ec-text-secondary);
+  font-family: var(--font-inter), sans-serif;
+}
+
+.pdd-desc-box {
+  margin-bottom: 24px;
+}
+
+.pdd-desc-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ec-text-muted);
+  margin-bottom: 6px;
+  display: block;
+  font-family: var(--font-inter), sans-serif;
+}
+
+.pdd-desc-text {
+  font-size: 13px;
+  color: var(--ec-text-secondary);
+  line-height: 1.6;
+  font-family: var(--font-inter), sans-serif;
+}
+
+.pdd-action-cta-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.btn-anchor-toggle {
+  width: 100%;
+  padding: 12px;
+  border-radius: 999px;
+  background-color: var(--ec-accent);
+  color: #FAF8F5;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 150ms ease;
+  font-family: var(--font-inter), sans-serif;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-anchor-toggle.active {
+  background-color: var(--ec-bg-secondary);
+  border: 0.5px solid var(--ec-accent);
+  color: var(--ec-accent);
+}
+
+html.mode-dark .btn-anchor-toggle {
+  color: #080808;
+}
+
+html.mode-dark .btn-anchor-toggle.active {
+  color: var(--ec-accent);
+}
+
+.pdd-sub-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-sub-action {
+  flex: 1;
+  padding: 10px;
+  border-radius: 999px;
+  background-color: transparent;
+  border: 0.5px solid var(--ec-border);
+  color: var(--ec-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background-color 150ms ease;
+  cursor: pointer;
+  font-family: var(--font-inter), sans-serif;
+}
+
+.btn-sub-action:hover {
+  background-color: var(--ec-bg-secondary);
+  color: var(--ec-text-primary);
+}
+
+/* -------------------------------------------------------------
+   VIEW TOGGLE (HEADER)
+-------------------------------------------------------------- */
+.closet-view-toggle {
+  display: flex;
+  background: var(--ec-bg-secondary);
+  border: 1px solid var(--ec-border-light);
+  border-radius: 12px;
+  padding: 3px;
+  gap: 3px;
+}
+
+.closet-view-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 12px;
+  background: transparent;
+  border: none;
+  border-radius: 9px;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ec-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.closet-view-btn:hover {
+  color: var(--ec-text-primary);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+html.mode-dark .closet-view-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.closet-view-btn.active {
+  background: var(--ec-white);
+  color: var(--ec-accent);
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.closet-view-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+@media (max-width: 480px) {
+  .closet-view-label {
+    display: none;
+  }
+  .closet-view-btn {
+    padding: 0 9px;
+    height: 36px;
+  }
+}

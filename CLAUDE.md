@@ -38,6 +38,7 @@ src/
 │   │   ├── mia/                    # chat, extract-date
 │   │   ├── outfit/generate/        # geração de outfits
 │   │   ├── pieces/                 # analyze, describe, moderate, studio (FASHN), ghost-mannequin (Photoroom)
+│   │   ├── storage/upload/         # ÚNICO caminho de upload de imagens: valida, re-encoda, modera e grava (service role)
 │   │   ├── tryon/                  # FASHN try-on + status (ownership)
 │   │   ├── wishlist/generate/
 │   │   ├── stripe/                 # checkout, portal, webhook
@@ -53,6 +54,7 @@ src/
 │   ├── rate-limit.ts, plan-limits.ts, pricing.ts   # limites por plano; preço do Pro em `pricing.ts`
 │   ├── api-schemas.ts, parse-request-body.ts       # Zod nos bodies das rotas
 │   ├── email.ts, email-templates.ts, trial-reminder.ts   # e-mails transacionais (Resend)
+│   ├── image-upload.ts, storage-url.ts            # validação/re-encode de upload; URL só da própria pasta
 │   └── moderation-server.ts, image.ts, piece-photos.ts
 ├── types/database.ts               # gerado pelo Supabase — não editar à mão
 ├── types/app.ts                    # tipos manuais (Plan, Profile, Piece, PiecePhoto…)
@@ -68,7 +70,7 @@ src/
 - `wishlist_items` — id, user_id, name, category, color, reason, priority (`high` | `medium` | `low`), purchased, created_at
 - `piece_photos` — múltiplas fotos por peça (is_cover, is_studio); `pieces.photo_url` fica em sincronia com a capa
 - `tryon_predictions` — id, user_id, prediction_id (unique), piece_id, status, created_at (valida ownership no `/api/tryon/status`). **Migration 0001 ainda não aplicada em produção — tabela não existe no banco**
-- Migrations em `supabase/migrations/` (0001–0005) são aplicadas **à mão via SQL**; o histórico do Supabase está dessincronizado. `supabase/schema.sql` é o dump de referência
+- Migrations em `supabase/migrations/` (0001–0007) são aplicadas **à mão via SQL**; o histórico do Supabase está dessincronizado. `supabase/schema.sql` é o dump de referência
 - Funções `handle_new_user` e `set_trial_on_signup` (triggers) não são executáveis via API; `increment_usage` só por `authenticated`
 - Trigger `on_auth_user_created` cria perfil automaticamente no signup
 - **RLS ativado em todas as tabelas** — toda query precisa respeitar `auth.uid()`
@@ -90,7 +92,7 @@ src/
 
 - IA gera **5 outfits por vez**; o usuário salva os que gostar (não salva tudo)
 - Outfits salvos vão pro Lookbook, filtráveis por período e ocasião
-- Storage de fotos é **público** (URLs diretas, sem signed URLs)
+- Storage de fotos é **público** (URLs diretas, sem signed URLs), mas **só o servidor grava** (`/api/storage/upload`, após moderação); o cliente não tem policy de INSERT. Nunca usar `supabase.storage.upload` no front
 - Fotos de peças ficam organizadas por `user_id` no bucket (`pieces/`)
 - Avatares ficam em `avatars/{user_id}/avatar.jpg`
 - Modelo Anthropic é fixo em `claude-sonnet-4-6` — não trocar sem decisão

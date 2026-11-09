@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { toBase64, compressPiecePhoto, moderateImage, MODERATION_CONTENT_MESSAGE } from '@/lib/image'
+import { toBase64, compressPiecePhoto, moderateImage, uploadImage, MODERATION_CONTENT_MESSAGE } from '@/lib/image'
 import TrialExpiredModal from '@/components/ui/TrialExpiredModal'
 import StudioScannerOverlay from '@/components/studio/StudioScannerOverlay'
 import './nova-peca.css'
@@ -136,13 +136,14 @@ export default function NovaPecaPage() {
     setStudioModalOpen(false)
     setStudioLoading(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user || !photo) return
+      if (!photo) return
 
-      const filename = `studio-input/${user.id}/${Date.now()}.jpg`
-      await supabase.storage.from('pieces').upload(filename, photo, { upsert: true })
-      const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(filename)
-      const photo_urls = [urlData.publicUrl]
+      const uploaded = await uploadImage(photo, 'piece-input')
+      if (!uploaded.ok) {
+        alert(uploaded.message)
+        return
+      }
+      const photo_urls = [uploaded.url]
 
       const res = await fetch('/api/pieces/studio', {
         method: 'POST',
@@ -168,21 +169,16 @@ export default function NovaPecaPage() {
 
     setGhostLoading(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
-      const tempPath = `studio-input/${user.id}/temp_${Date.now()}.jpg`
-      const { error: uploadError } = await supabase.storage
-        .from('pieces')
-        .upload(tempPath, photo, { contentType: 'image/jpeg', upsert: true })
-      if (uploadError) return
-
-      const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(tempPath)
+      const uploaded = await uploadImage(photo, 'piece-input')
+      if (!uploaded.ok) {
+        alert(uploaded.message)
+        return
+      }
 
       const res = await fetch('/api/pieces/ghost-mannequin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photo_url: urlData.publicUrl }),
+        body: JSON.stringify({ photo_url: uploaded.url }),
       })
       const data = await res.json().catch(() => ({}))
       if (handleApiError(res, data)) return
@@ -209,21 +205,18 @@ export default function NovaPecaPage() {
       if (!user) return
 
       const uploadedUrls: { url: string; isStudio: boolean; isCover: boolean }[] = []
-      const ts = Date.now()
 
       if (photo) {
-        const path = `${user.id}/${ts}.jpg`
-        const { error: uploadError } = await supabase.storage
-          .from('pieces')
-          .upload(path, photo, { contentType: 'image/jpeg' })
-        if (!uploadError) {
-          const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(path)
-          uploadedUrls.push({
-            url: urlData.publicUrl,
-            isStudio: false,
-            isCover: selectedStudioIndex === null,
-          })
+        const uploaded = await uploadImage(photo, 'piece')
+        if (!uploaded.ok) {
+          alert(uploaded.message)
+          return
         }
+        uploadedUrls.push({
+          url: uploaded.url,
+          isStudio: false,
+          isCover: selectedStudioIndex === null,
+        })
       }
 
       for (let i = 0; i < studioImages.length; i++) {

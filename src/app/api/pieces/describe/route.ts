@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { piecesDescribeBodySchema } from '@/lib/api-schemas'
+import { isOwnedStorageUrl } from '@/lib/storage-url'
 import { parseRequestBody } from '@/lib/parse-request-body'
 import { checkRateLimit, incrementUsage, rateLimitResponse } from '@/lib/rate-limit'
 import Anthropic from '@anthropic-ai/sdk'
@@ -23,14 +24,8 @@ export async function POST(request: Request) {
 
     const limitedUrls = photo_urls.slice(0, 3)
 
-    const ALLOWED_STORAGE_HOST = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '')
     for (const url of limitedUrls) {
-      try {
-        const parsed = new URL(url)
-        if (!ALLOWED_STORAGE_HOST || parsed.hostname !== ALLOWED_STORAGE_HOST) {
-          return NextResponse.json({ error: 'URL de imagem inválida' }, { status: 400 })
-        }
-      } catch {
+      if (!isOwnedStorageUrl(url, user.id)) {
         return NextResponse.json({ error: 'URL de imagem inválida' }, { status: 400 })
       }
     }

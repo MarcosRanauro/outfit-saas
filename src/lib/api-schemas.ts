@@ -89,3 +89,5 @@ export const moderateBodySchema = z.object({
 export const deleteAccountBodySchema = z.object({
   confirm: z.literal('APAGAR'),
 })
+
+export const uploadKindSchema = z.enum(['piece', 'piece-input', 'avatar'])

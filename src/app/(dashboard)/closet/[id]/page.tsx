@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { toBase64, moderateImage, MODERATION_CONTENT_MESSAGE } from '@/lib/image'
+import { toBase64, moderateImage, uploadImage, MODERATION_CONTENT_MESSAGE } from '@/lib/image'
 import { sortPiecePhotos, type DisplayPhoto } from '@/lib/piece-photos'
 import type { Piece } from '@/types/app'
 import StudioScannerOverlay from '@/components/studio/StudioScannerOverlay'
@@ -286,13 +286,11 @@ export default function PieceDetailPage() {
       if (!user) return
 
       const compressed = await compressForUpload(file)
-      const path = `${user.id}/${Date.now()}.jpg`
-      const { error: uploadError } = await supabase.storage
-        .from('pieces')
-        .upload(path, compressed, { contentType: 'image/jpeg' })
-      if (uploadError) throw uploadError
-
-      const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(path)
+      const uploaded = await uploadImage(compressed, 'piece')
+      if (!uploaded.ok) {
+        alert(uploaded.message)
+        return
+      }
       let baseCount = piece.piece_photos?.length ?? 0
       if (baseCount === 0 && piece.photo_url) {
         const { error: migrateError } = await supabase.from('piece_photos').insert({
@@ -310,7 +308,7 @@ export default function PieceDetailPage() {
       const { error: insertError } = await supabase.from('piece_photos').insert({
         piece_id: piece.id,
         user_id: user.id,
-        url: urlData.publicUrl,
+        url: uploaded.url,
         is_cover: false,
         is_studio: false,
         sort_order: baseCount,

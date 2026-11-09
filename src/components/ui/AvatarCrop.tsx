@@ -2,8 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import Cropper from 'react-easy-crop'
-import { createClient } from '@/lib/supabase/client'
-import { toBase64, moderateImage, MODERATION_CONTENT_MESSAGE } from '@/lib/image'
+import { toBase64, moderateImage, uploadImage, MODERATION_CONTENT_MESSAGE } from '@/lib/image'
 
 type Props = {
   onSave: (url: string) => void
@@ -54,9 +53,7 @@ async function getCroppedImg(imageSrc: string, pixelCrop: CroppedArea): Promise<
   })
 }
 
-export default function AvatarCrop({ onSave, onClose, userId }: Props) {
-  const supabase = createClient()
-
+export default function AvatarCrop({ onSave, onClose }: Props) {
   const [imageSrc, setImageSrc] = useState<string | null>(null)
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
@@ -88,21 +85,11 @@ export default function AvatarCrop({ onSave, onClose, userId }: Props) {
     try {
       const blob = await getCroppedImg(imageSrc, croppedAreaPixels)
 
-      const path = `${userId}/avatar.jpg`
-
-      const { error: uploadError } = await supabase
-        .storage
-        .from('avatars')
-        .upload(path, blob, { upsert: true, contentType: 'image/jpeg' })
-
-      if (!uploadError) {
-        const { data: urlData } = supabase
-          .storage
-          .from('avatars')
-          .getPublicUrl(path)
-
-        const url = urlData.publicUrl + '?t=' + Date.now()
-        onSave(url)
+      const uploaded = await uploadImage(blob, 'avatar')
+      if (uploaded.ok) {
+        onSave(uploaded.url + '?t=' + Date.now())
+      } else {
+        alert(uploaded.message)
       }
     } catch (err) {
       console.error('Erro ao salvar avatar:', err)

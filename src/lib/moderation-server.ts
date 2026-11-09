@@ -10,7 +10,10 @@ export type ModerationServerResult =
   | { status: 'flagged'; categories: unknown }
   | { status: 'unavailable' }
 
-export async function moderatePhotoBase64(photoBase64: string): Promise<ModerationServerResult> {
+export async function moderatePhotoBase64(
+  photoBase64: string,
+  mimeType = 'image/jpeg'
+): Promise<ModerationServerResult> {
   const { default: OpenAI } = await import('openai')
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
@@ -24,7 +27,7 @@ export async function moderatePhotoBase64(photoBase64: string): Promise<Moderati
           {
             type: 'image_url',
             image_url: {
-              url: `data:image/jpeg;base64,${photoBase64}`,
+              url: `data:${mimeType};base64,${photoBase64}`,
             },
           },
         ],

@@ -9,6 +9,12 @@ e este projeto segue [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
 ## [Unreleased]
 
+### Security
+- Upload de imagens moderado pelo servidor: `POST /api/storage/upload` valida o tipo real (magic bytes), re-encoda para JPEG com `sharp` (remove EXIF/GPS), modera a imagem final (fail-closed) e grava com service role em caminho definido pelo servidor. Peças, avatar e entradas de estúdio/manequim deixam de escrever direto no Storage
+- `studio`, `ghost-mannequin` e `describe` só aceitam URLs da pasta do próprio usuário (`lib/storage-url.ts`); `pieces/analyze` modera no servidor antes de chamar o Claude
+- Migration 0007: remove INSERT/UPDATE do cliente no Storage e a listagem cruzada do bucket `pieces`; limite de 5 MB e MIME jpeg/png/webp nos buckets
+- `scripts/audit-storage-moderation.mjs`: auditoria única das imagens existentes
+
 ### Changed
 - Saída da IA validada com Zod (`lib/ai-schemas.ts`) em outfit/generate, wishlist/generate, pieces/analyze, mia/extract-date e mia/chat: resposta malformada vira erro tratado (sem consumir cota) em vez de quebrar a tela; `piece_ids` ausente não derruba mais o `.includes`
 - Limites no chat da Mia: `message` até 2000 caracteres (também no textarea) e `history` aparado para as últimas 20 mensagens de até 4000 caracteres (`lib/api-schemas.ts`), contra abuso de tokens

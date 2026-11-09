@@ -1,0 +1,4009 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="artifact-type" content="dashboard">
+  <meta name="design-style" content="atelier">
+  <title>Mia Outfit AI — Closet & Lookbook Interativo</title>
+
+  <!-- Google Fonts: Cormorant Garamond, Inter, Bebas Neue -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@1.43.0/dist/umd/lucide.min.js"></script>
+
+  <style>
+    /* -------------------------------------------------------------
+       DESIGN SYSTEM & CSS VARIABLES
+       Édition Claire (Padrão) vs Dark Edition (html.mode-dark)
+    -------------------------------------------------------------- */
+    :root {
+      color-scheme: light;
+
+      /* Édition Claire */
+      --ec-bg-primary: #FAF8F5;
+      --ec-bg-secondary: #F2EDE6;
+      --ec-bg-tertiary: #EAE3D9;
+      --ec-accent: #C17F5A;          /* Terracota suave */
+      --ec-accent-hover: #A86B49;
+      --ec-accent-light: #C4A882;    /* Dourado areia */
+      --ec-text-primary: #1A1A1A;    /* Grafite */
+      --ec-text-secondary: #6B6B6B;  /* Cinza médio */
+      --ec-text-muted: #9A8E84;      /* Cinza areia */
+      --ec-border: #E8E2D9;
+      --ec-border-light: #F0EAE1;
+      --ec-white: #FFFFFF;
+      --ec-card-overlay: linear-gradient(to bottom, transparent 0%, rgba(250, 248, 245, 0.88) 100%);
+      --ec-shadow-subtle: 0 4px 20px rgba(193, 127, 90, 0.08);
+
+      /* Wardrobe Architectural Materials (Claire) */
+      --wb-wood-frame: #E8DFD3;
+      --wb-wood-inner: #F5EFEB;
+      --wb-wood-shelf: #DECFC0;
+      --wb-brass-rail: #C8AB7E;
+      --wb-led-glow: rgba(193, 127, 90, 0.15);
+      --wb-glass-drawer: rgba(255, 255, 255, 0.65);
+
+      /* Typography */
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-heading: 'Cormorant Garamond', Georgia, serif;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+      /* Spacing Scale */
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 32px;
+      --space-2xl: 48px;
+
+      /* Radii */
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-full: 999px;
+
+      /* Transitions */
+      --transition-mode: background-color 350ms ease, color 350ms ease, border-color 350ms ease, box-shadow 350ms ease;
+    }
+
+    /* Dark Edition (html.mode-dark) */
+    html.mode-dark {
+      color-scheme: dark;
+
+      --ec-bg-primary: #080808;
+      --ec-bg-secondary: #111111;
+      --ec-bg-tertiary: #1C1C1C;
+      --ec-accent: #B8974A;          /* Dourado preciso */
+      --ec-accent-hover: #D4AF6A;
+      --ec-accent-light: #D4AF6A;
+      --ec-text-primary: #F0EDE8;    /* Branco editorial */
+      --ec-text-secondary: #8A8A8A;  /* Cinza médio */
+      --ec-text-muted: #555555;      /* Grafite sutil */
+      --ec-border: #242424;
+      --ec-border-light: #181818;
+      --ec-white: #111111;
+      --ec-card-overlay: linear-gradient(to bottom, transparent 0%, rgba(8, 8, 8, 0.88) 100%);
+      --ec-shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.4);
+
+      /* Wardrobe Architectural Materials (Dark) */
+      --wb-wood-frame: #181818;
+      --wb-wood-inner: #0E0E0E;
+      --wb-wood-shelf: #222222;
+      --wb-brass-rail: #B8974A;
+      --wb-led-glow: rgba(184, 151, 74, 0.22);
+      --wb-glass-drawer: rgba(28, 28, 28, 0.7);
+
+      /* Typography */
+      --font-display: 'Bebas Neue', 'Inter', sans-serif;
+      --font-heading: 'Inter', sans-serif;
+    }
+
+    /* Reset & Base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      background-color: var(--ec-bg-primary);
+      color: var(--ec-text-primary);
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.5;
+      overflow-x: clip;
+      transition: var(--transition-mode);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+      color: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      background: none;
+      border: none;
+    }
+
+    /* App Container */
+    .app-root {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding-bottom: 80px; /* Space for BottomNav on mobile */
+    }
+
+    /* -------------------------------------------------------------
+       TOP NAVIGATION BAR
+    -------------------------------------------------------------- */
+    .app-navbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--space-xl);
+      background-color: var(--ec-bg-primary);
+      border-bottom: 0.5px solid var(--ec-border);
+      transition: var(--transition-mode);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      user-select: none;
+    }
+
+    /* Brand Logo (Claire) */
+    .brand-title {
+      font-family: var(--font-heading);
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: var(--ec-text-primary);
+    }
+    .brand-title span {
+      color: var(--ec-accent);
+      font-weight: 400;
+    }
+
+    /* Brand Logo (Dark) */
+    html.mode-dark .brand-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ec-text-primary);
+    }
+    html.mode-dark .brand-title span {
+      color: var(--ec-accent);
+      margin: 0 2px;
+    }
+
+    /* Center Nav Tabs */
+    .navbar-tabs {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      background-color: var(--ec-bg-secondary);
+      border: 0.5px solid var(--ec-border);
+      padding: 3px;
+      border-radius: var(--radius-full);
+      transition: var(--transition-mode);
+    }
+
+    .nav-tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      color: var(--ec-text-secondary);
+      transition: background-color 150ms ease, color 150ms ease;
+    }
+    .nav-tab-btn:hover {
+      color: var(--ec-text-primary);
+    }
+    .nav-tab-btn.active {
+      background-color: var(--ec-bg-primary);
+      color: var(--ec-accent);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    html.mode-dark .nav-tab-btn.active {
+      background-color: var(--ec-bg-tertiary);
+      color: var(--ec-accent);
+    }
+
+    /* Right Navbar Controls */
+    .navbar-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+
+    /* Mode Toggle Pill */
+    .mode-toggle {
+      display: inline-flex;
+      align-items: center;
+      background-color: var(--ec-bg-secondary);
+      border: 0.5px solid var(--ec-border);
+      border-radius: var(--radius-full);
+      padding: 3px;
+      gap: 2px;
+      transition: var(--transition-mode);
+    }
+
+    .toggle-opt {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      padding: 5px 12px;
+      border-radius: var(--radius-full);
+      color: var(--ec-text-muted);
+      transition: all 260ms ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .toggle-opt.active {
+      background-color: var(--ec-bg-primary);
+      color: var(--ec-text-primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    html.mode-dark .toggle-opt.active {
+      background-color: var(--ec-bg-tertiary);
+      color: var(--ec-text-primary);
+      border: 0.5px solid var(--ec-border);
+    }
+
+    .btn-new-piece {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background-color: var(--ec-accent);
+      color: #FAF8F5;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: var(--radius-full);
+      transition: background-color 150ms ease, transform 150ms ease;
+    }
+    .btn-new-piece:hover {
+      background-color: var(--ec-accent-hover);
+      transform: translateY(-1px);
+    }
+    html.mode-dark .btn-new-piece {
+      color: #080808;
+    }
+
+    /* -------------------------------------------------------------
+       CONTEXT BAR (Weather, Counts, View Mode Switcher)
+    -------------------------------------------------------------- */
+    .context-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-md) var(--space-xl);
+      border-bottom: 0.5px solid var(--ec-border);
+      background-color: var(--ec-bg-primary);
+      transition: var(--transition-mode);
+      flex-wrap: wrap;
+      gap: var(--space-md);
+    }
+
+    .context-left {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      flex-wrap: wrap;
+    }
+
+    .page-title {
+      font-family: var(--font-heading);
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--ec-text-primary);
+      letter-spacing: 0.01em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    html.mode-dark .page-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .count-chip {
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--ec-text-muted);
+      background-color: var(--ec-bg-secondary);
+      border: 0.5px solid var(--ec-border);
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+    }
+
+    /* Weather Context Pill with Interactive Switcher */
+    .weather-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background-color: var(--ec-bg-secondary);
+      border: 0.5px solid var(--ec-border);
+      padding: 5px 12px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      color: var(--ec-text-secondary);
+      cursor: pointer;
+      transition: border-color 150ms ease, background-color 150ms ease;
+    }
+    .weather-pill:hover {
+      border-color: var(--ec-accent);
+      color: var(--ec-text-primary);
+    }
+    .weather-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--ec-accent);
+      box-shadow: 0 0 6px var(--ec-accent);
+    }
+
+    /* Controls Group */
+    .context-right {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    /* Closet View Mode Selector (Armário vs Grid) */
+    .view-mode-pill {
+      display: inline-flex;
+      background-color: var(--ec-bg-secondary);
+      border: 0.5px solid var(--ec-border);
+      border-radius: var(--radius-full);
+      padding: 2px;
+      gap: 2px;
+    }
+    .view-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: var(--radius-full);
+      color: var(--ec-text-muted);
+      transition: all 180ms ease;
+    }
+    .view-btn:hover {
+      color: var(--ec-text-primary);
+    }
+    .view-btn.active {
+      background-color: var(--ec-bg-primary);
+      color: var(--ec-accent);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    html.mode-dark .view-btn.active {
+      background-color: var(--ec-bg-tertiary);
+    }
+
+    .filter-drawer-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 7px 14px;
+      border-radius: var(--radius-full);
+      background-color: var(--ec-bg-secondary);
+      border: 0.5px solid var(--ec-border);
+      color: var(--ec-text-secondary);
+      transition: all 150ms ease;
+    }
+    .filter-drawer-btn:hover {
+      background-color: var(--ec-border);
+      color: var(--ec-text-primary);
+    }
+    .filter-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background-color: var(--ec-accent);
+      color: #FAF8F5;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    /* -------------------------------------------------------------
+       CATEGORY CHIPS & SEARCH BAR
+    -------------------------------------------------------------- */
+    .filter-chips-bar {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-sm) var(--space-xl) var(--space-md);
+      background-color: var(--ec-bg-primary);
+      border-bottom: 0.5px solid var(--ec-border-light);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .filter-chips-bar::-webkit-scrollbar { display: none; }
+
+    .search-input-box {
+      position: relative;
+      min-width: 220px;
+      max-width: 280px;
+      flex-shrink: 0;
+    }
+    .search-input-box input {
+      width: 100%;
+      padding: 8px 12px 8px 34px;
+      border-radius: var(--radius-full);
+      background-color: var(--ec-bg-secondary);
+      border: 0.5px solid var(--ec-border);
+      color: var(--ec-text-primary);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 150ms ease;
+    }
+    .search-input-box input:focus {
+      border-color: var(--ec-accent);
+    }
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--ec-text-muted);
+      pointer-events: none;
+      width: 14px;
+      height: 14px;
+    }
+
+    .category-chips {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+      overflow-x: auto;
+      scrollbar-width: none;
+      flex: 1;
+    }
+    .cat-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      background-color: var(--ec-bg-primary);
+      border: 0.5px solid var(--ec-border);
+      color: var(--ec-text-secondary);
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 150ms ease;
+      flex-shrink: 0;
+    }
+    .cat-chip:hover {
+      background-color: var(--ec-bg-secondary);
+      color: var(--ec-text-primary);
+    }
+    .cat-chip.active {
+      background-color: var(--ec-accent);
+      color: #FAF8F5;
+      border-color: var(--ec-accent);
+    }
+    html.mode-dark .cat-chip.active {
+      color: #080808;
+    }
+
+    /* -------------------------------------------------------------
+       VIEW 1: ARQUITETURA TÁTIL DO GUARDA-ROUPA (WARDROBE VIEW)
+    -------------------------------------------------------------- */
+    .wardrobe-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: var(--space-xl) var(--space-xl) var(--space-2xl);
+      max-width: 1240px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .wardrobe-narrative-header {
+      text-align: center;
+      margin-bottom: var(--space-xl);
+      max-width: 680px;
+    }
+    .wardrobe-narrative-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ec-accent);
+      margin-bottom: var(--space-xs);
+    }
+    .wardrobe-narrative-title {
+      font-family: var(--font-heading);
+      font-size: 32px;
+      font-weight: 600;
+      color: var(--ec-text-primary);
+      line-height: 1.15;
+      margin-bottom: var(--space-xs);
+    }
+    html.mode-dark .wardrobe-narrative-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 20px;
+      font-weight: 300;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .wardrobe-narrative-sub {
+      font-size: 14px;
+      color: var(--ec-text-secondary);
+    }
+
+    /* The Main Wardrobe Cabinet Frame */
+    .wardrobe-cabinet {
+      width: 100%;
+      background: var(--wb-wood-inner);
+      border: 1px solid var(--ec-border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--ec-shadow-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+      transition: var(--transition-mode);
+    }
+
+    /* Shelf Section Common */
+    .wardrobe-section {
+      position: relative;
+      background: var(--ec-bg-primary);
+      border: 0.5px solid var(--ec-border);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      transition: all 250ms ease;
+      cursor: pointer;
+    }
+    .wardrobe-section:hover, .wardrobe-section.focused {
+      border-color: var(--ec-accent);
+      box-shadow: 0 0 0 1px var(--ec-accent), 0 8px 24px var(--wb-led-glow);
+    }
+
+    /* Section Hotspot Label Floating Badge */
+    .hotspot-badge {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      background-color: var(--ec-bg-secondary);
+      border: 0.5px solid var(--ec-border);
+      color: var(--ec-accent);
+      z-index: 5;
+      transition: all 150ms ease;
+    }
+    .wardrobe-section:hover .hotspot-badge,
+    .wardrobe-section.focused .hotspot-badge {
+      background-color: var(--ec-accent);
+      color: #FAF8F5;
+      border-color: var(--ec-accent);
+    }
+    html.mode-dark .wardrobe-section.focused .hotspot-badge {
+      color: #080808;
+    }
+
+    .hotspot-pulse {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: currentColor;
+      animation: pulseGlow 1.8s infinite ease-in-out;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.6); opacity: 0.5; }
+    }
+
+    .section-meta-title {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ec-text-muted);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* 1. Prateleira Superior: Acessórios & Bolsas */
+    .accessories-shelf {
+      min-height: 140px;
+    }
+    .accessories-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 14px;
+      align-items: end;
+    }
+    .garment-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      border: 0.5px solid transparent;
+      transition: all 180ms ease;
+      cursor: pointer;
+      position: relative;
+    }
+    .garment-item:hover {
+      background-color: var(--ec-bg-secondary);
+      border-color: var(--ec-border);
+      transform: translateY(-2px);
+    }
+    .garment-icon-svg {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .garment-item-name {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--ec-text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 120px;
+    }
+    .garment-item-brand {
+      font-size: 10px;
+      color: var(--ec-text-muted);
+    }
+
+    /* 2. Cabideiro / Varão de Blusas, Camisas & Casacos */
+    .hanging-rail-section {
+      min-height: 230px;
+      background: linear-gradient(to bottom, var(--ec-bg-secondary) 0%, var(--ec-bg-primary) 100%);
+    }
+    .metal-rail-bar {
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(90deg, #8E8478 0%, var(--wb-brass-rail) 30%, #F5E8D0 50%, var(--wb-brass-rail) 70%, #8E8478 100%);
+      border-radius: 3px;
+      margin-bottom: 8px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.12);
+    }
+    .hangers-rack {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      overflow-x: auto;
+      padding: 8px 4px 16px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--ec-border) transparent;
+    }
+    .hanger-piece {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+      width: 120px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: var(--radius-sm);
+      transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1), background-color 150ms ease;
+      position: relative;
+    }
+    .hanger-piece:hover {
+      background-color: var(--ec-bg-secondary);
+      transform: translateY(-4px) rotate(1.2deg);
+    }
+    .hanger-hook {
+      width: 24px;
+      height: 18px;
+      border-top: 2px solid var(--wb-brass-rail);
+      border-left: 2px solid var(--wb-brass-rail);
+      border-top-left-radius: 12px;
+      margin-bottom: -2px;
+    }
+    .hanger-silhouette {
+      width: 88px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 3. Gaveteiro / Nichos de Calças & Saias */
+    .drawers-section {
+      min-height: 150px;
+    }
+    .drawers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 12px;
+    }
+    .folded-piece {
+      background-color: var(--wb-glass-drawer);
+      border: 0.5px solid var(--ec-border);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 180ms ease;
+      cursor: pointer;
+    }
+    .folded-piece:hover {
+      border-color: var(--ec-accent);
+      background-color: var(--ec-bg-secondary);
+      transform: translateY(-2px);
+    }
+
+    /* 4. Sapateira Inferior Iluminada */
+    .shoe-rack-section {
+      min-height: 140px;
+      background: linear-gradient(to top, var(--ec-bg-secondary) 0%, var(--ec-bg-primary) 100%);
+      box-shadow: inset 0 -4px 16px var(--wb-led-glow);
+    }
+    .shoes-deck {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 16px;
+      align-items: end;
+    }
+
+    /* Anchor Badge Indicator */
+    .anchor-mini-badge {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: var(--ec-accent);
+      color: #FAF8F5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+    html.mode-dark .anchor-mini-badge {
+      color: #080808;
+    }
+
+    /* Drawer / Quick Inspection Panel for Active Compartment */
+    .compartment-focus-panel {
+      width: 100%;
+      margin-top: var(--space-lg);
+      background-color: var(--ec-bg-secondary);
+      border: 0.5px solid var(--ec-border);
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+      transition: var(--transition-mode);
+    }
+    .cfp-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .cfp-title {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--ec-text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    html.mode-dark .cfp-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .cfp-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 12px;
+    }
+    .cfp-card {
+      background-color: var(--ec-bg-primary);
+      border: 0.5px solid var(--ec-border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      cursor: pointer;
+      transition: all 150ms ease;
+    }
+    .cfp-card:hover {
+      border-color: var(--ec-accent);
+      transform: translateY(-2px);
+      box-shadow: var(--ec-shadow-subtle);
+    }
+    .cfp-thumb {
+      width: 52px;
+      height: 52px;
+      border-radius: var(--radius-sm);
+      background-color: var(--ec-bg-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .cfp-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .cfp-cat {
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--ec-accent);
+    }
+    .cfp-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ec-text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .cfp-desc {
+      font-size: 11px;
+      color: var(--ec-text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* -------------------------------------------------------------
+       VIEW 2: GRID EDITORIAL DO CLOSET (GRID VIEW)
+    -------------------------------------------------------------- */
+    .closet-grid-container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: var(--space-lg) var(--space-xl) var(--space-2xl);
+      width: 100%;
+    }
+
+    .closet-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .piece-card {
+      position: relative;
+      background-color: var(--ec-bg-secondary);
+      border: 0.5px solid var(--ec-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+    }
+    .piece-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--ec-accent);
+      box-shadow: var(--ec-shadow-subtle);
+    }
+
+    .piece-card-media {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1;
+      background-color: var(--ec-white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 16px;
+    }
+    .piece-card-media svg {
+      width: 80%;
+      height: 80%;
+      transition: transform 220ms ease;
+    }
+    .piece-card:hover .piece-card-media svg {
+      transform: scale(1.05);
+    }
+
+    .piece-card-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 24px 12px 10px;
+      background: var(--ec-card-overlay);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .piece-card-category {
+      font-family: var(--font-ui);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ec-accent);
+      margin-bottom: 2px;
+    }
+
+    .piece-card-name {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ec-text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .piece-card-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--ec-text-muted);
+      margin-top: 2px;
+    }
+
+    .piece-card-anchor-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background-color: var(--ec-accent);
+      color: #FAF8F5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      z-index: 2;
+    }
+    html.mode-dark .piece-card-anchor-badge {
+      color: #080808;
+    }
+
+    .piece-card-studio-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(250, 248, 245, 0.9);
+      border: 0.5px solid var(--ec-border);
+      color: var(--ec-accent);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      backdrop-filter: blur(4px);
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    html.mode-dark .piece-card-studio-badge {
+      background: rgba(8, 8, 8, 0.85);
+      border-color: var(--ec-border);
+    }
+
+    /* -------------------------------------------------------------
+       LOOKBOOK: ARARA DE OUTFITS INTERATIVA (FASHION RACK)
+    -------------------------------------------------------------- */
+    .lookbook-container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: var(--space-xl) var(--space-xl) var(--space-2xl);
+      width: 100%;
+    }
+
+    .lookbook-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: var(--space-xl);
+      flex-wrap: wrap;
+      gap: var(--space-md);
+      border-bottom: 0.5px solid var(--ec-border);
+      padding-bottom: var(--space-md);
+    }
+    .lookbook-header-left {
+      max-width: 650px;
+    }
+    .lookbook-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ec-accent);
+      display: block;
+      margin-bottom: 4px;
+    }
+    .lookbook-title {
+      font-family: var(--font-heading);
+      font-size: 32px;
+      font-weight: 600;
+      color: var(--ec-text-primary);
+      line-height: 1.15;
+      margin-bottom: 6px;
+    }
+    html.mode-dark .lookbook-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 20px;
+      font-weight: 300;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .lookbook-subtitle {
+      font-size: 14px;
+      color: var(--ec-text-secondary);
+    }
+
+    /* Ocasiões Pills */
+    .occasion-tabs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      margin-bottom: var(--space-lg);
+    }
+    .occasion-tab {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      background-color: var(--ec-bg-secondary);
+      border: 0.5px solid var(--ec-border);
+      color: var(--ec-text-secondary);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 150ms ease;
+    }
+    .occasion-tab.active {
+      background-color: var(--ec-accent);
+      color: #FAF8F5;
+      border-color: var(--ec-accent);
+    }
+    html.mode-dark .occasion-tab.active {
+      color: #080808;
+    }
+
+    /* Visual Arara de Outfits (Fashion Rack) */
+    .fashion-rail-stage {
+      background-color: var(--ec-bg-secondary);
+      border: 0.5px solid var(--ec-border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: var(--space-xl);
+      position: relative;
+    }
+    .rail-bar-top {
+      height: 8px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #786C5E 0%, var(--wb-brass-rail) 30%, #F5E8D0 50%, var(--wb-brass-rail) 70%, #786C5E 100%);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      margin-bottom: 20px;
+    }
+    .outfits-rack-scroll {
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--ec-border) transparent;
+    }
+
+    /* Outfit Rack Card */
+    .outfit-rack-card {
+      flex: 0 0 320px;
+      background-color: var(--ec-bg-primary);
+      border: 0.5px solid var(--ec-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all 250ms ease;
+      cursor: pointer;
+      position: relative;
+    }
+    .outfit-rack-card:hover, .outfit-rack-card.selected {
+      border-color: var(--ec-accent);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+    html.mode-dark .outfit-rack-card:hover,
+    html.mode-dark .outfit-rack-card.selected {
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+
+    .outfit-hanger-neck {
+      display: flex;
+      justify-content: center;
+      padding-top: 10px;
+    }
+    .hanger-triangle {
+      width: 44px;
+      height: 18px;
+      border-top: 2px solid var(--wb-brass-rail);
+      border-left: 2px solid var(--wb-brass-rail);
+      border-top-left-radius: 12px;
+    }
+
+    .outfit-ensemble-preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 16px;
+      background: linear-gradient(to bottom, var(--ec-bg-primary) 0%, var(--ec-bg-secondary) 100%);
+      border-bottom: 0.5px solid var(--ec-border);
+    }
+    .ensemble-thumb {
+      width: 50px;
+      height: 50px;
+      border-radius: var(--radius-sm);
+      background-color: var(--ec-white);
+      border: 0.5px solid var(--ec-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      transition: transform 150ms ease;
+    }
+    .ensemble-thumb:hover {
+      transform: scale(1.12);
+      border-color: var(--ec-accent);
+    }
+
+    .outfit-card-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    .outfit-badge-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .outfit-weather-tag {
+      font-size: 11px;
+      color: var(--ec-text-secondary);
+      background-color: var(--ec-bg-secondary);
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .outfit-card-title {
+      font-family: var(--font-heading);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--ec-text-primary);
+      margin-bottom: 4px;
+      line-height: 1.25;
+    }
+    html.mode-dark .outfit-card-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .outfit-card-sub {
+      font-size: 12px;
+      color: var(--ec-text-secondary);
+      line-height: 1.45;
+      margin-bottom: 14px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .outfit-card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 0.5px solid var(--ec-border);
+    }
+    .btn-use-look {
+      flex: 2;
+      padding: 9px;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: var(--radius-full);
+      background-color: var(--ec-accent);
+      color: #FAF8F5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background-color 150ms ease;
+    }
+    .btn-use-look:hover {
+      background-color: var(--ec-accent-hover);
+    }
+    html.mode-dark .btn-use-look {
+      color: #080808;
+    }
+
+    .btn-inspect-look {
+      flex: 1;
+      padding: 9px;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: var(--radius-full);
+      background-color: transparent;
+      border: 0.5px solid var(--ec-border);
+      color: var(--ec-text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 150ms ease;
+    }
+    .btn-inspect-look:hover {
+      background-color: var(--ec-bg-secondary);
+      color: var(--ec-text-primary);
+    }
+
+    /* Outfit Detailed Breakdown Inspector Section */
+    .lookbook-detail-card {
+      background-color: var(--ec-bg-primary);
+      border: 0.5px solid var(--ec-border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      box-shadow: var(--ec-shadow-subtle);
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .lookbook-detail-card {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+    }
+
+    .ld-left-block {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .ld-occasion-badge {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ec-accent);
+    }
+    .ld-title {
+      font-family: var(--font-heading);
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--ec-text-primary);
+      line-height: 1.15;
+    }
+    html.mode-dark .ld-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 20px;
+      font-weight: 300;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .ld-subtitle {
+      font-size: 15px;
+      color: var(--ec-text-secondary);
+      line-height: 1.5;
+    }
+
+    /* "Por que Funciona" Box (Mia AI Editorial Reasoning) */
+    .mia-reasoning-box {
+      background-color: var(--ec-bg-secondary);
+      border-left: 2px solid var(--ec-accent);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: 16px 20px;
+    }
+    .mrb-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ec-accent);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .mrb-text {
+      font-size: 13px;
+      color: var(--ec-text-primary);
+      line-height: 1.6;
+    }
+
+    .ld-pieces-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .ld-piece-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      background-color: var(--ec-bg-secondary);
+      border: 0.5px solid var(--ec-border);
+      cursor: pointer;
+      transition: all 150ms ease;
+    }
+    .ld-piece-row:hover {
+      border-color: var(--ec-accent);
+      transform: translateX(4px);
+    }
+    .ld-piece-thumb {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-sm);
+      background-color: var(--ec-white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+    }
+    .ld-piece-info {
+      flex: 1;
+    }
+    .ld-piece-cat {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--ec-accent);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .ld-piece-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ec-text-primary);
+    }
+
+    /* -------------------------------------------------------------
+       SPLIT MODAL: DETALHE DA PEÇA (PIECE DETAIL)
+       55% Galeria / 45% Informações
+    -------------------------------------------------------------- */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(8, 8, 8, 0.65);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-md);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 250ms ease;
+    }
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .piece-detail-dialog {
+      background-color: var(--ec-bg-primary);
+      border: 0.5px solid var(--ec-border);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 960px;
+      max-height: 90vh;
+      overflow-y: auto;
+      display: flex;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.25);
+      position: relative;
+    }
+    @media (max-width: 768px) {
+      .piece-detail-dialog {
+        flex-direction: column;
+        max-height: 94vh;
+      }
+    }
+
+    .modal-close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: var(--ec-bg-secondary);
+      border: 0.5px solid var(--ec-border);
+      color: var(--ec-text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: all 150ms ease;
+    }
+    .modal-close-btn:hover {
+      background-color: var(--ec-border);
+      color: var(--ec-text-primary);
+    }
+
+    /* Left Side: Photo & Thumbnails (55%) */
+    .pdd-gallery-side {
+      width: 55%;
+      background-color: var(--ec-bg-secondary);
+      border-right: 0.5px solid var(--ec-border);
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+    }
+    @media (max-width: 768px) {
+      .pdd-gallery-side {
+        width: 100%;
+        border-right: none;
+        border-bottom: 0.5px solid var(--ec-border);
+      }
+    }
+
+    .pdd-main-photo-box {
+      width: 100%;
+      aspect-ratio: 1;
+      background-color: var(--ec-white);
+      border-radius: var(--radius-md);
+      border: 0.5px solid var(--ec-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      margin-bottom: 16px;
+      padding: 24px;
+    }
+    .pdd-main-photo-box svg {
+      width: 90%;
+      height: 90%;
+      object-fit: contain;
+    }
+
+    .pdd-thumbs-row {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 4px 2px;
+    }
+    .pdd-thumb-card {
+      width: 64px;
+      height: 64px;
+      border-radius: var(--radius-sm);
+      background-color: var(--ec-white);
+      border: 1.5px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      transition: all 150ms ease;
+      padding: 6px;
+      flex-shrink: 0;
+    }
+    .pdd-thumb-card.active {
+      border-color: var(--ec-accent);
+    }
+    .pdd-thumb-card.is-cover::after {
+      content: 'Capa';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: var(--ec-accent);
+      color: #FAF8F5;
+      font-size: 9px;
+      font-weight: 600;
+      text-align: center;
+      padding: 1px 0;
+      border-bottom-left-radius: 4px;
+      border-bottom-right-radius: 4px;
+    }
+    .pdd-thumb-card.is-studio::before {
+      content: '✦';
+      position: absolute;
+      top: 2px;
+      right: 4px;
+      color: var(--ec-accent);
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    /* Right Side: Information & Action CTA (45%) */
+    .pdd-info-side {
+      width: 45%;
+      padding: 36px 32px;
+      display: flex;
+      flex-direction: column;
+    }
+    @media (max-width: 768px) {
+      .pdd-info-side {
+        width: 100%;
+        padding: 24px 20px;
+      }
+    }
+
+    .pdd-cat-badge {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ec-accent);
+      margin-bottom: 6px;
+    }
+    .pdd-piece-title {
+      font-family: var(--font-heading);
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--ec-text-primary);
+      line-height: 1.15;
+      margin-bottom: 18px;
+    }
+    html.mode-dark .pdd-piece-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 20px;
+      font-weight: 300;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .pdd-specs-table {
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .pdd-spec-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 0.5px solid var(--ec-border);
+      font-size: 13px;
+    }
+    .pdd-spec-label {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ec-text-muted);
+    }
+    .pdd-spec-val {
+      font-weight: 500;
+      color: var(--ec-text-primary);
+    }
+
+    .pdd-tags-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+    .pdd-tag {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      background-color: var(--ec-bg-secondary);
+      border: 0.5px solid var(--ec-border);
+      color: var(--ec-text-secondary);
+    }
+
+    .pdd-desc-box {
+      margin-bottom: 24px;
+    }
+    .pdd-desc-label {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ec-text-muted);
+      margin-bottom: 6px;
+      display: block;
+    }
+    .pdd-desc-text {
+      font-size: 13px;
+      color: var(--ec-text-secondary);
+      line-height: 1.6;
+    }
+
+    .pdd-action-cta-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: auto;
+    }
+    .btn-anchor-toggle {
+      width: 100%;
+      padding: 12px;
+      border-radius: var(--radius-full);
+      background-color: var(--ec-accent);
+      color: #FAF8F5;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background-color 150ms ease;
+    }
+    .btn-anchor-toggle.active {
+      background-color: var(--ec-bg-secondary);
+      border: 0.5px solid var(--ec-accent);
+      color: var(--ec-accent);
+    }
+    html.mode-dark .btn-anchor-toggle {
+      color: #080808;
+    }
+    html.mode-dark .btn-anchor-toggle.active {
+      color: var(--ec-accent);
+    }
+
+    .pdd-sub-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-sub-action {
+      flex: 1;
+      padding: 10px;
+      border-radius: var(--radius-full);
+      background-color: transparent;
+      border: 0.5px solid var(--ec-border);
+      color: var(--ec-text-secondary);
+      font-size: 12px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background-color 150ms ease;
+    }
+    .btn-sub-action:hover {
+      background-color: var(--ec-bg-secondary);
+      color: var(--ec-text-primary);
+    }
+
+    /* -------------------------------------------------------------
+       DRAWER LATERAL DE FILTROS (FILTER DRAWER)
+    -------------------------------------------------------------- */
+    .filter-drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0,0,0,0.4);
+      backdrop-filter: blur(4px);
+      z-index: 90;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 250ms ease;
+    }
+    .filter-drawer-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .filter-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 340px;
+      background-color: var(--ec-bg-primary);
+      border-left: 0.5px solid var(--ec-border);
+      z-index: 95;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .filter-drawer.open {
+      transform: translateX(0);
+    }
+    @media (max-width: 640px) {
+      .filter-drawer {
+        width: 100%;
+        top: 20%;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        border-left: none;
+        border-top: 0.5px solid var(--ec-border);
+        transform: translateY(100%);
+      }
+      .filter-drawer.open {
+        transform: translateY(0);
+      }
+    }
+
+    .fd-header {
+      padding: 20px 24px;
+      border-bottom: 0.5px solid var(--ec-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .fd-title {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--ec-text-primary);
+    }
+    html.mode-dark .fd-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .fd-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .fd-group-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ec-text-muted);
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .fd-checkbox-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .fd-checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--ec-text-secondary);
+      cursor: pointer;
+      user-select: none;
+    }
+    .fd-checkbox-label:hover {
+      color: var(--ec-text-primary);
+    }
+    .fd-checkbox-label input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--ec-accent);
+      border-radius: 4px;
+    }
+
+    .fd-footer {
+      padding: 16px 24px;
+      border-top: 0.5px solid var(--ec-border);
+      display: flex;
+      gap: 10px;
+      background-color: var(--ec-bg-secondary);
+    }
+    .fd-clear-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: var(--radius-full);
+      border: 0.5px solid var(--ec-border);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ec-text-secondary);
+    }
+    .fd-apply-btn {
+      flex: 2;
+      padding: 10px;
+      border-radius: var(--radius-full);
+      background-color: var(--ec-accent);
+      color: #FAF8F5;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    html.mode-dark .fd-apply-btn {
+      color: #080808;
+    }
+
+    /* -------------------------------------------------------------
+       MODAL DE NOVA PEÇA & SIMULADOR DE FOTO DE ESTÚDIO IA
+    -------------------------------------------------------------- */
+    .studio-modal-dialog {
+      background-color: var(--ec-bg-primary);
+      border: 0.5px solid var(--ec-border);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 580px;
+      padding: 28px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.25);
+      position: relative;
+    }
+    .studio-header {
+      margin-bottom: 20px;
+    }
+    .studio-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--ec-accent);
+    }
+    .studio-title {
+      font-family: var(--font-heading);
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--ec-text-primary);
+      margin-top: 4px;
+    }
+    html.mode-dark .studio-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .upload-dropzone {
+      background-color: var(--ec-bg-secondary);
+      border: 1.5px dashed var(--ec-border);
+      border-radius: var(--radius-md);
+      padding: 28px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 180ms ease;
+      margin-bottom: 20px;
+    }
+    .upload-dropzone:hover {
+      border-color: var(--ec-accent);
+      background-color: var(--ec-bg-primary);
+    }
+    .upload-icon {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 10px;
+      color: var(--ec-accent);
+    }
+
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    .form-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ec-text-muted);
+    }
+    .form-input-text, .form-select-box {
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      border: 0.5px solid var(--ec-border);
+      background-color: var(--ec-bg-secondary);
+      color: var(--ec-text-primary);
+      font-size: 13px;
+      outline: none;
+    }
+    .form-input-text:focus, .form-select-box:focus {
+      border-color: var(--ec-accent);
+    }
+
+    .studio-trigger-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: var(--radius-full);
+      background: transparent;
+      border: 1px solid var(--ec-accent);
+      color: var(--ec-accent);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+      transition: all 180ms ease;
+    }
+    .studio-trigger-btn:hover {
+      background-color: var(--ec-accent);
+      color: #FAF8F5;
+    }
+    html.mode-dark .studio-trigger-btn:hover {
+      color: #080808;
+    }
+
+    /* Loading Overlay for Studio Photo Generation */
+    .studio-loading-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(250, 248, 245, 0.92);
+      backdrop-filter: blur(6px);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      text-align: center;
+      z-index: 20;
+    }
+    html.mode-dark .studio-loading-overlay {
+      background: rgba(8, 8, 8, 0.94);
+    }
+    .studio-spinner {
+      width: 44px;
+      height: 44px;
+      border: 2px solid var(--ec-border);
+      border-top-color: var(--ec-accent);
+      border-radius: 50%;
+      animation: spinRound 750ms linear infinite;
+      margin-bottom: 16px;
+    }
+    @keyframes spinRound {
+      to { transform: rotate(360deg); }
+    }
+
+    /* -------------------------------------------------------------
+       BOTTOM NAVIGATION (PWA Mobile Experience)
+    -------------------------------------------------------------- */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background-color: rgba(250, 248, 245, 0.94);
+      backdrop-filter: blur(12px);
+      border-top: 0.5px solid var(--ec-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      z-index: 50;
+      transition: var(--transition-mode);
+    }
+    html.mode-dark .bottom-nav {
+      background-color: rgba(8, 8, 8, 0.94);
+    }
+
+    .bnav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      color: var(--ec-text-muted);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      transition: color 150ms ease;
+    }
+    .bnav-item svg {
+      width: 20px;
+      height: 20px;
+      stroke-width: 1.8;
+    }
+    .bnav-item.active {
+      color: var(--ec-accent);
+    }
+
+    /* Toast Notification */
+    .toast-container {
+      position: fixed;
+      bottom: 76px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--ec-bg-secondary);
+      border: 0.5px solid var(--ec-accent);
+      border-radius: var(--radius-full);
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ec-accent);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 250ms ease, transform 250ms ease;
+    }
+    .toast-container.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-6px);
+    }
+
+    /* Responsive Queries */
+    @media (max-width: 768px) {
+      .app-navbar {
+        padding: 0 var(--space-md);
+      }
+      .navbar-tabs {
+        display: none; /* Handled by BottomNav */
+      }
+      .context-bar {
+        padding: var(--space-sm) var(--space-md);
+      }
+      .filter-chips-bar {
+        padding: var(--space-sm) var(--space-md);
+      }
+      .wardrobe-container, .closet-grid-container, .lookbook-container {
+        padding-inline: var(--space-md);
+      }
+      .wardrobe-cabinet {
+        padding: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-root">
+
+    <!-- 01. Top Navbar -->
+    <header class="app-navbar">
+      <div class="brand-logo" onclick="switchNavTab('closet')">
+        <div class="brand-title">Mia<span>Outfit AI</span></div>
+      </div>
+
+      <!-- Center Desktop Tabs -->
+      <nav class="navbar-tabs" aria-label="Navegação Principal">
+        <button class="nav-tab-btn active" id="tab-btn-closet" onclick="switchNavTab('closet')">
+          <i data-lucide="archive"></i> Meu Closet
+        </button>
+        <button class="nav-tab-btn" id="tab-btn-lookbook" onclick="switchNavTab('lookbook')">
+          <i data-lucide="sparkles"></i> Lookbook Arara
+        </button>
+      </nav>
+
+      <!-- Right Actions: Theme Toggle & + Nova Peça -->
+      <div class="navbar-actions">
+        <div class="mode-toggle" role="group" aria-label="Alternar Tema Visual">
+          <button class="toggle-opt active" id="opt-claire" onclick="setVisualMode('claire')">
+            <span>Édition Claire</span>
+          </button>
+          <button class="toggle-opt" id="opt-dark" onclick="setVisualMode('dark')">
+            <span>Dark Edition</span>
+          </button>
+        </div>
+
+        <button class="btn-new-piece" onclick="openStudioModal()" aria-label="Cadastrar Nova Peça">
+          <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+          <span>Nova Peça</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 02. Context Bar (Weather Simulation, Page Title, Closet View Switcher) -->
+    <section class="context-bar">
+      <div class="context-left">
+        <h1 class="page-title" id="main-view-title">
+          <span>Meu Closet</span>
+          <span class="count-chip" id="piece-count-badge">24 peças</span>
+        </h1>
+
+        <!-- Weather Context Pill (Clicável para simular climas) -->
+        <button class="weather-pill" onclick="cycleWeather()" title="Clique para simular outro clima e testar as sugestões da Mia AI">
+          <span class="weather-dot"></span>
+          <span id="weather-text">⛅ São Paulo · 21°C · Nublado Suave</span>
+          <i data-lucide="refresh-cw" style="width: 12px; height: 12px; margin-left: 2px;"></i>
+        </button>
+      </div>
+
+      <div class="context-right">
+        <!-- Closet View Switcher (Armário Arquitetônico vs Grid) -->
+        <div class="view-mode-pill" id="closet-view-pill">
+          <button class="view-btn active" id="btn-view-wardrobe" onclick="setClosetView('wardrobe')">
+            <i data-lucide="layout-template" style="width: 14px; height: 14px;"></i>
+            <span>Armário Tátil</span>
+          </button>
+          <button class="view-btn" id="btn-view-grid" onclick="setClosetView('grid')">
+            <i data-lucide="grid" style="width: 14px; height: 14px;"></i>
+            <span>Visão Grid</span>
+          </button>
+        </div>
+
+        <!-- Filter Drawer Button -->
+        <button class="filter-drawer-btn" onclick="openFilterDrawer()">
+          <i data-lucide="sliders-horizontal" style="width: 14px; height: 14px;"></i>
+          <span>Filtros</span>
+          <span class="filter-badge" id="active-filters-count">0</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 03. Search & Category Chips Filter Bar -->
+    <div class="filter-chips-bar" id="category-filter-bar">
+      <div class="search-input-box">
+        <i data-lucide="search" class="search-icon"></i>
+        <input type="text" id="piece-search-input" placeholder="Buscar por peça, cor ou marca..." oninput="handleSearch(this.value)">
+      </div>
+
+      <div class="category-chips">
+        <button class="cat-chip active" data-category="all" onclick="filterByCategory('all')">Todas (24)</button>
+        <button class="cat-chip" data-category="cabideiro" onclick="filterByCategory('cabideiro')">Blusas & Casacos (10)</button>
+        <button class="cat-chip" data-category="gaveteiro" onclick="filterByCategory('gaveteiro')">Calças & Saias (6)</button>
+        <button class="cat-chip" data-category="sapateira" onclick="filterByCategory('sapateira')">Calçados (4)</button>
+        <button class="cat-chip" data-category="acessorios" onclick="filterByCategory('acessorios')">Bolsas & Acessórios (4)</button>
+        <button class="cat-chip" data-category="anchor" onclick="filterByCategory('anchor')">📌 Peças Âncora (6)</button>
+      </div>
+    </div>
+
+    <!-- MAIN VIEW CONTAINER: CLOSET (WARDROBE OR GRID) OR LOOKBOOK -->
+    <main id="app-main-content">
+
+      <!-- ============================================================
+           TAB 1: CLOSET - SUBVIEW A: ARQUITETURA TÁTIL DO GUARDA-ROUPA
+      ============================================================= -->
+      <section id="view-wardrobe-wrapper" class="wardrobe-container">
+        <div class="wardrobe-narrative-header">
+          <div class="wardrobe-narrative-badge">
+            <i data-lucide="eye" style="width: 12px; height: 12px;"></i>
+            <span>Visualização Arquitetônica & Tátil</span>
+          </div>
+          <h2 class="wardrobe-narrative-title">O seu closet, organizado com inteligência.</h2>
+          <p class="wardrobe-narrative-sub">Toque em qualquer compartimento para focar no setor, inspecionar peças e definir itens âncora.</p>
+        </div>
+
+        <!-- The Scandinavian Luxury Cabinet Cross-Section -->
+        <div class="wardrobe-cabinet">
+
+          <!-- 1. Prateleira Superior: Acessórios & Bolsas -->
+          <div class="wardrobe-section accessories-shelf" id="shelf-accessories" onclick="focusCompartment('acessorios')">
+            <span class="hotspot-badge">
+              <span class="hotspot-pulse"></span>
+              <span>✦ 4 Bolsas & Acessórios</span>
+            </span>
+            <div class="section-meta-title">
+              <i data-lucide="sparkle" style="width: 13px; height: 13px; color: var(--ec-accent);"></i>
+              <span>Prateleira Superior — Acessórios & Bolsas</span>
+            </div>
+            <div class="accessories-grid" id="wardrobe-accessories-slot">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- 2. Cabideiro / Varão de Blusas, Camisas & Casacos -->
+          <div class="wardrobe-section hanging-rail-section" id="shelf-cabideiro" onclick="focusCompartment('cabideiro')">
+            <span class="hotspot-badge">
+              <span class="hotspot-pulse"></span>
+              <span>✦ 10 Blusas & Casacos</span>
+            </span>
+            <div class="section-meta-title">
+              <i data-lucide="tag" style="width: 13px; height: 13px; color: var(--ec-accent);"></i>
+              <span>Cabideiro Principal — Peças Suspensas</span>
+            </div>
+            <div class="metal-rail-bar"></div>
+            <div class="hangers-rack" id="wardrobe-hangers-slot">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- 3. Gaveteiro / Nichos de Calças, Bermudas & Saias -->
+          <div class="wardrobe-section drawers-section" id="shelf-gaveteiro" onclick="focusCompartment('gaveteiro')">
+            <span class="hotspot-badge">
+              <span class="hotspot-pulse"></span>
+              <span>✦ 6 Calças & Saias Dobradas</span>
+            </span>
+            <div class="section-meta-title">
+              <i data-lucide="layers" style="width: 13px; height: 13px; color: var(--ec-accent);"></i>
+              <span>Gaveteiro Canelado — Calças & Saias</span>
+            </div>
+            <div class="drawers-grid" id="wardrobe-drawers-slot">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- 4. Sapateira Inferior Iluminada -->
+          <div class="wardrobe-section shoe-rack-section" id="shelf-sapateira" onclick="focusCompartment('sapateira')">
+            <span class="hotspot-badge">
+              <span class="hotspot-pulse"></span>
+              <span>✦ 4 Calçados Selecionados</span>
+            </span>
+            <div class="section-meta-title">
+              <i data-lucide="sun" style="width: 13px; height: 13px; color: var(--ec-accent);"></i>
+              <span>Sapateira Inferior com Luz Rasante</span>
+            </div>
+            <div class="shoes-deck" id="wardrobe-shoes-slot">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Dynamic Quick-Inspection Tray for Active Compartment -->
+        <div class="compartment-focus-panel" id="compartment-focus-panel">
+          <div class="cfp-header">
+            <div class="cfp-title">
+              <span id="cfp-title-text">Cabideiro Principal (10 peças)</span>
+            </div>
+            <button class="btn-sub-action" onclick="setClosetView('grid')">
+              <span>Abrir todas no Grid</span>
+              <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i>
+            </button>
+          </div>
+          <div class="cfp-grid" id="cfp-pieces-grid">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           TAB 1: CLOSET - SUBVIEW B: GRID EDITORIAL (GRID VIEW)
+      ============================================================= -->
+      <section id="view-grid-wrapper" class="closet-grid-container" style="display: none;">
+        <div class="closet-grid" id="main-closet-grid">
+          <!-- Rendered via JS -->
+        </div>
+      </section>
+
+      <!-- ============================================================
+           TAB 2: LOOKBOOK - ARARA DE OUTFITS INTERATIVA (FASHION RAIL)
+      ============================================================= -->
+      <section id="view-lookbook-wrapper" class="lookbook-container" style="display: none;">
+        <div class="lookbook-header">
+          <div class="lookbook-header-left">
+            <span class="lookbook-label">Curadoria Personalizada da Mia</span>
+            <h2 class="lookbook-title">Arara de Looks do Dia</h2>
+            <p class="lookbook-subtitle">Outfits criados pela IA considerando as roupas cadastradas, temperatura local e ocasião.</p>
+          </div>
+        </div>
+
+        <!-- Ocasiões Filter Pills -->
+        <div class="occasion-tabs">
+          <button class="occasion-tab active" data-occasion="all" onclick="filterLookbook('all')">Todos os Looks (4)</button>
+          <button class="occasion-tab" data-occasion="trabalho" onclick="filterLookbook('trabalho')">Trabalho & Reuniões</button>
+          <button class="occasion-tab" data-occasion="casual" onclick="filterLookbook('casual')">Casual & Fim de Semana</button>
+          <button class="occasion-tab" data-occasion="noite" onclick="filterLookbook('noite')">Jantar & Noite</button>
+        </div>
+
+        <!-- Fashion Rail Rack (Arara Metálica de Boutique) -->
+        <div class="fashion-rail-stage">
+          <div class="rail-bar-top"></div>
+          <div class="outfits-rack-scroll" id="outfits-rack-scroll">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+
+        <!-- Detailed Outfit Breakdown Card -->
+        <div class="lookbook-detail-card" id="lookbook-detail-card">
+          <div class="ld-left-block">
+            <span class="ld-occasion-badge" id="ld-occasion-text">Trabalho & Negócios</span>
+            <h3 class="ld-title" id="ld-title-text">Alfaiataria Despojada em Linho</h3>
+            <p class="ld-subtitle" id="ld-sub-text">Harmonia em tons terrosos suaves com silhueta alongada para dias de temperatura amena.</p>
+
+            <div class="mia-reasoning-box">
+              <div class="mrb-label">
+                <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
+                <span>Por que funciona — Análise da Mia AI</span>
+              </div>
+              <p class="mrb-text" id="ld-reasoning-text">
+                O contraste entre a estrutura suave do linho cru e a solidez do mocassim tratorado confere autoridade sem rigidez. A paleta monocromática terrosa alonga a silhueta, enquanto a bolsa tote em couro pinhão ancora a composição.
+              </p>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 12px;">
+              <button class="btn-use-look" id="btn-use-active-look" onclick="recordOutfitUsage()">
+                <i data-lucide="check" style="width: 15px; height: 15px;"></i>
+                <span>Usar este look hoje</span>
+              </button>
+              <button class="btn-sub-action" onclick="generateOutfitVariation()">
+                <i data-lucide="shuffle" style="width: 15px; height: 15px;"></i>
+                <span>Gerar variação</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="ld-right-block">
+            <div class="section-meta-title" style="margin-bottom: 12px;">
+              <i data-lucide="layers" style="width: 13px; height: 13px; color: var(--ec-accent);"></i>
+              <span>Peças que compõem este outfit</span>
+            </div>
+            <div class="ld-pieces-list" id="ld-pieces-list">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- 04. Split Modal: Detalhe da Peça (Piece Detail Dialog) -->
+    <div class="modal-overlay" id="piece-modal-overlay" onclick="closePieceModal(event)">
+      <div class="piece-detail-dialog" onclick="event.stopPropagation()">
+        <button class="modal-close-btn" onclick="closePieceModal()" aria-label="Fechar Modal">
+          <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+        </button>
+
+        <!-- Left: Photo & Thumbs (55%) -->
+        <div class="pdd-gallery-side">
+          <div class="pdd-main-photo-box" id="pdd-main-media">
+            <!-- Active SVG Rendered here -->
+          </div>
+
+          <div class="pdd-thumbs-row" id="pdd-thumbs-row">
+            <!-- 4 Thumbs (Original + 3 Studio Shots) -->
+          </div>
+        </div>
+
+        <!-- Right: Specs & Actions (45%) -->
+        <div class="pdd-info-side">
+          <span class="pdd-cat-badge" id="pdd-cat-badge">Casacos & Blazers</span>
+          <h2 class="pdd-piece-title" id="pdd-piece-title">Blazer Linho Cru</h2>
+
+          <div class="pdd-specs-table">
+            <div class="pdd-spec-row">
+              <span class="pdd-spec-label">Marca</span>
+              <span class="pdd-spec-val" id="pdd-spec-brand">COS</span>
+            </div>
+            <div class="pdd-spec-row">
+              <span class="pdd-spec-label">Cor Principal</span>
+              <span class="pdd-spec-val" id="pdd-spec-color">Areia Cru / Bege</span>
+            </div>
+            <div class="pdd-spec-row">
+              <span class="pdd-spec-label">Material</span>
+              <span class="pdd-spec-val" id="pdd-spec-fabric">100% Linho Pura Trama</span>
+            </div>
+            <div class="pdd-spec-row">
+              <span class="pdd-spec-label">Estação Ideal</span>
+              <span class="pdd-spec-val" id="pdd-spec-season">Meia-Estação / Primavera</span>
+            </div>
+          </div>
+
+          <div class="pdd-tags-group" id="pdd-tags-group">
+            <span class="pdd-tag">Alfaiataria Fluida</span>
+            <span class="pdd-tag">Corte Reto</span>
+            <span class="pdd-tag">Casual Chic</span>
+          </div>
+
+          <div class="pdd-desc-box">
+            <span class="pdd-desc-label">Análise de Visão Mia AI</span>
+            <p class="pdd-desc-text" id="pdd-desc-text">
+              Peça estruturada com ombros desconstruídos. Trama respirável excelente para sobreposições contemporâneas com regatas de algodão pima e jeans retos.
+            </p>
+          </div>
+
+          <div class="pdd-action-cta-stack">
+            <button class="btn-anchor-toggle" id="btn-toggle-anchor" onclick="toggleActivePieceAnchor()">
+              <i data-lucide="pin" style="width: 15px; height: 15px;"></i>
+              <span id="anchor-btn-label">Definir como Peça Âncora</span>
+            </button>
+
+            <div class="pdd-sub-actions">
+              <button class="btn-sub-action" onclick="createLookFromActivePiece()">
+                <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
+                <span>Gerar Look com Esta Peça</span>
+              </button>
+              <button class="btn-sub-action" onclick="simulateStudioShotForActivePiece()">
+                <i data-lucide="wand-2" style="width: 14px; height: 14px;"></i>
+                <span>✦ Foto Estúdio IA</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 05. Drawer Lateral de Filtros (Filter Drawer) -->
+    <div class="filter-drawer-overlay" id="filter-drawer-overlay" onclick="closeFilterDrawer(event)">
+      <div class="filter-drawer" id="filter-drawer" onclick="event.stopPropagation()">
+        <div class="fd-header">
+          <span class="fd-title">Filtrar Closet</span>
+          <button class="modal-close-btn" onclick="closeFilterDrawer()" aria-label="Fechar Filtros" style="position: static;">
+            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+          </button>
+        </div>
+
+        <div class="fd-body">
+          <div class="fd-group">
+            <span class="fd-group-title">Tipo de Peça</span>
+            <div class="fd-checkbox-list">
+              <label class="fd-checkbox-label">
+                <input type="checkbox" name="type" value="cabideiro" onchange="applyDrawerFilters()">
+                <span>Blusas, Camisas & Casacos</span>
+              </label>
+              <label class="fd-checkbox-label">
+                <input type="checkbox" name="type" value="gaveteiro" onchange="applyDrawerFilters()">
+                <span>Calças, Bermudas & Saias</span>
+              </label>
+              <label class="fd-checkbox-label">
+                <input type="checkbox" name="type" value="sapateira" onchange="applyDrawerFilters()">
+                <span>Calçados</span>
+              </label>
+              <label class="fd-checkbox-label">
+                <input type="checkbox" name="type" value="acessorios" onchange="applyDrawerFilters()">
+                <span>Bolsas & Acessórios</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="fd-group">
+            <span class="fd-group-title">Status Especial</span>
+            <div class="fd-checkbox-list">
+              <label class="fd-checkbox-label">
+                <input type="checkbox" name="status" value="anchor" onchange="applyDrawerFilters()">
+                <span>Apenas Peças Âncora 📌</span>
+              </label>
+              <label class="fd-checkbox-label">
+                <input type="checkbox" name="status" value="studio" onchange="applyDrawerFilters()">
+                <span>Com Foto de Estúdio IA ✦</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="fd-group">
+            <span class="fd-group-title">Estilo Pessoal</span>
+            <div class="fd-checkbox-list">
+              <label class="fd-checkbox-label">
+                <input type="checkbox" name="style" value="Casual Chic" onchange="applyDrawerFilters()">
+                <span>Casual Chic</span>
+              </label>
+              <label class="fd-checkbox-label">
+                <input type="checkbox" name="style" value="Alfaiataria" onchange="applyDrawerFilters()">
+                <span>Alfaiataria & Trabalho</span>
+              </label>
+              <label class="fd-checkbox-label">
+                <input type="checkbox" name="style" value="Minimalista" onchange="applyDrawerFilters()">
+                <span>Minimalista Urbano</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="fd-footer">
+          <button class="fd-clear-btn" onclick="clearDrawerFilters()">Limpar</button>
+          <button class="fd-apply-btn" onclick="closeFilterDrawer()">Ver Resultados</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 06. Modal "Nova Peça & Simulador de Estúdio IA" -->
+    <div class="modal-overlay" id="studio-modal-overlay" onclick="closeStudioModal(event)">
+      <div class="studio-modal-dialog" onclick="event.stopPropagation()">
+        <button class="modal-close-btn" onclick="closeStudioModal()" aria-label="Fechar Cadastro">
+          <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+        </button>
+
+        <div class="studio-header">
+          <span class="studio-label">Cadastro Inteligente com IA</span>
+          <h2 class="studio-title">Adicionar Peça ao Closet</h2>
+        </div>
+
+        <div class="upload-dropzone" onclick="simulateFileUpload()">
+          <i data-lucide="camera" class="upload-icon"></i>
+          <p style="font-weight: 500; font-size: 14px; color: var(--ec-text-primary); margin-bottom: 4px;">Tirar foto ou selecionar da galeria</p>
+          <p style="font-size: 12px; color: var(--ec-text-muted);">A Mia analisa cores, recorte de fundo e tags automaticamente.</p>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">Nome da Peça</label>
+          <input type="text" id="np-name-input" class="form-input-text" value="Colete de Tricô Canelado Gola V" placeholder="Ex: Camisa de Linho Cru">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-row">
+            <label class="form-label">Compartimento</label>
+            <select id="np-compartment-select" class="form-select-box">
+              <option value="cabideiro">Cabideiro (Blusas & Casacos)</option>
+              <option value="gaveteiro">Gaveteiro (Calças & Saias)</option>
+              <option value="sapateira">Sapateira (Calçados)</option>
+              <option value="acessorios">Prateleira de Acessórios</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Marca</label>
+            <input type="text" id="np-brand-input" class="form-input-text" value="Massimo Dutti">
+          </div>
+        </div>
+
+        <button class="studio-trigger-btn" onclick="triggerStudioProcessing()">
+          <i data-lucide="sparkles" style="width: 16px; height: 16px;"></i>
+          <span>✦ Criar foto de estúdio (Remove.bg + IA)</span>
+        </button>
+
+        <p style="text-align: center; font-size: 11px; color: var(--ec-text-muted); margin-top: 8px;">
+          Remove o fundo imperfeito e gera 3 fotografias de catálogo profissional.
+        </p>
+
+        <!-- Loading Overlay during processing -->
+        <div class="studio-loading-overlay" id="studio-loading-overlay" style="display: none;">
+          <div class="studio-spinner"></div>
+          <h3 style="font-size: 18px; font-weight: 600; color: var(--ec-text-primary); margin-bottom: 6px;">Criando foto de estúdio...</h3>
+          <p style="font-size: 13px; color: var(--ec-text-secondary); max-width: 280px; line-height: 1.5;">
+            A Mia está removendo o fundo da imagem e gerando 3 variações com iluminação de estúdio.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 07. Bottom Navigation Bar (PWA Mobile) -->
+    <nav class="bottom-nav">
+      <button class="bnav-item active" id="bnav-closet" onclick="switchNavTab('closet')">
+        <i data-lucide="archive"></i>
+        <span>Closet</span>
+      </button>
+      <button class="bnav-item" id="bnav-lookbook" onclick="switchNavTab('lookbook')">
+        <i data-lucide="sparkles"></i>
+        <span>Lookbook</span>
+      </button>
+      <button class="bnav-item" onclick="openStudioModal()">
+        <i data-lucide="plus-circle"></i>
+        <span>Nova Peça</span>
+      </button>
+      <button class="bnav-item" onclick="toggleThemeQuick()">
+        <i data-lucide="moon"></i>
+        <span>Tema</span>
+      </button>
+    </nav>
+
+    <!-- Toast Notification Indicator -->
+    <div class="toast-container" id="app-toast">
+      <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
+      <span id="toast-message">Notificação</span>
+    </div>
+
+  </div>
+
+  <!-- API Shim Tag required by Gemini Notebook persistence -->
+  <api-shim></api-shim>
+
+  <script>
+    /* =====================================================================
+       MIA OUTFIT AI — DATASETS & MOCK PIECES
+    ====================================================================== */
+
+    // High quality vector SVG illustrations representing the fashion pieces
+    function getGarmentSvg(type, colorHex, accentHex) {
+      if (!colorHex) colorHex = '#C4A882';
+      if (!accentHex) accentHex = '#1A1A1A';
+
+      switch(type) {
+        case 'trench':
+          return `<svg viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M28 20L50 14L72 20L84 40L74 44L68 30V95H32V30L26 44L16 40L28 20Z" fill="${colorHex}" stroke="${accentHex}" stroke-width="1.8"/>
+            <path d="M42 20L50 34L58 20" stroke="${accentHex}" stroke-width="1.5"/>
+            <path d="M32 55H68" stroke="${accentHex}" stroke-width="2"/>
+            <circle cx="50" cy="55" r="3" fill="${accentHex}"/>
+            <path d="M50 34V95" stroke="${accentHex}" stroke-width="1.2" stroke-dasharray="3 2"/>
+          </svg>`;
+        case 'blazer':
+          return `<svg viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M30 18L50 24L70 18L84 38L75 42L68 30V90H32V30L25 42L16 38L30 18Z" fill="${colorHex}" stroke="${accentHex}" stroke-width="1.8"/>
+            <path d="M38 18L50 44L62 18" fill="none" stroke="${accentHex}" stroke-width="1.6"/>
+            <path d="M36 68H44M56 68H64" stroke="${accentHex}" stroke-width="1.5"/>
+            <circle cx="50" cy="52" r="2" fill="${accentHex}"/>
+          </svg>`;
+        case 'shirt':
+          return `<svg viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M32 20L50 25L68 20L80 34L72 38L66 28V86H34V28L28 38L20 34L32 20Z" fill="${colorHex}" stroke="${accentHex}" stroke-width="1.8"/>
+            <path d="M42 20L50 28L58 20" stroke="${accentHex}" stroke-width="1.5"/>
+            <path d="M50 28V86" stroke="${accentHex}" stroke-width="1.2"/>
+            <circle cx="50" cy="38" r="1.5" fill="${accentHex}"/>
+            <circle cx="50" cy="50" r="1.5" fill="${accentHex}"/>
+            <circle cx="50" cy="62" r="1.5" fill="${accentHex}"/>
+          </svg>`;
+        case 'leather_jacket':
+          return `<svg viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M28 20L50 26L72 20L85 36L77 40L70 30V82H30V30L23 40L15 36L28 20Z" fill="${colorHex}" stroke="${accentHex}" stroke-width="2"/>
+            <path d="M40 22L56 52" stroke="${accentHex}" stroke-width="2.2"/>
+            <path d="M34 56L42 62" stroke="${accentHex}" stroke-width="1.5"/>
+            <path d="M60 62L66 56" stroke="${accentHex}" stroke-width="1.5"/>
+          </svg>`;
+        case 'sweater':
+          return `<svg viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M34 22C34 16 66 16 66 22L82 36L74 42L68 32V85H32V32L26 42L18 36L34 22Z" fill="${colorHex}" stroke="${accentHex}" stroke-width="1.8"/>
+            <path d="M40 18H60V24H40V18Z" fill="${colorHex}" stroke="${accentHex}" stroke-width="1.2"/>
+            <path d="M32 82H68" stroke="${accentHex}" stroke-width="1.5"/>
+          </svg>`;
+        case 'tank':
+          return `<svg viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M36 20C42 28 58 28 64 20L72 32C66 40 66 46 66 84H34C34 46 34 40 28 32L36 20Z" fill="${colorHex}" stroke="${accentHex}" stroke-width="1.8"/>
+            <path d="M40 80H60" stroke="${accentHex}" stroke-width="1.2"/>
+          </svg>`;
+        case 'pants':
+          return `<svg viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M32 20H68L72 95H53L50 50L47 95H28L32 20Z" fill="${colorHex}" stroke="${accentHex}" stroke-width="1.8"/>
+            <path d="M50 20V32" stroke="${accentHex}" stroke-width="1.5"/>
+            <path d="M40 28H60" stroke="${accentHex}" stroke-width="1.2"/>
+          </svg>`;
+        case 'skirt':
+          return `<svg viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M38 20H62L78 88H22L38 20Z" fill="${colorHex}" stroke="${accentHex}" stroke-width="1.8"/>
+            <path d="M30 40L35 88M44 32L46 88M56 32L54 88M70 40L65 88" stroke="${accentHex}" stroke-width="1.2" stroke-opacity="0.6"/>
+          </svg>`;
+        case 'loafer':
+          return `<svg viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 65C16 52 45 45 70 50C85 54 90 62 88 74H16V65Z" fill="${colorHex}" stroke="${accentHex}" stroke-width="1.8"/>
+            <rect x="14" y="74" width="76" height="8" rx="2" fill="${accentHex}"/>
+            <path d="M50 50V58H65V50" stroke="${accentHex}" stroke-width="1.5"/>
+          </svg>`;
+        case 'slingback':
+          return `<svg viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22 62C30 52 55 52 75 62L88 72H40L22 62Z" fill="${colorHex}" stroke="${accentHex}" stroke-width="1.8"/>
+            <path d="M75 62C85 54 88 56 90 65" stroke="${accentHex}" stroke-width="1.5"/>
+            <path d="M34 72V84H28V72" fill="${accentHex}" stroke="${accentHex}" stroke-width="1.2"/>
+          </svg>`;
+        case 'sneaker':
+          return `<svg viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 64C20 48 42 42 66 48L88 62V76H16V64Z" fill="${colorHex}" stroke="${accentHex}" stroke-width="1.8"/>
+            <rect x="14" y="74" width="76" height="8" rx="3" fill="#FAF8F5" stroke="${accentHex}" stroke-width="1.4"/>
+            <path d="M48 52L54 58M58 54L64 60" stroke="${accentHex}" stroke-width="1.5"/>
+          </svg>`;
+        case 'bag':
+          return `<svg viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M40 34C40 22 60 22 60 34" stroke="${accentHex}" stroke-width="2"/>
+            <rect x="25" y="34" width="50" height="52" rx="4" fill="${colorHex}" stroke="${accentHex}" stroke-width="1.8"/>
+            <path d="M25 46H75" stroke="${accentHex}" stroke-width="1.5"/>
+            <circle cx="50" cy="46" r="3" fill="${accentHex}"/>
+          </svg>`;
+        case 'sunglasses':
+          return `<svg viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="18" y="44" width="28" height="20" rx="6" fill="${colorHex}" stroke="${accentHex}" stroke-width="1.8"/>
+            <rect x="54" y="44" width="28" height="20" rx="6" fill="${colorHex}" stroke="${accentHex}" stroke-width="1.8"/>
+            <path d="M46 50H54" stroke="${accentHex}" stroke-width="2"/>
+            <path d="M18 48L10 44M82 48L90 44" stroke="${accentHex}" stroke-width="1.8"/>
+          </svg>`;
+        default:
+          return `<svg viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="55" r="30" fill="${colorHex}" stroke="${accentHex}" stroke-width="2"/>
+          </svg>`;
+      }
+    }
+
+    // Default Mock Closet Database
+    const initialClosetData = [
+      // 1. Cabideiro (Blusas, Camisas & Casacos)
+      {
+        id: 'p1',
+        name: 'Trench Coat Clássico Duplo',
+        compartment: 'cabideiro',
+        category: 'Casacos & Blazers',
+        svgType: 'trench',
+        colorHex: '#D2B48C',
+        colorName: 'Cáqui Areia',
+        brand: 'Burberry Heritage',
+        fabric: '100% Algodão Gabardine',
+        season: 'Outono / Inverno',
+        fit: 'Regular Alongado',
+        style: 'Alfaiataria',
+        is_anchor: true,
+        is_studio: true,
+        description: 'Trench clássico com lapela transpassada e cinto com fivela forrada. Impermeável e atemporal.'
+      },
+      {
+        id: 'p2',
+        name: 'Blazer de Linho Cru Alfaiataria',
+        compartment: 'cabideiro',
+        category: 'Casacos & Blazers',
+        svgType: 'blazer',
+        colorHex: '#E8DFD3',
+        colorName: 'Bege Areia Natural',
+        brand: 'COS',
+        fabric: '100% Linho Europeu',
+        season: 'Meia-Estação / Primavera',
+        fit: 'Alfaiataria Fluida',
+        style: 'Casual Chic',
+        is_anchor: true,
+        is_studio: true,
+        description: 'Blazer estruturado com ombros limpos. Trama respirável ideal para composições monocromáticas elegantes.'
+      },
+      {
+        id: 'p3',
+        name: 'Camisa de Seda Pura Off-White',
+        compartment: 'cabideiro',
+        category: 'Blusas & Camisas',
+        svgType: 'shirt',
+        colorHex: '#FBF9F5',
+        colorName: 'Off-White Perolado',
+        brand: 'Massimo Dutti',
+        fabric: '100% Seda Mulberry',
+        season: 'Atemporal',
+        fit: 'Fluido Regular',
+        style: 'Minimalista',
+        is_anchor: false,
+        is_studio: true,
+        description: 'Toque acetinado suave com colarinho clássico e botões em madrepérola natural.'
+      },
+      {
+        id: 'p4',
+        name: 'Jaqueta Biker de Pelica Grafite',
+        compartment: 'cabideiro',
+        category: 'Casacos & Blazers',
+        svgType: 'leather_jacket',
+        colorHex: '#2B2B2B',
+        colorName: 'Grafite Fosco',
+        brand: 'Osklen',
+        fabric: '100% Couro Pelica',
+        season: 'Outono / Inverno',
+        fit: 'Slim Biker',
+        style: 'Minimalista',
+        is_anchor: false,
+        is_studio: true,
+        description: 'Couro nobre extra macio com ferragens em banho grafite escovado. Contraponto moderno para peças fluidas.'
+      },
+      {
+        id: 'p5',
+        name: 'Suéter Gola Alta Lã Merino',
+        compartment: 'cabideiro',
+        category: 'Blusas & Camisas',
+        svgType: 'sweater',
+        colorHex: '#C17F5A',
+        colorName: 'Terracota Queimado',
+        brand: 'Arket',
+        fabric: '100% Lã Merino Extrafina',
+        season: 'Inverno / Frio Ameno',
+        fit: 'Ajuste Confortável',
+        style: 'Casual Chic',
+        is_anchor: true,
+        is_studio: false,
+        description: 'Tricô fino e macio em tom terracota marcante, assinatura da paleta Édition Claire.'
+      },
+      {
+        id: 'p6',
+        name: 'Regata Canelada Algodão Pima',
+        compartment: 'cabideiro',
+        category: 'Blusas & Camisas',
+        svgType: 'tank',
+        colorHex: '#F5EFEB',
+        colorName: 'Cru Pálido',
+        brand: 'Hering Privée',
+        fabric: '100% Algodão Pima Peruano',
+        season: 'Todas as Estações',
+        fit: 'Slim Canelado',
+        style: 'Casual Chic',
+        is_anchor: false,
+        is_studio: false,
+        description: 'Peça básica de altíssima densidade para bases de sobreposição sob blazers e casacos.'
+      },
+      {
+        id: 'p7',
+        name: 'Cardigan Alongado de Caxemira',
+        compartment: 'cabideiro',
+        category: 'Blusas & Camisas',
+        svgType: 'sweater',
+        colorHex: '#BFA89B',
+        colorName: 'Taupe Suave',
+        brand: 'Zara Premium',
+        fabric: 'Caxemira & Lã',
+        season: 'Outono',
+        fit: 'Oversized',
+        style: 'Casual Chic',
+        is_anchor: false,
+        is_studio: false,
+        description: 'Caimento fluido e acolhedor para tardes amenas de trabalho e viagens.'
+      },
+      {
+        id: 'p8',
+        name: 'Camisa Listrada Azul Oxford',
+        compartment: 'cabideiro',
+        category: 'Blusas & Camisas',
+        svgType: 'shirt',
+        colorHex: '#D6E4F0',
+        colorName: 'Azul Céu Listrado',
+        brand: 'Ralph Lauren',
+        fabric: '100% Algodão Fio 80',
+        season: 'Primavera / Verão',
+        fit: 'Clássico',
+        style: 'Alfaiataria',
+        is_anchor: false,
+        is_studio: false,
+        description: 'Listras finas clássicas para dinamizar looks neutros com um toque náutico refinado.'
+      },
+      {
+        id: 'p9',
+        name: 'Blazer Preto Alfaiataria Noite',
+        compartment: 'cabideiro',
+        category: 'Casacos & Blazers',
+        svgType: 'blazer',
+        colorHex: '#141414',
+        colorName: 'Preto Profundo',
+        brand: 'Saint Laurent Inspired',
+        fabric: 'Lã Fria e Seda',
+        season: 'Noite / Atemporal',
+        fit: 'Ombros Marcados',
+        style: 'Noite',
+        is_anchor: true,
+        is_studio: true,
+        description: 'Corte afiado com lapela de smoking acetinada para ocasiões noturnas de alto impacto.'
+      },
+      {
+        id: 'p10',
+        name: 'Colete Estruturado em Alfaiataria',
+        compartment: 'cabideiro',
+        category: 'Blusas & Camisas',
+        svgType: 'tank',
+        colorHex: '#DDD3C4',
+        colorName: 'Areia Dourada',
+        brand: 'Massimo Dutti',
+        fabric: 'Linho & Viscose',
+        season: 'Verão / Meia-Estação',
+        fit: 'Alfaiataria Ajustada',
+        style: 'Alfaiataria',
+        is_anchor: false,
+        is_studio: false,
+        description: 'Usado fechado como top ou aberto como terceira peça geométrica.'
+      },
+
+      // 2. Gaveteiro (Calças, Bermudas & Saias)
+      {
+        id: 'p11',
+        name: 'Calça Alfaiataria Reta com Pregas',
+        compartment: 'gaveteiro',
+        category: 'Calças & Saias',
+        svgType: 'pants',
+        colorHex: '#D6C7B2',
+        colorName: 'Areia Natural',
+        brand: 'Massimo Dutti',
+        fabric: 'Lã Fria & Viscose',
+        season: 'Atemporal',
+        fit: 'Cintura Alta Reta',
+        style: 'Alfaiataria',
+        is_anchor: true,
+        is_studio: true,
+        description: 'Caimento impecável com vinco central passado. Alonga perfeitamente a linha das pernas.'
+      },
+      {
+        id: 'p12',
+        name: 'Jeans Reto Lavagem Média 501',
+        compartment: 'gaveteiro',
+        category: 'Calças & Saias',
+        svgType: 'pants',
+        colorHex: '#5A7D9A',
+        colorName: 'Azul Índigo Médio',
+        brand: "Levi's",
+        fabric: '100% Algodão Selvedge',
+        season: 'Todas as Estações',
+        fit: 'Straight Leg',
+        style: 'Casual Chic',
+        is_anchor: false,
+        is_studio: true,
+        description: 'O jeans definitivo. Barra desfeita sutil para harmonizar tanto com salto quanto tênis.'
+      },
+      {
+        id: 'p13',
+        name: 'Saia Midi Plissada em Cetim Champagne',
+        compartment: 'gaveteiro',
+        category: 'Calças & Saias',
+        svgType: 'skirt',
+        colorHex: '#E8DCC4',
+        colorName: 'Champagne Perolado',
+        brand: 'Zara',
+        fabric: 'Cetim Fluido',
+        season: 'Primavera / Verão',
+        fit: 'Evasê Midi',
+        style: 'Noite',
+        is_anchor: false,
+        is_studio: true,
+        description: 'Movimento gracioso sob a luz. Transita perfeitamente do escritório ao jantar.'
+      },
+      {
+        id: 'p14',
+        name: 'Pantalona em Linho e Seda Caramelo',
+        compartment: 'gaveteiro',
+        category: 'Calças & Saias',
+        svgType: 'pants',
+        colorHex: '#A07855',
+        colorName: 'Caramelo Queimado',
+        brand: 'Osklen',
+        fabric: '70% Linho / 30% Seda',
+        season: 'Verão / Meia-Estação',
+        fit: 'Pantalona Ampla',
+        style: 'Casual Chic',
+        is_anchor: false,
+        is_studio: false,
+        description: 'Fluidez descontraída e sofisticada para dias de brisa quente e reuniões solares.'
+      },
+      {
+        id: 'p15',
+        name: 'Bermuda de Alfaiataria Cintura Alta',
+        compartment: 'gaveteiro',
+        category: 'Calças & Saias',
+        svgType: 'pants',
+        colorHex: '#1F1F1F',
+        colorName: 'Preto Carvão',
+        brand: 'COS',
+        fabric: 'Algodão & Elastano',
+        season: 'Verão',
+        fit: 'Bermuda Reta Pelo Joelho',
+        style: 'Minimalista',
+        is_anchor: false,
+        is_studio: false,
+        description: 'Comprimento bermuda contemporâneo para alfaiataria fresca em dias quentes.'
+      },
+      {
+        id: 'p16',
+        name: 'Calça Cenoura em Sarja Off-White',
+        compartment: 'gaveteiro',
+        category: 'Calças & Saias',
+        svgType: 'pants',
+        colorHex: '#FAF5ED',
+        colorName: 'Off-White',
+        brand: 'Renner Atelier',
+        fabric: '100% Algodão Sarjado',
+        season: 'Primavera',
+        fit: 'Cenoura com Cinto Forrado',
+        style: 'Casual Chic',
+        is_anchor: false,
+        is_studio: false,
+        description: 'Cintura marcada com afunilamento elegante nos tornozelos.'
+      },
+
+      // 3. Sapateira (Calçados)
+      {
+        id: 'p17',
+        name: 'Mocassim Tratorado em Couro Preto',
+        compartment: 'sapateira',
+        category: 'Calçados',
+        svgType: 'loafer',
+        colorHex: '#1A1A1A',
+        colorName: 'Preto Brilho Polido',
+        brand: 'Schutz',
+        fabric: 'Couro Bovino Nobre',
+        season: 'Atemporal',
+        fit: 'Regular Confortável',
+        style: 'Minimalista',
+        is_anchor: true,
+        is_studio: true,
+        description: 'Sola tratorada de peso visual contemporâneo com fivela minimalista.'
+      },
+      {
+        id: 'p18',
+        name: 'Scarpin Slingback Salto Médio Terracota',
+        compartment: 'sapateira',
+        category: 'Calçados',
+        svgType: 'slingback',
+        colorHex: '#C17F5A',
+        colorName: 'Terracota Aveludado',
+        brand: 'Arezzo',
+        fabric: 'Couro Camurça Nobre',
+        season: 'Meia-Estação / Noite',
+        fit: 'Bico Fino Salto Bloco 5cm',
+        style: 'Casual Chic',
+        is_anchor: false,
+        is_studio: true,
+        description: 'Tira slingback delicada com salto em bloco equilibrado para caminhar com elegância.'
+      },
+      {
+        id: 'p19',
+        name: 'Tênis Minimalista em Couro Branco',
+        compartment: 'sapateira',
+        category: 'Calçados',
+        svgType: 'sneaker',
+        colorHex: '#FFFFFF',
+        colorName: 'Branco Puro',
+        brand: 'Veja Campo',
+        fabric: 'Couro Sustentável ChromeFree',
+        season: 'Todas as Estações',
+        fit: 'Sneaker Low',
+        style: 'Casual Chic',
+        is_anchor: false,
+        is_studio: true,
+        description: 'Silhueta limpa com solado de borracha amazônica. Versatilidade total.'
+      },
+      {
+        id: 'p20',
+        name: 'Bota Chelsea Cano Curto Café',
+        compartment: 'sapateira',
+        category: 'Calçados',
+        svgType: 'loafer',
+        colorHex: '#4A3525',
+        colorName: 'Marrom Café',
+        brand: 'Luiza Barcelos',
+        fabric: 'Couro Nobre Escovado',
+        season: 'Outono / Inverno',
+        fit: 'Cano Baixo Elástico Lateral',
+        style: 'Alfaiataria',
+        is_anchor: false,
+        is_studio: false,
+        description: 'Bota chelsea firme com bico levemente amendoadado e elásticos duplos.'
+      },
+
+      // 4. Acessórios & Bolsas
+      {
+        id: 'p21',
+        name: 'Bolsa Tote de Couro Pinhão',
+        compartment: 'acessorios',
+        category: 'Bolsas & Acessórios',
+        svgType: 'bag',
+        colorHex: '#6F4E37',
+        colorName: 'Pinhão / Café',
+        brand: 'Schutz Premium',
+        fabric: 'Couro Floater Genuíno',
+        season: 'Atemporal',
+        fit: 'Tote Estruturada Grande',
+        style: 'Alfaiataria',
+        is_anchor: true,
+        is_studio: true,
+        description: 'Comporta notebook com divisórias forradas em camurça. Estrutura geométrica marcante.'
+      },
+      {
+        id: 'p22',
+        name: 'Óculos de Sol Acetato Tartaruga',
+        compartment: 'acessorios',
+        category: 'Bolsas & Acessórios',
+        svgType: 'sunglasses',
+        colorHex: '#523A28',
+        colorName: 'Havana Tartaruga',
+        brand: 'Celine Inspired',
+        fabric: 'Acetato Mazzucchelli Italiano',
+        season: 'Verão / Dias Claros',
+        fit: 'Geométrico Médio',
+        style: 'Casual Chic',
+        is_anchor: false,
+        is_studio: true,
+        description: 'Lentes marrom degradê com proteção UV400 e hastes reforçadas em fio dourado.'
+      },
+      {
+        id: 'p23',
+        name: 'Cinto de Couro com Fivela Escovada',
+        compartment: 'acessorios',
+        category: 'Bolsas & Acessórios',
+        svgType: 'bag',
+        colorHex: '#38281E',
+        colorName: 'Marrom Tabaco',
+        brand: 'Massimo Dutti',
+        fabric: 'Couro de Soleta',
+        season: 'Atemporal',
+        fit: 'Largura 3cm',
+        style: 'Minimalista',
+        is_anchor: false,
+        is_studio: false,
+        description: 'Fivela retangular com banho latão escovado, ideal para marcar cintura de blazers.'
+      },
+      {
+        id: 'p24',
+        name: 'Lenço de Seda Pura Botânica',
+        compartment: 'acessorios',
+        category: 'Bolsas & Acessórios',
+        svgType: 'bag',
+        colorHex: '#D4AF6A',
+        colorName: 'Ocre & Oliva',
+        brand: 'Scarf Co.',
+        fabric: '100% Seda Sarja 14mm',
+        season: 'Meia-Estação',
+        fit: 'Quadrado 70x70cm',
+        style: 'Casual Chic',
+        is_anchor: false,
+        is_studio: false,
+        description: 'Estampa manual inspirada em flora brasileira. Amarração versátil em pescoço ou bolsas.'
+      }
+    ];
+
+    // Outfits in the Lookbook Fashion Rail
+    const outfitsData = [
+      {
+        id: 'look-1',
+        title: 'Alfaiataria Despojada em Linho',
+        subtitle: 'Harmonia em tons terrosos suaves com silhueta alongada para dias de temperatura amena.',
+        occasion: 'trabalho',
+        occasionLabel: 'Trabalho & Reuniões',
+        weatherTag: '⛅ 21°C · Nublado Suave',
+        idealTemp: '19°C – 23°C',
+        piecesIds: ['p2', 'p6', 'p11', 'p17', 'p21'],
+        reasoning: 'O contraste entre a estrutura suave do linho cru e a solidez do mocassim tratorado confere autoridade sem rigidez. A paleta monocromática terrosa alonga a silhueta, enquanto a bolsa tote em couro pinhão ancora a composição.',
+        usageCount: 3,
+        lastUsed: 'Há 2 dias'
+      },
+      {
+        id: 'look-2',
+        title: 'Casual Chic Urbano & Denim Nobre',
+        subtitle: 'Seda pura desconstruída com denim de corte clássico e tênis minimalista.',
+        occasion: 'casual',
+        occasionLabel: 'Casual & Fim de Semana',
+        weatherTag: '☀️ 24°C · Ensolarado',
+        idealTemp: '22°C – 26°C',
+        piecesIds: ['p3', 'p12', 'p19', 'p22'],
+        reasoning: 'A nobreza da seda perolada combinada com o jeans reto cria o equilíbrio perfeito de estilo "high-low". O tênis branco traz frescor e mobilidade contemporânea enquanto os óculos tartaruga arrematam o ponto focal refinado.',
+        usageCount: 5,
+        lastUsed: 'Ontem'
+      },
+      {
+        id: 'look-3',
+        title: 'Noite Minimalista & Tensão de Texturas',
+        subtitle: 'Jaqueta de pelica grafite com saia de cetim fluido champagne e slingback terracota.',
+        occasion: 'noite',
+        occasionLabel: 'Jantar & Noite',
+        weatherTag: '🌙 18°C · Noite Fresca',
+        idealTemp: '16°C – 20°C',
+        piecesIds: ['p4', 'p13', 'p18', 'p24'],
+        reasoning: 'Tensão estética envolvente entre o corte anguloso do couro fosco e o brilho líquido do cetim. O slingback terracota aquece a neutralidade do look, criando uma presença sofisticada e autoral.',
+        usageCount: 2,
+        lastUsed: 'Semana passada'
+      },
+      {
+        id: 'look-4',
+        title: 'Trench Coat & Camadas em Lã Merino',
+        subtitle: 'Proteção contra o vento com camadas inteligentes em cáqui, terracota e couro café.',
+        occasion: 'trabalho',
+        occasionLabel: 'Trabalho / Viagem',
+        weatherTag: '🌧️ 16°C · Garoa Fria',
+        idealTemp: '14°C – 18°C',
+        piecesIds: ['p1', 'p5', 'p11', 'p20', 'p21'],
+        reasoning: 'Camadas funcionais com gradação tonal do terracota ao cáqui. A impermeabilidade elegante do trench coat protege com linha vertical contínua, complementada pela bota chelsea que confere conforto tátil e firmeza.',
+        usageCount: 1,
+        lastUsed: 'Há 5 dias'
+      }
+    ];
+
+    /* =====================================================================
+       APP STATE PERSISTENCE ENGINE (NotebookAppApi & Fallback)
+    ====================================================================== */
+    let currentAppState = {
+      visualMode: 'claire',
+      navTab: 'closet',
+      closetView: 'wardrobe',
+      activeCategory: 'all',
+      activeCompartment: 'cabideiro',
+      searchQuery: '',
+      selectedLookId: 'look-1',
+      activePieceId: 'p2',
+      weatherIndex: 0,
+      closet: JSON.parse(JSON.stringify(initialClosetData))
+    };
+
+    const weatherScenarios = [
+      '⛅ São Paulo · 21°C · Nublado Suave',
+      '☀️ Rio de Janeiro · 28°C · Ensolarado & Quente',
+      '🌧️ Curitiba · 15°C · Chuva & Vento Fresco',
+      '🍂 Belo Horizonte · 23°C · Clima Seco Agradável'
+    ];
+
+    async function loadSavedState() {
+      try {
+        if (window.notebookAppApi && window.notebookAppApi.getAppState) {
+          const s = await window.notebookAppApi.getAppState();
+          if (s && s.closet && Array.isArray(s.closet)) {
+            currentAppState = Object.assign(currentAppState, s);
+          }
+        }
+      } catch(err) {
+        console.warn('Erro ao carregar estado do app', err);
+      }
+    }
+
+    async function persistState() {
+      try {
+        if (window.notebookAppApi && window.notebookAppApi.setAppState) {
+          await window.notebookAppApi.setAppState(currentAppState);
+        }
+      } catch(err) {
+        console.warn('Erro ao salvar estado do app', err);
+      }
+    }
+
+    /* =====================================================================
+       THEME & VISUAL MODE SWITCHER
+    ====================================================================== */
+    function setVisualMode(mode) {
+      currentAppState.visualMode = mode;
+      const htmlEl = document.documentElement;
+      const btnClaire = document.getElementById('opt-claire');
+      const btnDark = document.getElementById('opt-dark');
+
+      if (mode === 'dark') {
+        htmlEl.classList.add('mode-dark');
+        if (btnDark) btnDark.classList.add('active');
+        if (btnClaire) btnClaire.classList.remove('active');
+      } else {
+        htmlEl.classList.remove('mode-dark');
+        if (btnClaire) btnClaire.classList.add('active');
+        if (btnDark) btnDark.classList.remove('active');
+      }
+
+      persistState();
+      // Re-render pieces to match new theme strokes & hues
+      renderWardrobeCabinet();
+      renderClosetGrid();
+      renderLookbookRack();
+    }
+
+    function toggleThemeQuick() {
+      const newMode = currentAppState.visualMode === 'dark' ? 'claire' : 'dark';
+      setVisualMode(newMode);
+      showToast(`Tema alterado para ${newMode === 'dark' ? 'Dark Edition' : 'Édition Claire'}`);
+    }
+
+    /* =====================================================================
+       NAVIGATION TABS (Closet vs Lookbook)
+    ====================================================================== */
+    function switchNavTab(tab) {
+      currentAppState.navTab = tab;
+      const closetTab = document.getElementById('tab-btn-closet');
+      const lookbookTab = document.getElementById('tab-btn-lookbook');
+      const bnavCloset = document.getElementById('bnav-closet');
+      const bnavLookbook = document.getElementById('bnav-lookbook');
+
+      const wardrobeSection = document.getElementById('view-wardrobe-wrapper');
+      const gridSection = document.getElementById('view-grid-wrapper');
+      const lookbookSection = document.getElementById('view-lookbook-wrapper');
+      const viewModePill = document.getElementById('closet-view-pill');
+      const categoryBar = document.getElementById('category-filter-bar');
+      const mainTitle = document.getElementById('main-view-title');
+
+      if (tab === 'closet') {
+        if (closetTab) closetTab.classList.add('active');
+        if (lookbookTab) lookbookTab.classList.remove('active');
+        if (bnavCloset) bnavCloset.classList.add('active');
+        if (bnavLookbook) bnavLookbook.classList.remove('active');
+
+        if (viewModePill) viewModePill.style.display = 'inline-flex';
+        if (categoryBar) categoryBar.style.display = 'flex';
+        if (lookbookSection) lookbookSection.style.display = 'none';
+
+        if (mainTitle) {
+          mainTitle.innerHTML = `<span>Meu Closet</span> <span class="count-chip" id="piece-count-badge">${currentAppState.closet.length} peças</span>`;
+        }
+
+        setClosetView(currentAppState.closetView);
+      } else if (tab === 'lookbook') {
+        if (closetTab) closetTab.classList.remove('active');
+        if (lookbookTab) lookbookTab.classList.add('active');
+        if (bnavCloset) bnavCloset.classList.remove('active');
+        if (bnavLookbook) bnavLookbook.classList.add('active');
+
+        if (wardrobeSection) wardrobeSection.style.display = 'none';
+        if (gridSection) gridSection.style.display = 'none';
+        if (viewModePill) viewModePill.style.display = 'none';
+        if (categoryBar) categoryBar.style.display = 'none';
+        if (lookbookSection) lookbookSection.style.display = 'block';
+
+        if (mainTitle) {
+          mainTitle.innerHTML = `<span>Arara de Outfits</span> <span class="count-chip">Mia AI</span>`;
+        }
+
+        renderLookbookRack();
+        inspectLook(currentAppState.selectedLookId || 'look-1');
+      }
+
+      persistState();
+    }
+
+    /* =====================================================================
+       CLOSET VIEW TOGGLE: ARMÁRIO TÁTIL vs GRID
+    ====================================================================== */
+    function setClosetView(view) {
+      currentAppState.closetView = view;
+      const btnWardrobe = document.getElementById('btn-view-wardrobe');
+      const btnGrid = document.getElementById('btn-view-grid');
+      const wardrobeSection = document.getElementById('view-wardrobe-wrapper');
+      const gridSection = document.getElementById('view-grid-wrapper');
+
+      if (view === 'wardrobe') {
+        if (btnWardrobe) btnWardrobe.classList.add('active');
+        if (btnGrid) btnGrid.classList.remove('active');
+        if (wardrobeSection) wardrobeSection.style.display = 'flex';
+        if (gridSection) gridSection.style.display = 'none';
+        renderWardrobeCabinet();
+      } else {
+        if (btnGrid) btnGrid.classList.add('active');
+        if (btnWardrobe) btnWardrobe.classList.remove('active');
+        if (wardrobeSection) wardrobeSection.style.display = 'none';
+        if (gridSection) gridSection.style.display = 'block';
+        renderClosetGrid();
+      }
+
+      persistState();
+    }
+
+    /* =====================================================================
+       RENDERER: ARQUITETURA TÁTIL DO GUARDA-ROUPA
+    ====================================================================== */
+    function renderWardrobeCabinet() {
+      const isDark = document.documentElement.classList.contains('mode-dark');
+      const strokeColor = isDark ? '#D4AF6A' : '#1A1A1A';
+
+      // 1. Acessórios & Bolsas
+      const accSlot = document.getElementById('wardrobe-accessories-slot');
+      if (accSlot) {
+        const accPieces = currentAppState.closet.filter(p => p.compartment === 'acessorios');
+        accSlot.innerHTML = accPieces.map(p => `
+          <div class="garment-item" onclick="openPieceModal('${p.id}'); event.stopPropagation();">
+            ${p.is_anchor ? '<span class="anchor-mini-badge" title="Peça Âncora">📌</span>' : ''}
+            <div class="garment-icon-svg">${getGarmentSvg(p.svgType, p.colorHex, strokeColor)}</div>
+            <span class="garment-item-name">${p.name}</span>
+            <span class="garment-item-brand">${p.brand}</span>
+          </div>
+        `).join('');
+      }
+
+      // 2. Cabideiro (Blusas, Camisas & Casacos)
+      const hangersSlot = document.getElementById('wardrobe-hangers-slot');
+      if (hangersSlot) {
+        const cabPieces = currentAppState.closet.filter(p => p.compartment === 'cabideiro');
+        hangersSlot.innerHTML = cabPieces.map(p => `
+          <div class="hanger-piece" onclick="openPieceModal('${p.id}'); event.stopPropagation();">
+            ${p.is_anchor ? '<span class="anchor-mini-badge" title="Peça Âncora">📌</span>' : ''}
+            <div class="hanger-hook"></div>
+            <div class="hanger-silhouette">${getGarmentSvg(p.svgType, p.colorHex, strokeColor)}</div>
+            <span class="garment-item-name" style="margin-top: 4px;">${p.name}</span>
+            <span class="garment-item-brand">${p.brand}</span>
+          </div>
+        `).join('');
+      }
+
+      // 3. Gaveteiro (Calças, Bermudas & Saias)
+      const drawersSlot = document.getElementById('wardrobe-drawers-slot');
+      if (drawersSlot) {
+        const drawPieces = currentAppState.closet.filter(p => p.compartment === 'gaveteiro');
+        drawersSlot.innerHTML = drawPieces.map(p => `
+          <div class="folded-piece" onclick="openPieceModal('${p.id}'); event.stopPropagation();">
+            ${p.is_anchor ? '<span class="anchor-mini-badge" title="Peça Âncora">📌</span>' : ''}
+            <div class="garment-icon-svg">${getGarmentSvg(p.svgType, p.colorHex, strokeColor)}</div>
+            <span class="garment-item-name">${p.name}</span>
+            <span class="garment-item-brand">${p.brand}</span>
+          </div>
+        `).join('');
+      }
+
+      // 4. Sapateira (Calçados)
+      const shoesSlot = document.getElementById('wardrobe-shoes-slot');
+      if (shoesSlot) {
+        const shoePieces = currentAppState.closet.filter(p => p.compartment === 'sapateira');
+        shoesSlot.innerHTML = shoePieces.map(p => `
+          <div class="garment-item" onclick="openPieceModal('${p.id}'); event.stopPropagation();">
+            ${p.is_anchor ? '<span class="anchor-mini-badge" title="Peça Âncora">📌</span>' : ''}
+            <div class="garment-icon-svg">${getGarmentSvg(p.svgType, p.colorHex, strokeColor)}</div>
+            <span class="garment-item-name">${p.name}</span>
+            <span class="garment-item-brand">${p.brand}</span>
+          </div>
+        `).join('');
+      }
+
+      renderCompartmentFocusPanel();
+    }
+
+    function focusCompartment(compKey) {
+      currentAppState.activeCompartment = compKey;
+      const sections = ['accessories-shelf', 'hanging-rail-section', 'drawers-section', 'shoe-rack-section'];
+      const targets = {
+        'acessorios': 'shelf-accessories',
+        'cabideiro': 'shelf-cabideiro',
+        'gaveteiro': 'shelf-gaveteiro',
+        'sapateira': 'shelf-sapateira'
+      };
+
+      document.querySelectorAll('.wardrobe-section').forEach(s => s.classList.remove('focused'));
+      const activeEl = document.getElementById(targets[compKey]);
+      if (activeEl) activeEl.classList.add('focused');
+
+      renderCompartmentFocusPanel();
+      persistState();
+    }
+
+    function renderCompartmentFocusPanel() {
+      const compKey = currentAppState.activeCompartment || 'cabideiro';
+      const names = {
+        'acessorios': 'Prateleira Superior de Acessórios & Bolsas',
+        'cabideiro': 'Cabideiro Principal de Blusas, Camisas & Casacos',
+        'gaveteiro': 'Gaveteiro Canelado de Calças, Bermudas & Saias',
+        'sapateira': 'Sapateira Rasante de Calçados'
+      };
+
+      const titleEl = document.getElementById('cfp-title-text');
+      const gridEl = document.getElementById('cfp-pieces-grid');
+      const pieces = currentAppState.closet.filter(p => p.compartment === compKey);
+
+      if (titleEl) {
+        titleEl.textContent = `${names[compKey]} (${pieces.length} peças cadastradas)`;
+      }
+
+      if (gridEl) {
+        const isDark = document.documentElement.classList.contains('mode-dark');
+        const strokeColor = isDark ? '#D4AF6A' : '#1A1A1A';
+
+        gridEl.innerHTML = pieces.map(p => `
+          <div class="cfp-card" onclick="openPieceModal('${p.id}')">
+            <div class="cfp-thumb">
+              ${getGarmentSvg(p.svgType, p.colorHex, strokeColor)}
+            </div>
+            <div class="cfp-info">
+              <span class="cfp-cat">${p.category} ${p.is_anchor ? '• Âncora 📌' : ''}</span>
+              <div class="cfp-name">${p.name}</div>
+              <div class="cfp-desc">${p.fabric} · ${p.brand}</div>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    /* =====================================================================
+       RENDERER: VISÃO GRID EDITORIAL DO CLOSET
+    ====================================================================== */
+    function renderClosetGrid() {
+      const gridEl = document.getElementById('main-closet-grid');
+      if (!gridEl) return;
+
+      const isDark = document.documentElement.classList.contains('mode-dark');
+      const strokeColor = isDark ? '#D4AF6A' : '#1A1A1A';
+
+      let filtered = currentAppState.closet;
+
+      // Category filter
+      if (currentAppState.activeCategory === 'anchor') {
+        filtered = filtered.filter(p => p.is_anchor);
+      } else if (currentAppState.activeCategory !== 'all') {
+        filtered = filtered.filter(p => p.compartment === currentAppState.activeCategory);
+      }
+
+      // Search Query filter
+      if (currentAppState.searchQuery.trim()) {
+        const q = currentAppState.searchQuery.toLowerCase();
+        filtered = filtered.filter(p =>
+          p.name.toLowerCase().includes(q) ||
+          p.brand.toLowerCase().includes(q) ||
+          p.colorName.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q)
+        );
+      }
+
+      if (filtered.length === 0) {
+        gridEl.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--ec-text-muted);">
+            <i data-lucide="inbox" style="width: 44px; height: 44px; margin: 0 auto 12px; stroke-width: 1.2;"></i>
+            <h3 style="font-size: 16px; font-weight: 500; color: var(--ec-text-primary); margin-bottom: 4px;">Nenhuma peça encontrada</h3>
+            <p style="font-size: 13px;">Tente limpar a busca ou selecionar outra categoria.</p>
+          </div>
+        `;
+        if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+        return;
+      }
+
+      gridEl.innerHTML = filtered.map(p => `
+        <div class="piece-card" onclick="openPieceModal('${p.id}')">
+          ${p.is_anchor ? '<div class="piece-card-anchor-badge" title="Peça Âncora">📌</div>' : ''}
+          ${p.is_studio ? '<div class="piece-card-studio-badge">✦ Estúdio</div>' : ''}
+          <div class="piece-card-media">
+            ${getGarmentSvg(p.svgType, p.colorHex, strokeColor)}
+          </div>
+          <div class="piece-card-overlay">
+            <span class="piece-card-category">${p.category}</span>
+            <div class="piece-card-name">${p.name}</div>
+            <div class="piece-card-meta">
+              <span>${p.brand}</span>
+              <span>${p.colorName}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      const countBadge = document.getElementById('piece-count-badge');
+      if (countBadge) countBadge.textContent = `${filtered.length} de ${currentAppState.closet.length} peças`;
+    }
+
+    function filterByCategory(cat) {
+      currentAppState.activeCategory = cat;
+      document.querySelectorAll('.cat-chip').forEach(btn => {
+        if (btn.dataset.category === cat) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+      renderClosetGrid();
+      persistState();
+    }
+
+    function handleSearch(val) {
+      currentAppState.searchQuery = val;
+      renderClosetGrid();
+    }
+
+    /* =====================================================================
+       LOOKBOOK: FASHION RACK & OUTFIT INSPECTOR
+    ====================================================================== */
+    function renderLookbookRack() {
+      const rackEl = document.getElementById('outfits-rack-scroll');
+      if (!rackEl) return;
+
+      const isDark = document.documentElement.classList.contains('mode-dark');
+      const strokeColor = isDark ? '#D4AF6A' : '#1A1A1A';
+
+      rackEl.innerHTML = outfitsData.map(outfit => {
+        // Collect piece SVGs
+        const outfitPieces = outfit.piecesIds
+          .map(id => currentAppState.closet.find(p => p.id === id))
+          .filter(Boolean);
+
+        const isSelected = outfit.id === currentAppState.selectedLookId;
+
+        return `
+          <div class="outfit-rack-card ${isSelected ? 'selected' : ''}" onclick="inspectLook('${outfit.id}')">
+            <div class="outfit-hanger-neck">
+              <div class="hanger-triangle"></div>
+            </div>
+
+            <div class="outfit-ensemble-preview">
+              ${outfitPieces.slice(0, 4).map(p => `
+                <div class="ensemble-thumb" title="${p.name}">
+                  ${getGarmentSvg(p.svgType, p.colorHex, strokeColor)}
+                </div>
+              `).join('')}
+            </div>
+
+            <div class="outfit-card-body">
+              <div class="outfit-badge-row">
+                <span class="outfit-weather-tag">${outfit.weatherTag}</span>
+                <span style="font-size: 11px; color: var(--ec-accent); font-weight: 500;">${outfit.occasionLabel}</span>
+              </div>
+              <h3 class="outfit-card-title">${outfit.title}</h3>
+              <p class="outfit-card-sub">${outfit.subtitle}</p>
+
+              <div class="outfit-card-actions">
+                <button class="btn-use-look" onclick="recordOutfitUsage('${outfit.id}'); event.stopPropagation();">
+                  <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                  <span>Usar hoje (${outfit.usageCount})</span>
+                </button>
+                <button class="btn-inspect-look" onclick="inspectLook('${outfit.id}'); event.stopPropagation();">
+                  <span>Ver Detalhes</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+    }
+
+    function inspectLook(lookId) {
+      currentAppState.selectedLookId = lookId;
+      const outfit = outfitsData.find(o => o.id === lookId) || outfitsData[0];
+
+      // Highlight in rack cards
+      document.querySelectorAll('.outfit-rack-card').forEach(c => c.classList.remove('selected'));
+      // Update Detail Card
+      const occBadge = document.getElementById('ld-occasion-text');
+      const titleEl = document.getElementById('ld-title-text');
+      const subEl = document.getElementById('ld-sub-text');
+      const reasoningEl = document.getElementById('ld-reasoning-text');
+      const piecesListEl = document.getElementById('ld-pieces-list');
+
+      if (occBadge) occBadge.textContent = `${outfit.occasionLabel} · ${outfit.weatherTag}`;
+      if (titleEl) titleEl.textContent = outfit.title;
+      if (subEl) subEl.textContent = outfit.subtitle;
+      if (reasoningEl) reasoningEl.textContent = outfit.reasoning;
+
+      if (piecesListEl) {
+        const isDark = document.documentElement.classList.contains('mode-dark');
+        const strokeColor = isDark ? '#D4AF6A' : '#1A1A1A';
+
+        const pieces = outfit.piecesIds
+          .map(id => currentAppState.closet.find(p => p.id === id))
+          .filter(Boolean);
+
+        piecesListEl.innerHTML = pieces.map(p => `
+          <div class="ld-piece-row" onclick="openPieceModal('${p.id}')">
+            <div class="ld-piece-thumb">
+              ${getGarmentSvg(p.svgType, p.colorHex, strokeColor)}
+            </div>
+            <div class="ld-piece-info">
+              <span class="ld-piece-cat">${p.category} ${p.is_anchor ? '• Âncora 📌' : ''}</span>
+              <div class="ld-piece-name">${p.name}</div>
+            </div>
+            <i data-lucide="chevron-right" style="width: 14px; height: 14px; color: var(--ec-text-muted);"></i>
+          </div>
+        `).join('');
+      }
+
+      if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+      persistState();
+    }
+
+    function filterLookbook(occ) {
+      document.querySelectorAll('.occasion-tab').forEach(b => {
+        if (b.dataset.occasion === occ) {
+          b.classList.add('active');
+        } else {
+          b.classList.remove('active');
+        }
+      });
+      showToast(`Filtrando looks por ocasião: ${occ === 'all' ? 'Todos os Looks' : occ}`);
+    }
+
+    function recordOutfitUsage(outfitId) {
+      const id = outfitId || currentAppState.selectedLookId;
+      const outfit = outfitsData.find(o => o.id === id);
+      if (outfit) {
+        outfit.usageCount = (outfit.usageCount || 0) + 1;
+        outfit.lastUsed = 'Hoje';
+        showToast(`Look "${outfit.title}" marcado como usado hoje! Registrado no histórico.`);
+        renderLookbookRack();
+        persistState();
+      }
+    }
+
+    function generateOutfitVariation() {
+      const outfit = outfitsData.find(o => o.id === currentAppState.selectedLookId);
+      if (!outfit) return;
+
+      showToast(`Mia AI recalculando sobreposições para "${outfit.title}"...`);
+      setTimeout(() => {
+        outfit.subtitle = `Variação de meia-estação com substituição de calçado leve e sobreposição desconstruída.`;
+        inspectLook(outfit.id);
+        renderLookbookRack();
+        showToast(`✓ Variação do look gerada com sucesso pela Mia!`);
+      }, 700);
+    }
+
+    /* =====================================================================
+       SPLIT MODAL: DETALHE DA PEÇA (PIECE DETAIL)
+    ====================================================================== */
+    function openPieceModal(pieceId) {
+      currentAppState.activePieceId = pieceId;
+      const piece = currentAppState.closet.find(p => p.id === pieceId);
+      if (!piece) return;
+
+      const modalEl = document.getElementById('piece-modal-overlay');
+      const catBadge = document.getElementById('pdd-cat-badge');
+      const titleEl = document.getElementById('pdd-piece-title');
+      const brandEl = document.getElementById('pdd-spec-brand');
+      const colorEl = document.getElementById('pdd-spec-color');
+      const fabricEl = document.getElementById('pdd-spec-fabric');
+      const seasonEl = document.getElementById('pdd-spec-season');
+      const descEl = document.getElementById('pdd-desc-text');
+      const tagsGroup = document.getElementById('pdd-tags-group');
+      const anchorBtn = document.getElementById('btn-toggle-anchor');
+      const anchorLabel = document.getElementById('anchor-btn-label');
+      const mainMedia = document.getElementById('pdd-main-media');
+      const thumbsRow = document.getElementById('pdd-thumbs-row');
+
+      const isDark = document.documentElement.classList.contains('mode-dark');
+      const strokeColor = isDark ? '#D4AF6A' : '#1A1A1A';
+
+      if (catBadge) catBadge.textContent = piece.category;
+      if (titleEl) titleEl.textContent = piece.name;
+      if (brandEl) brandEl.textContent = piece.brand;
+      if (colorEl) colorEl.textContent = piece.colorName;
+      if (fabricEl) fabricEl.textContent = piece.fabric;
+      if (seasonEl) seasonEl.textContent = piece.season;
+      if (descEl) descEl.textContent = piece.description;
+
+      if (tagsGroup) {
+        tagsGroup.innerHTML = `
+          <span class="pdd-tag">${piece.fit}</span>
+          <span class="pdd-tag">${piece.style}</span>
+          <span class="pdd-tag">${piece.season}</span>
+        `;
+      }
+
+      if (anchorBtn && anchorLabel) {
+        if (piece.is_anchor) {
+          anchorBtn.classList.add('active');
+          anchorLabel.textContent = '✓ Peça Âncora Ativa';
+        } else {
+          anchorBtn.classList.remove('active');
+          anchorLabel.textContent = '📌 Definir como Peça Âncora';
+        }
+      }
+
+      // Render main media SVG
+      if (mainMedia) {
+        mainMedia.innerHTML = getGarmentSvg(piece.svgType, piece.colorHex, strokeColor);
+      }
+
+      // Render 4 Thumbs (Original, Cutout, Studio 1, Studio 2)
+      if (thumbsRow) {
+        thumbsRow.innerHTML = `
+          <div class="pdd-thumb-card active is-cover" onclick="swapDetailPhoto(0, '${piece.svgType}', '${piece.colorHex}')">
+            ${getGarmentSvg(piece.svgType, piece.colorHex, strokeColor)}
+          </div>
+          <div class="pdd-thumb-card is-studio" onclick="swapDetailPhoto(1, '${piece.svgType}', '${piece.colorHex}')">
+            ${getGarmentSvg(piece.svgType, piece.colorHex, strokeColor)}
+          </div>
+          <div class="pdd-thumb-card is-studio" onclick="swapDetailPhoto(2, '${piece.svgType}', '${piece.colorHex}')">
+            ${getGarmentSvg(piece.svgType, piece.colorHex, strokeColor)}
+          </div>
+          <div class="pdd-thumb-card is-studio" onclick="swapDetailPhoto(3, '${piece.svgType}', '${piece.colorHex}')">
+            ${getGarmentSvg(piece.svgType, piece.colorHex, strokeColor)}
+          </div>
+        `;
+      }
+
+      if (modalEl) modalEl.classList.add('open');
+      if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+    }
+
+    function swapDetailPhoto(index, svgType, colorHex) {
+      document.querySelectorAll('.pdd-thumb-card').forEach((c, idx) => {
+        if (idx === index) {
+          c.classList.add('active', 'is-cover');
+        } else {
+          c.classList.remove('active', 'is-cover');
+        }
+      });
+      const mainMedia = document.getElementById('pdd-main-media');
+      const isDark = document.documentElement.classList.contains('mode-dark');
+      const strokeColor = isDark ? '#D4AF6A' : '#1A1A1A';
+      if (mainMedia) {
+        mainMedia.innerHTML = getGarmentSvg(svgType, colorHex, strokeColor);
+      }
+      showToast(`Foto de Capa alterada para variação ${index + 1}.`);
+    }
+
+    function toggleActivePieceAnchor() {
+      const piece = currentAppState.closet.find(p => p.id === currentAppState.activePieceId);
+      if (!piece) return;
+
+      piece.is_anchor = !piece.is_anchor;
+      const anchorBtn = document.getElementById('btn-toggle-anchor');
+      const anchorLabel = document.getElementById('anchor-btn-label');
+
+      if (piece.is_anchor) {
+        if (anchorBtn) anchorBtn.classList.add('active');
+        if (anchorLabel) anchorLabel.textContent = '✓ Peça Âncora Ativa';
+        showToast(`"${piece.name}" fixada como Peça Âncora do seu guarda-roupa!`);
+      } else {
+        if (anchorBtn) anchorBtn.classList.remove('active');
+        if (anchorLabel) anchorLabel.textContent = '📌 Definir como Peça Âncora';
+        showToast(`"${piece.name}" removida das Peças Âncora.`);
+      }
+
+      renderWardrobeCabinet();
+      renderClosetGrid();
+      persistState();
+    }
+
+    function createLookFromActivePiece() {
+      const piece = currentAppState.closet.find(p => p.id === currentAppState.activePieceId);
+      if (!piece) return;
+
+      closePieceModal();
+      switchNavTab('lookbook');
+      showToast(`A Mia selecionou o Look com "${piece.name}".`);
+    }
+
+    function simulateStudioShotForActivePiece() {
+      const piece = currentAppState.closet.find(p => p.id === currentAppState.activePieceId);
+      if (!piece) return;
+
+      showToast(`Processando foto de estúdio com fundo branco para "${piece.name}"...`);
+      setTimeout(() => {
+        piece.is_studio = true;
+        renderWardrobeCabinet();
+        renderClosetGrid();
+        persistState();
+        showToast(`✦ 3 fotos de estúdio geradas e adicionadas à galeria da peça!`);
+      }, 800);
+    }
+
+    function closePieceModal(e) {
+      if (e && e.target && e.target.id !== 'piece-modal-overlay') return;
+      const modalEl = document.getElementById('piece-modal-overlay');
+      if (modalEl) modalEl.classList.remove('open');
+    }
+
+    /* =====================================================================
+       FILTER DRAWER ACTIONS
+    ====================================================================== */
+    function openFilterDrawer() {
+      const overlay = document.getElementById('filter-drawer-overlay');
+      const drawer = document.getElementById('filter-drawer');
+      if (overlay) overlay.classList.add('open');
+      if (drawer) drawer.classList.add('open');
+    }
+
+    function closeFilterDrawer(e) {
+      if (e && e.target && e.target.id !== 'filter-drawer-overlay') return;
+      const overlay = document.getElementById('filter-drawer-overlay');
+      const drawer = document.getElementById('filter-drawer');
+      if (overlay) overlay.classList.remove('open');
+      if (drawer) drawer.classList.remove('open');
+    }
+
+    function applyDrawerFilters() {
+      const checkedTypes = Array.from(document.querySelectorAll('input[name="type"]:checked')).map(cb => cb.value);
+      const checkedStatus = Array.from(document.querySelectorAll('input[name="status"]:checked')).map(cb => cb.value);
+      const checkedStyles = Array.from(document.querySelectorAll('input[name="style"]:checked')).map(cb => cb.value);
+
+      const totalActive = checkedTypes.length + checkedStatus.length + checkedStyles.length;
+      const badge = document.getElementById('active-filters-count');
+      if (badge) badge.textContent = totalActive;
+
+      // Filter in Grid
+      if (totalActive > 0 && currentAppState.closetView !== 'grid') {
+        setClosetView('grid');
+      }
+      renderClosetGrid();
+    }
+
+    function clearDrawerFilters() {
+      document.querySelectorAll('#filter-drawer input[type="checkbox"]').forEach(cb => cb.checked = false);
+      const badge = document.getElementById('active-filters-count');
+      if (badge) badge.textContent = '0';
+      renderClosetGrid();
+      showToast('Filtros do Closet redefinidos.');
+    }
+
+    /* =====================================================================
+       MODAL: NOVA PEÇA & SIMULADOR DE ESTÚDIO IA
+    ====================================================================== */
+    function openStudioModal() {
+      const modalEl = document.getElementById('studio-modal-overlay');
+      const loading = document.getElementById('studio-loading-overlay');
+      if (loading) loading.style.display = 'none';
+      if (modalEl) modalEl.classList.add('open');
+    }
+
+    function closeStudioModal(e) {
+      if (e && e.target && e.target.id !== 'studio-modal-overlay') return;
+      const modalEl = document.getElementById('studio-modal-overlay');
+      if (modalEl) modalEl.classList.remove('open');
+    }
+
+    function simulateFileUpload() {
+      showToast('Foto selecionada: Analisando tecido, cor e silhueta via IA...');
+    }
+
+    function triggerStudioProcessing() {
+      const loading = document.getElementById('studio-loading-overlay');
+      if (loading) loading.style.display = 'flex';
+
+      const nameInput = document.getElementById('np-name-input');
+      const compSelect = document.getElementById('np-compartment-select');
+      const brandInput = document.getElementById('np-brand-input');
+
+      const newPieceName = nameInput ? nameInput.value : 'Peça Customizada';
+      const comp = compSelect ? compSelect.value : 'cabideiro';
+      const brand = brandInput ? brandInput.value : 'Acervo';
+
+      setTimeout(() => {
+        if (loading) loading.style.display = 'none';
+
+        // Add to database
+        const newPiece = {
+          id: 'p' + (currentAppState.closet.length + 1),
+          name: newPieceName,
+          compartment: comp,
+          category: comp === 'cabideiro' ? 'Blusas & Casacos' : comp === 'gaveteiro' ? 'Calças & Saias' : comp === 'sapateira' ? 'Calçados' : 'Bolsas & Acessórios',
+          svgType: comp === 'cabideiro' ? 'sweater' : comp === 'gaveteiro' ? 'pants' : comp === 'sapateira' ? 'loafer' : 'bag',
+          colorHex: '#C17F5A',
+          colorName: 'Terracota Artesanal',
+          brand: brand,
+          fabric: 'Tricô Penteado',
+          season: 'Meia-Estação',
+          fit: 'Confortável',
+          style: 'Casual Chic',
+          is_anchor: false,
+          is_studio: true,
+          description: 'Foto gerada com fundo branco profissional pela API de visão. Pronto para compor novos looks.'
+        };
+
+        currentAppState.closet.unshift(newPiece);
+        closeStudioModal();
+        renderWardrobeCabinet();
+        renderClosetGrid();
+        persistState();
+        showToast(`✦ Peça "${newPiece.name}" adicionada com 3 fotos de estúdio!`);
+      }, 1600);
+    }
+
+    /* =====================================================================
+       WEATHER CYCLER (Real-Time Weather Context Simulator)
+    ====================================================================== */
+    function cycleWeather() {
+      currentAppState.weatherIndex = (currentAppState.weatherIndex + 1) % weatherScenarios.length;
+      const weatherTextEl = document.getElementById('weather-text');
+      const currentScenario = weatherScenarios[currentAppState.weatherIndex];
+      if (weatherTextEl) weatherTextEl.textContent = currentScenario;
+
+      showToast(`Clima alterado: ${currentScenario}. Recalculando prioridade dos outfits.`);
+      persistState();
+    }
+
+    /* =====================================================================
+       TOAST NOTIFICATION ENGINE
+    ====================================================================== */
+    let toastTimeout = null;
+    function showToast(message) {
+      const toast = document.getElementById('app-toast');
+      const msgEl = document.getElementById('toast-message');
+      if (!toast || !msgEl) return;
+
+      msgEl.textContent = message;
+      toast.classList.add('show');
+
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3400);
+    }
+
+    /* =====================================================================
+       INITIALIZATION ROUTINE
+    ====================================================================== */
+    async function initApp() {
+      await loadSavedState();
+
+      // Apply Visual Mode
+      setVisualMode(currentAppState.visualMode || 'claire');
+
+      // Set Main Tab & Subviews
+      switchNavTab(currentAppState.navTab || 'closet');
+
+      // Render Closet
+      renderWardrobeCabinet();
+      renderClosetGrid();
+
+      // Initialize Lucide Icons
+      if (window.lucide && window.lucide.createIcons) {
+        window.lucide.createIcons();
+      }
+
+      // Notify host environment that app is ready
+      if (window.notebookAppApi && window.notebookAppApi.notifyAppReady) {
+        window.notebookAppApi.notifyAppReady();
+      }
+    }
+
+    // Run on DOM ready
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>

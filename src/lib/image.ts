@@ -108,3 +108,29 @@ export async function moderateImage(base64: string): Promise<ModerateImageResult
     return { approved: false, message: MODERATION_UNAVAILABLE_MESSAGE }
   }
 }
+
+export type UploadImageKind = 'piece' | 'piece-input' | 'avatar'
+
+export type UploadImageResult =
+  | { ok: true; url: string }
+  | { ok: false; message: string }
+
+/** Envia a imagem pelo servidor, que modera e grava no Storage (o cliente não escreve direto). */
+export async function uploadImage(file: Blob, kind: UploadImageKind): Promise<UploadImageResult> {
+  try {
+    const form = new FormData()
+    form.append('file', file, 'photo.jpg')
+    form.append('kind', kind)
+
+    const res = await fetch('/api/storage/upload', { method: 'POST', body: form })
+    const data = await res.json().catch(() => ({})) as { url?: string; code?: string }
+
+    if (res.ok && data.url) return { ok: true, url: data.url }
+    if (data.code === 'CONTENT_FLAGGED') return { ok: false, message: MODERATION_CONTENT_MESSAGE }
+    if (data.code === 'TOO_LARGE' || res.status === 413) return { ok: false, message: MODERATION_PAYLOAD_TOO_LARGE_MESSAGE }
+    if (data.code === 'MODERATION_UNAVAILABLE') return { ok: false, message: MODERATION_UNAVAILABLE_MESSAGE }
+    return { ok: false, message: 'Erro ao enviar a imagem. Tente novamente.' }
+  } catch {
+    return { ok: false, message: 'Erro ao enviar a imagem. Tente novamente.' }
+  }
+}

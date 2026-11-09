@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { isOwnedStorageUrl } from '@/lib/storage-url'
 import { checkRateLimit, incrementUsage, rateLimitResponse } from '@/lib/rate-limit'
 
 export const maxDuration = 120
@@ -21,14 +23,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'photo_urls obrigatório' }, { status: 400 })
     }
 
-    const ALLOWED_STORAGE_HOST = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace('https://', '')
+    // só imagens já moderadas, gravadas pelo servidor na pasta do próprio usuário
     for (const url of photo_urls) {
-      try {
-        const parsed = new URL(url)
-        if (!ALLOWED_STORAGE_HOST || parsed.hostname !== ALLOWED_STORAGE_HOST) {
-          return NextResponse.json({ error: 'URL de imagem inválida' }, { status: 400 })
-        }
-      } catch {
+      if (typeof url !== 'string' || !isOwnedStorageUrl(url, user.id)) {
         return NextResponse.json({ error: 'URL de imagem inválida' }, { status: 400 })
       }
     }
@@ -344,7 +341,8 @@ export async function POST(request: Request) {
     const imgBuffer = Buffer.from(await imgRes.arrayBuffer())
 
     const storagePath = `studio/${user.id}/${Date.now()}.jpg`
-    const { error: uploadError } = await supabase.storage
+    const admin = createAdminClient()
+    const { error: uploadError } = await admin.storage
       .from('pieces')
       .upload(storagePath, imgBuffer, { contentType: 'image/jpeg', upsert: true })
 
@@ -353,7 +351,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Erro ao salvar imagem' }, { status: 500 })
     }
 
-    const { data: urlData } = supabase.storage.from('pieces').getPublicUrl(storagePath)
+    const { data: urlData } = admin.storage.from('pieces').getPublicUrl(storagePath)
 
     await incrementUsage(user.id, 'model_generate')
     return NextResponse.json({ images: [urlData.publicUrl] })
