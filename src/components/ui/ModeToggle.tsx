@@ -34,7 +34,8 @@ export default function ModeToggle({ compact = false }: ModeToggleProps) {
         className={`toggle-opt toggle-option${mode === 'claire' ? ' active' : ''}`}
         onClick={() => handleChange('claire')}
       >
-        <span>{compact ? 'Claire' : 'Édition Claire'}</span>
+        <span className={compact ? '' : 'mode-label-desktop'}>{compact ? 'Claire' : 'Édition Claire'}</span>
+        {!compact && <span className="mode-label-mobile">Claire</span>}
       </button>
       <button
         type="button"
@@ -42,7 +43,8 @@ export default function ModeToggle({ compact = false }: ModeToggleProps) {
         className={`toggle-opt toggle-option${mode === 'dark' ? ' active' : ''}`}
         onClick={() => handleChange('dark')}
       >
-        <span>{compact ? 'Dark' : 'Dark Edition'}</span>
+        <span className={compact ? '' : 'mode-label-desktop'}>{compact ? 'Dark' : 'Dark Edition'}</span>
+        {!compact && <span className="mode-label-mobile">Dark</span>}
       </button>
     </div>
   )

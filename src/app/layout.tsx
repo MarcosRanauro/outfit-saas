@@ -16,7 +16,10 @@ const bebas = Bebas_Neue({
 })
 
 export const viewport: Viewport = {
-  themeColor: '#080808',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#FAF8F5' },
+    { media: '(prefers-color-scheme: dark)', color: '#080808' },
+  ],
   width: 'device-width',
   initialScale: 1,
 }

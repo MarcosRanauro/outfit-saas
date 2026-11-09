@@ -1,9 +1,11 @@
 /* ─── PÁGINA ──────────────────────────────────── */
 
 .closet-page {
-  overflow-x: hidden;
+  overflow-x: clip;
+  overscroll-behavior-x: none;
   width: 100%;
   max-width: 100%;
+  background: var(--ec-bg-primary);
 }
 
 /* ─── CLOSET HEADER ───────────────────────────── */
@@ -744,8 +746,11 @@ html.mode-dark .view-btn.active {
   align-items: center;
   gap: 6px;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
   scrollbar-width: none;
   flex: 1;
+  min-width: 0;
 }
 .category-chips::-webkit-scrollbar { display: none; }
 
@@ -784,30 +789,78 @@ html.mode-dark .cat-chip.active {
 
 @media (max-width: 768px) {
   .context-bar {
-    padding: 12px 16px;
+    padding: 10px 14px;
     gap: 10px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
   .context-left {
     gap: 8px;
     width: 100%;
+    display: flex;
+    align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .page-title {
+    font-size: 19px;
+    gap: 6px;
+  }
+  .count-chip {
+    font-size: 11px;
+    padding: 2px 8px;
+  }
+  .weather-pill {
+    font-size: 11px;
+    padding: 4px 8px;
+    gap: 6px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .context-right {
     width: 100%;
+    display: flex;
+    align-items: center;
     justify-content: space-between;
     gap: 6px;
     flex-wrap: nowrap;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
     scrollbar-width: none;
   }
   .context-right::-webkit-scrollbar { display: none; }
   .filter-chips-bar {
-    padding: 8px 16px 12px;
+    padding: 8px 14px 10px;
     gap: 8px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
   }
   .search-input-box {
-    min-width: 150px;
-    max-width: 180px;
+    min-width: 110px;
+    max-width: 140px;
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .view-btn span {
+    display: none;
+  }
+  .view-btn {
+    padding: 6px 10px;
+  }
+  .filter-drawer-btn span:first-of-type {
+    display: none;
+  }
+  .filter-drawer-btn {
+    padding: 6px 10px;
+    gap: 4px;
   }
 }
 
