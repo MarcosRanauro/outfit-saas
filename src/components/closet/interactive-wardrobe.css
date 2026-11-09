@@ -79,6 +79,19 @@ html.mode-dark .wardrobe-narrative-title {
   font-family: var(--font-inter), sans-serif;
 }
 
+@media (max-width: 640px) {
+  .wardrobe-container {
+    padding: 12px 10px 48px;
+  }
+  .wardrobe-narrative-title {
+    font-size: 24px;
+    line-height: 1.2;
+  }
+  .wardrobe-narrative-sub {
+    font-size: 13px;
+  }
+}
+
 /* -------------------------------------------------------------
    THE SCANDINAVIAN LUXURY CABINET FRAME
 -------------------------------------------------------------- */
@@ -179,6 +192,28 @@ html.mode-dark .wardrobe-section.focused .hotspot-badge {
   display: flex;
   align-items: center;
   gap: 6px;
+  max-width: calc(100% - 135px);
+  line-height: 1.35;
+}
+
+@media (max-width: 640px) {
+  .section-meta-title {
+    font-size: 10px;
+    max-width: calc(100% - 120px);
+    margin-bottom: 14px;
+  }
+
+  .hotspot-badge {
+    top: 10px;
+    right: 12px;
+    font-size: 10px;
+    padding: 3px 8px;
+    gap: 4px;
+    max-width: 115px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 /* 1. Prateleira Superior: Acessórios & Bolsas */
@@ -416,6 +451,14 @@ html.mode-dark .anchor-mini-badge {
   gap: 10px;
 }
 
+@media (max-width: 640px) {
+  .cfp-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+}
+
 .cfp-title {
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-size: 20px;
@@ -424,6 +467,13 @@ html.mode-dark .anchor-mini-badge {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .cfp-title {
+    font-size: 16px;
+    line-height: 1.35;
+  }
 }
 
 html.mode-dark .cfp-title {
@@ -438,6 +488,13 @@ html.mode-dark .cfp-title {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
   gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .cfp-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
 }
 
 .cfp-card {
@@ -777,6 +834,7 @@ html.mode-dark .pdd-piece-title {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   padding: 8px 0;
   border-bottom: 0.5px solid var(--ec-border);
   font-size: 13px;
@@ -789,11 +847,14 @@ html.mode-dark .pdd-piece-title {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--ec-text-muted);
+  flex-shrink: 0;
 }
 
 .pdd-spec-val {
   font-weight: 500;
   color: var(--ec-text-primary);
+  text-align: right;
+  word-break: break-word;
 }
 
 .pdd-tags-group {
@@ -878,6 +939,25 @@ html.mode-dark .btn-anchor-toggle.active {
 .pdd-sub-actions {
   display: flex;
   gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .pdd-piece-title {
+    font-size: 20px;
+    margin-bottom: 12px;
+  }
+
+  .pdd-sub-actions {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .btn-sub-action {
+    width: 100%;
+    padding: 11px 16px;
+    font-size: 13px;
+  }
 }
 
 .btn-sub-action {

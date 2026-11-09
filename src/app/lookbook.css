@@ -39,6 +39,74 @@ html.mode-dark .lookbook-title {
   color: var(--ec-text-muted);
 }
 
+.lookbook-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lookbook-view-toggle {
+  display: flex;
+  background: var(--ec-bg-secondary);
+  border: 1px solid var(--ec-border-light);
+  border-radius: 12px;
+  padding: 3px;
+  gap: 3px;
+}
+
+.lookbook-view-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px;
+  background: transparent;
+  border: none;
+  border-radius: 9px;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ec-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.lookbook-view-btn:hover {
+  color: var(--ec-text-primary);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+html.mode-dark .lookbook-view-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.lookbook-view-btn.active {
+  background: var(--ec-white);
+  color: var(--ec-accent);
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+@media (max-width: 480px) {
+  .lookbook-header {
+    padding: 14px 16px 12px;
+  }
+  .lookbook-header-right {
+    gap: 8px;
+  }
+  .lookbook-view-label {
+    display: none;
+  }
+  .lookbook-view-btn {
+    padding: 0 8px;
+    height: 34px;
+  }
+  .lookbook-count {
+    font-size: 11px;
+  }
+}
+
 /* ─── BUSCA + FILTRO ─────────────────────────── */
 
 .lookbook-search-row {

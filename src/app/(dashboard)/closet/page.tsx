@@ -471,7 +471,7 @@ export default function ClosetPage() {
           >
             ♡
           </button>
-          <ModeToggle />
+          <ModeToggle compact />
         </div>
       </div>
 

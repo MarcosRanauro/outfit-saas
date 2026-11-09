@@ -270,6 +270,18 @@ html.mode-dark .outfit-card-title {
   border-top: 0.5px solid var(--ec-border);
 }
 
+@media (max-width: 480px) {
+  .outfit-card-actions {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .btn-use-look,
+  .btn-inspect-look {
+    width: 100%;
+    padding: 10px 12px;
+  }
+}
+
 .btn-use-look {
   flex: 2;
   padding: 9px;
@@ -342,6 +354,29 @@ html.mode-dark .lookbook-detail-card {
     grid-template-columns: 1fr;
     gap: 20px;
     padding: 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .lookbook-detail-card {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .ld-title {
+    font-size: 22px;
+  }
+
+  .ld-subtitle {
+    font-size: 13px;
+  }
+
+  .fashion-rail-stage {
+    padding: 16px 12px;
+  }
+
+  .lookbook-narrative-title {
+    font-size: 22px;
   }
 }
 
@@ -569,4 +604,28 @@ html.mode-dark .ld-title {
 .lookbook-modal-close:hover {
   background-color: var(--ec-border);
   color: var(--ec-text-primary);
+}
+
+@media (max-width: 640px) {
+  .lookbook-modal-backdrop {
+    padding: 10px;
+  }
+  .lookbook-modal-dialog {
+    padding: 20px 14px;
+    border-radius: 14px;
+    max-height: 92vh;
+  }
+  .lookbook-modal-close {
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+  .lookbook-modal-dialog .ld-title {
+    padding-right: 36px;
+  }
+  .lookbook-modal-dialog .ld-occasion-badge {
+    padding-right: 36px;
+  }
 }
