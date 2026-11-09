@@ -62,6 +62,10 @@
   background: var(--ec-bg-primary);
 }
 
+.dashboard-content:has(.mia-page) {
+  overflow-y: hidden;
+}
+
 /* ─── BANNER ──────────────────────────────────── */
 
 .dashboard-top-banner {
@@ -98,7 +102,7 @@
   border-top: 0.5px solid var(--ec-border-light);
   display: flex;
   justify-content: space-around;
-  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px));
   z-index: 50;
   transition: background 0.3s ease;
 }
