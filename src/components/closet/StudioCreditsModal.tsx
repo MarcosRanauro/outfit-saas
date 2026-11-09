@@ -37,7 +37,7 @@ export default function StudioCreditsModal({
         window.location.assign(data.url)
         return
       }
-      alert(data.error || 'Erro ao iniciar checkout do pacote.')
+      alert(data.details || data.error || 'Erro ao iniciar checkout do pacote.')
     } catch (err) {
       console.error('Erro no checkout de créditos:', err)
       alert('Erro ao conectar com o checkout. Tente novamente.')

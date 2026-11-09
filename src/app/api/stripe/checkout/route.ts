@@ -98,16 +98,35 @@ export async function POST(request: Request) {
     // 3) Logs no console para facilitar o debug local
     console.log('[stripe/checkout] priceId recebido:', priceId, 'ID do usuário:', user.id)
 
-    // 2) Se o preço for undefined, retornar erro 400 com mensagem clara
-    if (!priceId) {
+    // 2) Se o preço for undefined ou inválido (ex: '[SENSITIVE]' do Vercel CLI), retornar erro 400 com mensagem clara
+    if (!priceId || priceId === '[SENSITIVE]' || !priceId.startsWith('price_')) {
       return NextResponse.json(
-        { error: 'Variável de preço do Stripe não configurada' },
+        { error: `ID de preço do Stripe inválido ou não configurado (${priceId || 'vazio'}). Configure STRIPE_PRICE_ID no .env.local com um ID válido da Stripe (ex: price_...)` },
         { status: 400 }
       )
     }
 
     // Cria ou reutiliza customer no Stripe
     let customerId = profile?.stripe_customer_id
+
+    if (customerId) {
+      try {
+        const existingCustomer = await stripe.customers.retrieve(customerId)
+        if ('deleted' in existingCustomer && existingCustomer.deleted) {
+          customerId = null
+        }
+      } catch (err: unknown) {
+        // Se o customer não existir nesta conta/modo da Stripe, recria
+        const stripeError = err as { code?: string; statusCode?: number; message?: string }
+        if (
+          stripeError?.code === 'resource_missing' ||
+          stripeError?.statusCode === 404 ||
+          stripeError?.message?.includes('No such customer')
+        ) {
+          customerId = null
+        }
+      }
+    }
 
     if (!customerId) {
       const customer = await stripe.customers.create({
@@ -169,8 +188,9 @@ export async function POST(request: Request) {
 
   } catch (error) {
     console.error('[stripe/checkout] erro:', error)
+    const message = error instanceof Error ? error.message : 'Erro ao criar sessão de pagamento'
     return NextResponse.json(
-      { error: 'Erro ao criar sessão de pagamento' },
+      { error: 'Erro ao criar sessão de pagamento', details: message },
       { status: 500 }
     )
   }
