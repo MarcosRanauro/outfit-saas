@@ -69,6 +69,24 @@ html.mode-dark {
   color: var(--ec-text-muted);
 }
 
+.mode-label-mobile {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .mode-label-desktop {
+    display: none;
+  }
+  .mode-label-mobile {
+    display: inline;
+  }
+  .toggle-option,
+  .toggle-opt {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+}
+
 * {
   margin: 0;
   padding: 0;

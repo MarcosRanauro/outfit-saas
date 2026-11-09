@@ -35,6 +35,8 @@ html.mode-dark {
   max-width: 1240px;
   margin: 0 auto;
   width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .wardrobe-narrative-header {
@@ -81,14 +83,17 @@ html.mode-dark .wardrobe-narrative-title {
 
 @media (max-width: 640px) {
   .wardrobe-container {
-    padding: 12px 10px 48px;
+    padding: 10px 6px 36px;
+  }
+  .wardrobe-narrative-header {
+    margin-bottom: 16px;
   }
   .wardrobe-narrative-title {
-    font-size: 24px;
+    font-size: 22px;
     line-height: 1.2;
   }
   .wardrobe-narrative-sub {
-    font-size: 13px;
+    font-size: 12px;
   }
 }
 
@@ -97,6 +102,9 @@ html.mode-dark .wardrobe-narrative-title {
 -------------------------------------------------------------- */
 .wardrobe-cabinet {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   background: var(--wb-wood-inner);
   border: 1px solid var(--ec-border);
   border-radius: 16px;
@@ -107,6 +115,7 @@ html.mode-dark .wardrobe-narrative-title {
   gap: 16px;
   position: relative;
   transition: all 350ms ease;
+  overflow: hidden;
 }
 
 html.mode-dark .wardrobe-cabinet {
@@ -115,7 +124,9 @@ html.mode-dark .wardrobe-cabinet {
 
 @media (max-width: 768px) {
   .wardrobe-cabinet {
-    padding: 12px;
+    padding: 10px 8px;
+    gap: 12px;
+    border-radius: 12px;
   }
 }
 
@@ -129,6 +140,10 @@ html.mode-dark .wardrobe-cabinet {
   transition: all 250ms ease;
   cursor: pointer;
   text-align: left;
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .wardrobe-section:hover,
@@ -194,22 +209,30 @@ html.mode-dark .wardrobe-section.focused .hotspot-badge {
   gap: 6px;
   max-width: calc(100% - 135px);
   line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @media (max-width: 640px) {
+  .wardrobe-section {
+    padding: 10px 8px;
+  }
+
   .section-meta-title {
-    font-size: 10px;
-    max-width: calc(100% - 120px);
-    margin-bottom: 14px;
+    font-size: 9px;
+    max-width: calc(100% - 95px);
+    margin-bottom: 10px;
+    letter-spacing: 0.04em;
   }
 
   .hotspot-badge {
-    top: 10px;
-    right: 12px;
-    font-size: 10px;
-    padding: 3px 8px;
+    top: 8px;
+    right: 8px;
+    font-size: 9px;
+    padding: 2px 7px;
     gap: 4px;
-    max-width: 115px;
+    max-width: 90px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -302,6 +325,11 @@ html.mode-dark .wardrobe-section.focused .hotspot-badge {
   align-items: flex-start;
   gap: 16px;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   padding: 8px 4px 16px;
   scrollbar-width: thin;
   scrollbar-color: var(--ec-border) transparent;
@@ -405,6 +433,11 @@ html.mode-dark .wardrobe-section.focused .hotspot-badge {
   align-items: flex-end;
   gap: 16px;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   padding: 10px 4px 6px;
   scrollbar-width: thin;
   scrollbar-color: var(--ec-border) transparent;
@@ -507,6 +540,73 @@ html.mode-dark .anchor-mini-badge {
   font-style: italic;
   font-family: var(--font-inter), sans-serif;
   padding: 12px 6px;
+}
+
+@media (max-width: 640px) {
+  .hanging-rail-section,
+  .calceiro-section {
+    min-height: 165px;
+  }
+
+  .accessories-shelf,
+  .shoe-rack-section {
+    min-height: 135px;
+  }
+
+  .hangers-rack {
+    gap: 8px;
+    padding: 6px 2px 10px;
+  }
+
+  .hanger-piece {
+    width: 82px;
+    padding: 4px 2px;
+  }
+
+  .hanger-hook {
+    width: 18px;
+    height: 14px;
+    border-top-width: 1.5px;
+    border-left-width: 1.5px;
+  }
+
+  .hanger-silhouette {
+    width: 68px;
+    height: 76px;
+  }
+
+  .boutique-deck {
+    gap: 8px;
+    padding: 6px 2px 4px;
+  }
+
+  .boutique-shelf-item {
+    width: 80px;
+    padding: 4px 2px;
+  }
+
+  .boutique-item-visual {
+    width: 62px;
+    height: 62px;
+    margin-bottom: 4px;
+  }
+
+  .garment-item-name {
+    font-size: 10px;
+    max-width: 76px;
+  }
+
+  .garment-item-brand {
+    font-size: 9px;
+  }
+
+  .anchor-mini-badge {
+    width: 16px;
+    height: 16px;
+    font-size: 9px;
+    top: 4px;
+    left: 4px;
+  }
 }
 
 /* -------------------------------------------------------------

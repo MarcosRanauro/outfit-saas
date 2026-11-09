@@ -138,8 +138,14 @@ html.mode-dark .btn-new-piece {
 
 @media (max-width: 768px) {
   .app-navbar {
-    padding: 0 16px;
-    height: 56px;
+    padding: 0 14px;
+    height: 54px;
+    max-width: 100vw;
+    box-sizing: border-box;
+  }
+
+  .brand-title {
+    font-size: 19px;
   }
 
   .navbar-tabs {
@@ -147,11 +153,33 @@ html.mode-dark .btn-new-piece {
   }
 
   .navbar-actions {
-    gap: 8px;
+    gap: 6px;
   }
 
   .btn-new-piece {
-    padding: 6px 12px;
+    padding: 6px 10px;
     font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-navbar {
+    padding: 0 10px;
+  }
+
+  .brand-title {
+    font-size: 17px;
+  }
+
+  .btn-new-piece span {
+    display: none;
+  }
+
+  .btn-new-piece {
+    padding: 7px;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    justify-content: center;
   }
 }
