@@ -152,6 +152,10 @@ export default function PieceDetailPage() {
       alert('Limite do plano atingido. Faça upgrade para continuar.')
       return true
     }
+    if (data.code === 'GHOST_CREDITS_EXHAUSTED' || data.code === 'TRIAL_PIECES_LIMIT_REACHED') {
+      alert(String(data.error || 'Limite atingido.'))
+      return true
+    }
     return false
   }
 

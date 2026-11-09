@@ -179,6 +179,8 @@ CREATE TABLE IF NOT EXISTS "public"."profiles" (
     "usage_wishlist_generations" integer DEFAULT 0,
     "trial_ends_at" timestamp with time zone,
     "usage_studio_generations" integer DEFAULT 0,
+    "usage_model_generations" integer DEFAULT 0,
+    "extra_ghost_credits" integer DEFAULT 0,
     "welcome_email_sent_at" timestamp with time zone,
     "trial_reminder_sent_at" timestamp with time zone
 );

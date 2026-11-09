@@ -66,6 +66,11 @@ export default function NovaPecaPage() {
       return true
     }
 
+    if (data.code === 'GHOST_CREDITS_EXHAUSTED' || data.code === 'TRIAL_PIECES_LIMIT_REACHED') {
+      alert(String(data.error || 'Limite atingido.'))
+      return true
+    }
+
     return false
   }
 
