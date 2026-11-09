@@ -37,6 +37,8 @@ html.mode-dark {
   width: 100%;
   box-sizing: border-box;
   min-width: 0;
+  overflow-x: clip;
+  overscroll-behavior-x: none;
 }
 
 .wardrobe-narrative-header {
@@ -326,6 +328,7 @@ html.mode-dark .wardrobe-section.focused .hotspot-badge {
   gap: 16px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -434,6 +437,7 @@ html.mode-dark .wardrobe-section.focused .hotspot-badge {
   gap: 16px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
   width: 100%;
   max-width: 100%;
   min-width: 0;
