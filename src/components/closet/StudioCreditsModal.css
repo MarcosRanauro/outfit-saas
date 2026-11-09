@@ -13,23 +13,27 @@
   padding: 20px;
 }
 
-html.mode-dark .studio-credits-overlay {
+html.mode-dark .studio-credits-overlay,
+.mode-dark .studio-credits-overlay {
   background: rgba(8, 8, 8, 0.94);
 }
 
 .studio-credits-card {
-  background: var(--ec-white, #FFFFFF);
-  border: 0.5px solid var(--ec-border, rgba(180, 140, 60, 0.25));
+  background: var(--ec-white);
+  border: 0.5px solid var(--ec-border);
   border-radius: 16px;
   padding: 32px 26px;
   max-width: 440px;
   width: 100%;
   text-align: center;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  transition: background-color 200ms ease, border-color 200ms ease;
 }
 
-html.mode-dark .studio-credits-card {
-  background: var(--ec-bg-secondary, #12181a);
+html.mode-dark .studio-credits-card,
+.mode-dark .studio-credits-card {
+  background: var(--ec-bg-secondary);
+  border-color: var(--ec-border);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
@@ -42,9 +46,9 @@ html.mode-dark .studio-credits-card {
   font-weight: 500;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  background: var(--ec-accent-faint, rgba(180, 140, 60, 0.1));
-  color: var(--ec-accent, #B48C3C);
-  border: 0.5px solid var(--ec-accent-border, rgba(180, 140, 60, 0.3));
+  background: var(--ec-accent-faint);
+  color: var(--ec-accent);
+  border: 0.5px solid var(--ec-accent-border);
   margin-bottom: 14px;
 }
 
@@ -52,12 +56,13 @@ html.mode-dark .studio-credits-card {
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-size: 26px;
   font-weight: 600;
-  color: var(--ec-text-primary, #111);
+  color: var(--ec-text-primary);
   margin-bottom: 8px;
   line-height: 1.2;
 }
 
-html.mode-dark .studio-credits-title {
+html.mode-dark .studio-credits-title,
+.mode-dark .studio-credits-title {
   font-family: var(--font-inter), 'Inter', sans-serif;
   font-size: 18px;
   font-weight: 400;
@@ -68,7 +73,7 @@ html.mode-dark .studio-credits-title {
 .studio-credits-sub {
   font-family: var(--font-inter), 'Inter', sans-serif;
   font-size: 13px;
-  color: var(--ec-text-secondary, #666);
+  color: var(--ec-text-secondary);
   line-height: 1.55;
   margin-bottom: 20px;
 }
@@ -83,8 +88,8 @@ html.mode-dark .studio-credits-title {
 
 .studio-pkg-item {
   position: relative;
-  background: var(--ec-bg-primary, #FAF8F5);
-  border: 1px solid var(--ec-border, rgba(180, 140, 60, 0.2));
+  background: var(--ec-bg-primary);
+  border: 1px solid var(--ec-border);
   border-radius: 12px;
   padding: 16px 12px;
   display: flex;
@@ -96,25 +101,27 @@ html.mode-dark .studio-credits-title {
   outline: none;
 }
 
-html.mode-dark .studio-pkg-item {
-  background: var(--ec-bg-primary, #0d1214);
+html.mode-dark .studio-pkg-item,
+.mode-dark .studio-pkg-item {
+  background: var(--ec-bg-tertiary);
+  border-color: var(--ec-border);
 }
 
 .studio-pkg-item:hover {
-  border-color: var(--ec-accent, #B48C3C);
+  border-color: var(--ec-accent);
   transform: translateY(-2px);
 }
 
 .studio-pkg-item.selected {
-  border-color: var(--ec-accent, #B48C3C);
-  background: var(--ec-accent-faint, rgba(180, 140, 60, 0.1));
-  box-shadow: 0 0 0 2px var(--ec-accent, #B48C3C);
+  border-color: var(--ec-accent);
+  background: var(--ec-accent-subtle);
+  box-shadow: 0 0 0 1px var(--ec-accent);
 }
 
 .studio-pkg-tag {
   position: absolute;
   top: -8px;
-  background: var(--ec-accent, #B48C3C);
+  background: var(--ec-accent);
   color: #FAF8F5;
   font-family: var(--font-inter), 'Inter', sans-serif;
   font-size: 9px;
@@ -125,15 +132,21 @@ html.mode-dark .studio-pkg-item {
   border-radius: 999px;
 }
 
+html.mode-dark .studio-pkg-tag,
+.mode-dark .studio-pkg-tag {
+  color: #080808;
+}
+
 .studio-pkg-count {
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-size: 32px;
   font-weight: 600;
-  color: var(--ec-text-primary, #111);
+  color: var(--ec-text-primary);
   line-height: 1;
 }
 
-html.mode-dark .studio-pkg-count {
+html.mode-dark .studio-pkg-count,
+.mode-dark .studio-pkg-count {
   font-family: var(--font-inter), 'Inter', sans-serif;
   font-size: 24px;
   font-weight: 500;
@@ -144,7 +157,7 @@ html.mode-dark .studio-pkg-count {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--ec-text-muted, #888);
+  color: var(--ec-text-muted);
   margin-top: 2px;
   margin-bottom: 6px;
 }
@@ -153,7 +166,7 @@ html.mode-dark .studio-pkg-count {
   font-family: var(--font-inter), 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 600;
-  color: var(--ec-accent, #B48C3C);
+  color: var(--ec-accent);
 }
 
 /* CTA */
@@ -161,7 +174,7 @@ html.mode-dark .studio-pkg-count {
   width: 100%;
   padding: 13px 20px;
   border-radius: 999px;
-  background: var(--ec-accent, #B48C3C);
+  background: var(--ec-accent);
   color: #FAF8F5;
   border: none;
   font-family: var(--font-inter), 'Inter', sans-serif;
@@ -171,6 +184,11 @@ html.mode-dark .studio-pkg-count {
   text-transform: uppercase;
   cursor: pointer;
   transition: opacity 150ms, transform 150ms;
+}
+
+html.mode-dark .studio-credits-cta,
+.mode-dark .studio-credits-cta {
+  color: #080808;
 }
 
 .studio-credits-cta:hover:not(:disabled) {
@@ -187,7 +205,7 @@ html.mode-dark .studio-pkg-count {
 .studio-pro-alternative {
   margin-top: 16px;
   padding-top: 14px;
-  border-top: 0.5px solid var(--ec-border, rgba(180, 140, 60, 0.15));
+  border-top: 0.5px solid var(--ec-border);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -196,7 +214,7 @@ html.mode-dark .studio-pkg-count {
 .studio-pro-text {
   font-family: var(--font-inter), 'Inter', sans-serif;
   font-size: 11px;
-  color: var(--ec-text-muted, #888);
+  color: var(--ec-text-muted);
 }
 
 .studio-pro-link {
@@ -205,7 +223,7 @@ html.mode-dark .studio-pkg-count {
   font-family: var(--font-inter), 'Inter', sans-serif;
   font-size: 12px;
   font-weight: 500;
-  color: var(--ec-accent, #B48C3C);
+  color: var(--ec-accent);
   cursor: pointer;
   text-decoration: underline;
   padding: 2px;
@@ -221,7 +239,7 @@ html.mode-dark .studio-pkg-count {
   border: none;
   font-family: var(--font-inter), 'Inter', sans-serif;
   font-size: 12px;
-  color: var(--ec-text-muted, #999);
+  color: var(--ec-text-muted);
   cursor: pointer;
   margin-top: 14px;
   padding: 6px;
@@ -229,5 +247,5 @@ html.mode-dark .studio-pkg-count {
 }
 
 .studio-credits-close:hover {
-  color: var(--ec-text-primary, #111);
+  color: var(--ec-text-primary);
 }

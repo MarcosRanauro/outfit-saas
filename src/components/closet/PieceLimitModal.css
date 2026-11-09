@@ -13,23 +13,27 @@
   padding: 20px;
 }
 
-html.mode-dark .limit-modal-overlay {
+html.mode-dark .limit-modal-overlay,
+.mode-dark .limit-modal-overlay {
   background: rgba(8, 8, 8, 0.94);
 }
 
 .limit-modal-card {
-  background: var(--ec-white, #FFFFFF);
-  border: 0.5px solid var(--ec-border, rgba(180, 140, 60, 0.25));
+  background: var(--ec-white);
+  border: 0.5px solid var(--ec-border);
   border-radius: 16px;
   padding: 36px 28px;
   max-width: 380px;
   width: 100%;
   text-align: center;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  transition: background-color 200ms ease, border-color 200ms ease;
 }
 
-html.mode-dark .limit-modal-card {
-  background: var(--ec-bg-secondary, #12181a);
+html.mode-dark .limit-modal-card,
+.mode-dark .limit-modal-card {
+  background: var(--ec-bg-secondary);
+  border-color: var(--ec-border);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
@@ -42,9 +46,9 @@ html.mode-dark .limit-modal-card {
   font-weight: 500;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  background: var(--ec-accent-faint, rgba(180, 140, 60, 0.1));
-  color: var(--ec-accent, #B48C3C);
-  border: 0.5px solid var(--ec-accent-border, rgba(180, 140, 60, 0.3));
+  background: var(--ec-accent-faint);
+  color: var(--ec-accent);
+  border: 0.5px solid var(--ec-accent-border);
   margin-bottom: 16px;
 }
 
@@ -52,12 +56,13 @@ html.mode-dark .limit-modal-card {
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-size: 28px;
   font-weight: 600;
-  color: var(--ec-text-primary, #111);
+  color: var(--ec-text-primary);
   margin-bottom: 10px;
   line-height: 1.15;
 }
 
-html.mode-dark .limit-modal-title {
+html.mode-dark .limit-modal-title,
+.mode-dark .limit-modal-title {
   font-family: var(--font-inter), 'Inter', sans-serif;
   font-size: 19px;
   font-weight: 400;
@@ -68,7 +73,7 @@ html.mode-dark .limit-modal-title {
 .limit-modal-sub {
   font-family: var(--font-inter), 'Inter', sans-serif;
   font-size: 13px;
-  color: var(--ec-text-secondary, #666);
+  color: var(--ec-text-secondary);
   line-height: 1.6;
   margin-bottom: 20px;
 }
@@ -85,11 +90,12 @@ html.mode-dark .limit-modal-title {
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-size: 40px;
   font-weight: 400;
-  color: var(--ec-text-primary, #111);
+  color: var(--ec-text-primary);
   line-height: 1;
 }
 
-html.mode-dark .limit-price-value {
+html.mode-dark .limit-price-value,
+.mode-dark .limit-price-value {
   font-family: var(--font-inter), 'Inter', sans-serif;
   font-size: 30px;
   font-weight: 500;
@@ -98,7 +104,7 @@ html.mode-dark .limit-price-value {
 .limit-price-period {
   font-family: var(--font-inter), 'Inter', sans-serif;
   font-size: 14px;
-  color: var(--ec-text-muted, #999);
+  color: var(--ec-text-muted);
 }
 
 .limit-modal-features {
@@ -114,7 +120,7 @@ html.mode-dark .limit-price-value {
 .limit-modal-features li {
   font-family: var(--font-inter), 'Inter', sans-serif;
   font-size: 13px;
-  color: var(--ec-text-secondary, #555);
+  color: var(--ec-text-secondary);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -122,7 +128,7 @@ html.mode-dark .limit-price-value {
 
 .limit-modal-features li::before {
   content: '✦';
-  color: var(--ec-accent, #B48C3C);
+  color: var(--ec-accent);
   font-size: 11px;
 }
 
@@ -130,7 +136,7 @@ html.mode-dark .limit-price-value {
   width: 100%;
   padding: 13px 20px;
   border-radius: 999px;
-  background: var(--ec-accent, #B48C3C);
+  background: var(--ec-accent);
   color: #FAF8F5;
   border: none;
   font-family: var(--font-inter), 'Inter', sans-serif;
@@ -140,6 +146,11 @@ html.mode-dark .limit-price-value {
   text-transform: uppercase;
   cursor: pointer;
   transition: opacity 150ms, transform 150ms;
+}
+
+html.mode-dark .limit-modal-cta,
+.mode-dark .limit-modal-cta {
+  color: #080808;
 }
 
 .limit-modal-cta:hover:not(:disabled) {
@@ -157,7 +168,7 @@ html.mode-dark .limit-price-value {
   border: none;
   font-family: var(--font-inter), 'Inter', sans-serif;
   font-size: 12px;
-  color: var(--ec-text-muted, #999);
+  color: var(--ec-text-muted);
   cursor: pointer;
   margin-top: 14px;
   padding: 6px;
@@ -165,5 +176,5 @@ html.mode-dark .limit-price-value {
 }
 
 .limit-modal-close:hover {
-  color: var(--ec-text-primary, #111);
+  color: var(--ec-text-primary);
 }

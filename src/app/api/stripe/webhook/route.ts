@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { createAdminClient, getUserEmail } from '@/lib/supabase/admin'
 import { sendEmail } from '@/lib/email'
 import { paymentFailedEmail } from '@/lib/email-templates'
+import { ADDON_PACKAGES } from '@/config/plan-limits'
 
 export async function POST(request: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -33,25 +34,44 @@ export async function POST(request: Request) {
   try {
     switch (event.type) {
 
-      // Compra avulsa de fotos finalizada com sucesso
+      // Compra avulsa de fotos finalizada com sucesso (ADDON_PACKAGES)
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
-        if (session.mode === 'payment' && session.metadata?.addon_photos && session.metadata?.supabase_user_id) {
-          const userId = session.metadata.supabase_user_id
-          const photosToAdd = parseInt(session.metadata.addon_photos, 10) || 0
-          if (photosToAdd > 0) {
-            const { data: p } = await supabase
-              .from('profiles')
-              .select('extra_ghost_credits')
-              .eq('id', userId)
-              .single()
 
-            const current = p?.extra_ghost_credits ?? 0
-            await supabase
-              .from('profiles')
-              .update({ extra_ghost_credits: current + photosToAdd })
-              .eq('id', userId)
-          }
+        // Identifica compra de pacote de créditos extras
+        const packageId = session.metadata?.addon_package_id || session.metadata?.package_id
+        const matchedPackage = packageId ? ADDON_PACKAGES.find(pkg => pkg.id === packageId) : null
+
+        const photosFromPackage = matchedPackage?.photos
+        const photosFromMeta = session.metadata?.addon_photos ? parseInt(session.metadata.addon_photos, 10) : 0
+        const photosToAdd = photosFromPackage ?? (photosFromMeta > 0 ? photosFromMeta : 0)
+
+        // Resolução do usuário do Supabase
+        let userId = session.metadata?.supabase_user_id || session.client_reference_id
+
+        if (!userId && session.customer) {
+          const { data: customerProfile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('stripe_customer_id', session.customer as string)
+            .single()
+          userId = customerProfile?.id
+        }
+
+        if (photosToAdd > 0 && userId) {
+          const { data: p } = await supabase
+            .from('profiles')
+            .select('extra_ghost_credits')
+            .eq('id', userId)
+            .single()
+
+          const current = p?.extra_ghost_credits ?? 0
+          await supabase
+            .from('profiles')
+            .update({ extra_ghost_credits: current + photosToAdd })
+            .eq('id', userId)
+
+          console.log(`[stripe/webhook] +${photosToAdd} créditos extras (ghost mannequin) adicionados ao usuário ${userId}`)
         }
         break
       }
