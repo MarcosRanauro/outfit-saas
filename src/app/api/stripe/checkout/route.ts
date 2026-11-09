@@ -101,7 +101,7 @@ export async function POST(request: Request) {
     // 2) Se o preço for undefined ou inválido (ex: '[SENSITIVE]' do Vercel CLI), retornar erro 400 com mensagem clara
     if (!priceId || priceId === '[SENSITIVE]' || !priceId.startsWith('price_')) {
       return NextResponse.json(
-        { error: `ID de preço do Stripe inválido ou não configurado (${priceId || 'vazio'}). Configure STRIPE_PRICE_ID no .env.local com um ID válido da Stripe (ex: price_...)` },
+        { error: 'Variável de preço do Stripe não configurada' },
         { status: 400 }
       )
     }
