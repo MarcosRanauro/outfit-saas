@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { PRECO_PRO_COMPACTO } from '@/lib/pricing'
+import { ADDON_PACKAGES } from '@/config/plan-limits'
 import '../landing.css'
 
 interface BeforeInstallPromptEvent extends Event {
@@ -202,10 +203,14 @@ export default function LandingPage() {
             </h1>
           )}
           <p className="sub">A Mia analisa seu closet e monta o look certo para cada dia.</p>
-          <Link href="/cadastro" className="cta-main">Começar grátis por 15 dias →</Link>
+          <div className="hero-highlight-pill">
+            <span className="pill-sparkle">✦</span>
+            <span>15 dias grátis com até 20 peças e 3 fotos de estúdio</span>
+          </div>
+          <Link href="/cadastro" className="cta-main">Começar 15 dias grátis →</Link>
           <div className="social-proof">
             <span className="stars">★★★★★</span>
-            <span>500+ looks gerados esta semana</span>
+            <span>500+ looks gerados esta semana · Sem cartão de crédito</span>
           </div>
 
           {installPrompt && !isInstalled && (
@@ -238,8 +243,8 @@ export default function LandingPage() {
       {/* TICKER */}
       <div className="ticker-wrap">
         <div className="ticker-track">
-          <span className="ticker-content">STYLIST PESSOAL · INTELIGÊNCIA ARTIFICIAL · SEU CLOSET · LOOKS PERFEITOS · CLIMA EM TEMPO REAL · 15 DIAS GRÁTIS · </span>
-          <span className="ticker-content">STYLIST PESSOAL · INTELIGÊNCIA ARTIFICIAL · SEU CLOSET · LOOKS PERFEITOS · CLIMA EM TEMPO REAL · 15 DIAS GRÁTIS · </span>
+          <span className="ticker-content">STYLIST PESSOAL · INTELIGÊNCIA ARTIFICIAL · 15 DIAS GRÁTIS COM ATÉ 20 PEÇAS E 3 FOTOS DE ESTÚDIO · CLIMA EM TEMPO REAL · SEU CLOSET INTELIGENTE · </span>
+          <span className="ticker-content">STYLIST PESSOAL · INTELIGÊNCIA ARTIFICIAL · 15 DIAS GRÁTIS COM ATÉ 20 PEÇAS E 3 FOTOS DE ESTÚDIO · CLIMA EM TEMPO REAL · SEU CLOSET INTELIGENTE · </span>
         </div>
       </div>
 
@@ -337,30 +342,105 @@ export default function LandingPage() {
       <section className="ec-pricing" id="planos">
         <div className="ec-pricing-inner">
           <div className="ec-pricing-header scroll-animate">
+            <div className="ec-section-label">PLANOS & PREÇOS</div>
             <h2 className="ec-pricing-title">
               {mode === 'dark' ? 'SIMPLES E TRANSPARENTE' : <>Simples e <em>transparente</em></>}
             </h2>
-            <p className="ec-pricing-sub">Sem surpresas. Cancele quando quiser.</p>
+            <p className="ec-pricing-sub">Experimente com 15 dias grátis. Sem surpresas, cancele quando quiser.</p>
           </div>
-          <div className="plans-track">
-            <div className="plan-card scroll-animate">
-              <div className="plan-badge">ACESSO COMPLETO</div>
+
+          <div className="plans-grid">
+            {/* Card Trial */}
+            <div className="plan-card plan-card-trial scroll-animate">
+              <div className="plan-badge plan-badge-trial">15 DIAS GRÁTIS</div>
+              <h3 className="plan-name">Período de Teste</h3>
+              <div className="plan-price">
+                <span className="plan-amount">R$ 0</span>
+              </div>
+              <p className="plan-period">por 15 dias de acesso completo</p>
+              <div className="plan-divider" />
+              <ul className="plan-features">
+                <li><strong>15 dias grátis</strong> sem pedir cartão de crédito</li>
+                <li><strong>Até 20 peças</strong> cadastradas no closet</li>
+                <li><strong>3 fotos de estúdio</strong> com Manequim Fantasma</li>
+                <li><strong>Chat com a Mia</strong> liberado para tirar dúvidas</li>
+                <li><strong>Geração de looks</strong> ilimitada com clima real</li>
+                <li>Análise de fotos com inteligência artificial</li>
+              </ul>
+              <Link href="/cadastro" className="plan-cta plan-cta-outline">
+                Começar 15 dias grátis
+              </Link>
+              <p className="plan-note">Sem cartão · Cancele quando quiser</p>
+            </div>
+
+            {/* Card Pro em Destaque */}
+            <div className="plan-card plan-card-pro plan-card-featured scroll-animate">
+              <div className="plan-featured-tag">MAIS ESCOLHIDO</div>
+              <div className="plan-badge plan-badge-pro">ACESSO ILIMITADO</div>
+              <h3 className="plan-name">Plano Pro</h3>
               <div className="plan-price">
                 <span className="plan-amount">{PRECO_PRO_COMPACTO}</span>
               </div>
               <p className="plan-period">/mês após o período de teste</p>
               <div className="plan-divider" />
               <ul className="plan-features">
-                <li>Closet inteligente ilimitado</li>
-                <li>Looks do dia com clima em tempo real</li>
-                <li>Chat ilimitado com a Mia</li>
-                <li>Foto de estúdio</li>
-                <li>Virtual Try-On</li>
+                <li><strong>Closet ilimitado</strong> (cadastre quantas peças quiser)</li>
+                <li><strong>20 fotos de estúdio/mês</strong> com Manequim Fantasma</li>
+                <li><strong>Chat ilimitado</strong> com a Mia, sua stylist pessoal</li>
+                <li><strong>Outfits ilimitados</strong> inteligentes para qualquer clima</li>
+                <li>Análise visual avançada de tecidos, fit e ocasiões</li>
+                <li>Sugestões inteligentes de compras na Wishlist</li>
+                <li>Atualizações e novas funções em primeira mão</li>
               </ul>
-              <Link href="/cadastro" className="plan-cta plan-cta-accent">Começar 15 dias grátis</Link>
-              <p className="plan-note">15 dias grátis · Sem cartão de crédito · Cancele quando quiser</p>
+              <Link href="/cadastro" className="plan-cta plan-cta-accent">
+                Experimentar Pro Grátis
+              </Link>
+              <p className="plan-note">15 dias de teste incluídos · Cancele a qualquer momento</p>
             </div>
           </div>
+
+          {/* Seção Pacotes Extras Avulsos */}
+          <div className="addon-pricing-section scroll-animate">
+            <div className="addon-pricing-header">
+              <span className="addon-badge">✦ CRÉDITOS AVULSOS</span>
+              <h3 className="addon-title">Fotos de Estúdio Extras (Manequim Fantasma)</h3>
+              <p className="addon-sub">
+                Precisa de mais fotos de estúdio para suas peças? Adquira pacotes de créditos avulsos a qualquer momento.
+                {' '}<strong>Os créditos nunca expiram</strong> e acumulam com sua conta.
+              </p>
+            </div>
+
+            <div className="addon-packages-grid">
+              {ADDON_PACKAGES.map((pkg) => {
+                const isPopular = pkg.id === 'addon_25'
+                const isBestValue = pkg.id === 'addon_100'
+                const formattedPrice = pkg.price.toLocaleString('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+                })
+                const perPhoto = (pkg.price / pkg.photos).toFixed(2).replace('.', ',')
+
+                return (
+                  <div
+                    key={pkg.id}
+                    className={`addon-pkg-card ${isPopular ? 'popular' : ''} ${isBestValue ? 'best-value' : ''}`}
+                  >
+                    {isPopular && <span className="addon-tag">Mais Escolhido</span>}
+                    {isBestValue && <span className="addon-tag best">Melhor Valor</span>}
+                    <div className="addon-pkg-count">+{pkg.photos}</div>
+                    <div className="addon-pkg-label">fotos</div>
+                    <div className="addon-pkg-price">{formattedPrice}</div>
+                    <div className="addon-pkg-unit">R$ {perPhoto}/foto</div>
+                  </div>
+                )
+              })}
+            </div>
+
+            <p className="addon-guarantee-note">
+              ✦ Créditos avulsos sem prazo de validade · Podem ser comprados a qualquer momento durante o teste ou no Pro
+            </p>
+          </div>
+
         </div>
       </section>
 
@@ -383,13 +463,13 @@ export default function LandingPage() {
             </h2>
           )}
           <p className="cta-sub scroll-animate">
-            Cadastre-se grátis e conheça a Mia, sua nova stylist pessoal.
+            Cadastre-se grátis e ganhe 15 dias com até 20 peças e 3 fotos de estúdio.
           </p>
           <Link href="/cadastro" className="ec-cta-btn scroll-animate">
             Criar conta grátis →
           </Link>
           <p className="cta-note scroll-animate">
-            15 dias grátis · Sem cartão de crédito · Cancele quando quiser
+            15 dias grátis com até 20 peças e 3 fotos de estúdio · Sem cartão de crédito · Cancele quando quiser
           </p>
         </div>
       </section>
