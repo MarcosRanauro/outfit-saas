@@ -2,9 +2,35 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { isOwnedStorageUrl } from '@/lib/storage-url'
-import { checkRateLimit, incrementUsage, rateLimitResponse } from '@/lib/rate-limit'
+import { evaluateGhostCredits, deductGhostCredit } from '@/lib/ghost-credits'
 
 export const maxDuration = 60
+
+export async function GET() {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('plan, trial_ends_at, usage_studio_generations, usage_reset_at, extra_ghost_credits')
+      .eq('id', user.id)
+      .single()
+
+    const status = evaluateGhostCredits(profile)
+    return NextResponse.json({
+      balance: status.totalBalance,
+      allowance_remaining: status.allowanceRemaining,
+      extra_credits: status.extraCredits,
+      is_pro: status.isPro,
+      allowed: status.allowed,
+    })
+  } catch (error) {
+    console.error('Erro no GET /api/pieces/ghost-mannequin:', error)
+    return NextResponse.json({ error: 'Erro ao consultar saldo' }, { status: 500 })
+  }
+}
 
 export async function POST(request: Request) {
   try {
@@ -12,10 +38,27 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
-    const rateLimit = await checkRateLimit(user.id, 'studio_generate')
-    if (!rateLimit.allowed) return rateLimitResponse(rateLimit)
+    // 1) Checagem de saldo antes de processar a imagem
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('plan, trial_ends_at, usage_studio_generations, usage_reset_at, extra_ghost_credits')
+      .eq('id', user.id)
+      .single()
 
-    const { photo_url } = await request.json()
+    const ghostStatus = evaluateGhostCredits(profile)
+    if (!ghostStatus.allowed) {
+      return NextResponse.json(
+        {
+          error: ghostStatus.errorMessage || 'Seus créditos de Manequim Fantasma acabaram.',
+          code: 'GHOST_CREDITS_EXHAUSTED',
+          balance: 0,
+          upgradeUrl: '/perfil',
+        },
+        { status: 403 }
+      )
+    }
+
+    const { photo_url } = await request.json().catch(() => ({}))
     if (!photo_url || typeof photo_url !== 'string') {
       return NextResponse.json({ error: 'Nenhuma foto fornecida' }, { status: 400 })
     }
@@ -71,8 +114,18 @@ export async function POST(request: Request) {
 
     const { data: urlData } = admin.storage.from('pieces').getPublicUrl(storagePath)
 
-    await incrementUsage(user.id, 'studio_generate')
-    return NextResponse.json({ studio_urls: [urlData.publicUrl] })
+    // 2) Subtrai 1 crédito após o sucesso da requisição
+    const { remaining_credits } = await deductGhostCredit(
+      user.id,
+      profile!,
+      ghostStatus,
+      supabase
+    )
+
+    return NextResponse.json({
+      studio_urls: [urlData.publicUrl],
+      remaining_credits,
+    })
 
   } catch (error) {
     console.error('Ghost mannequin route error:', error)

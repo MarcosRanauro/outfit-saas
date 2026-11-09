@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { toBase64, compressPiecePhoto, moderateImage, uploadImage, MODERATION_CONTENT_MESSAGE } from '@/lib/image'
 import TrialExpiredModal from '@/components/ui/TrialExpiredModal'
+import PieceLimitModal from '@/components/closet/PieceLimitModal'
+import StudioCreditsModal from '@/components/closet/StudioCreditsModal'
 import StudioScannerOverlay from '@/components/studio/StudioScannerOverlay'
 import './nova-peca.css'
 
@@ -47,10 +49,21 @@ export default function NovaPecaPage() {
   const [description, setDescription] = useState('')
   const [notes, setNotes] = useState('')
   const [showTrialExpired, setShowTrialExpired] = useState(false)
+  const [showPieceLimitModal, setShowPieceLimitModal] = useState(false)
+  const [showStudioCreditsModal, setShowStudioCreditsModal] = useState(false)
+  const [userPlan, setUserPlan] = useState<'free' | 'pro'>('free')
 
   useEffect(() => {
     const saved = localStorage.getItem('mia_theme') as 'light' | 'dark' | null
     document.documentElement.setAttribute('data-theme', saved || 'light')
+
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        supabase.from('profiles').select('plan').eq('id', user.id).single().then(({ data }) => {
+          if (data?.plan === 'pro') setUserPlan('pro')
+        })
+      }
+    })
   }, [])
 
   function handleApiError(response: Response, data: Record<string, unknown>): boolean {
@@ -58,6 +71,16 @@ export default function NovaPecaPage() {
 
     if (data.code === 'TRIAL_EXPIRED') {
       setShowTrialExpired(true)
+      return true
+    }
+
+    if (data.code === 'TRIAL_PIECES_LIMIT_REACHED') {
+      setShowPieceLimitModal(true)
+      return true
+    }
+
+    if (data.code === 'GHOST_CREDITS_EXHAUSTED') {
+      setShowStudioCreditsModal(true)
       return true
     }
 
@@ -233,11 +256,10 @@ export default function NovaPecaPage() {
 
       const coverPhoto = uploadedUrls.find(p => p.isCover) ?? uploadedUrls[0]
 
-      const { data: piece, error: pieceError } = await supabase
-        .from('pieces')
-        .insert({
-          user_id: user.id,
-          code: `P${Date.now()}`,
+      const res = await fetch('/api/pieces', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           name,
           category,
           color: color || null,
@@ -249,24 +271,16 @@ export default function NovaPecaPage() {
           season: season || null,
           description: description || null,
           notes: notes || null,
-        })
-        .select()
-        .single()
+          photos: uploadedUrls,
+        }),
+      })
 
-      if (pieceError || !piece) throw pieceError
+      const data = await res.json().catch(() => ({}))
+      if (handleApiError(res, data)) return
 
-      if (uploadedUrls.length > 0) {
-        const photoRows = uploadedUrls.map((p, i) => ({
-          piece_id: piece.id,
-          user_id: user.id,
-          url: p.url,
-          is_cover: p.isCover,
-          is_studio: p.isStudio,
-          sort_order: i,
-        }))
-
-        const { error: photosError } = await supabase.from('piece_photos').insert(photoRows)
-        if (photosError) throw photosError
+      if (!res.ok) {
+        alert(data.error || 'Erro ao salvar a peça. Tente novamente.')
+        return
       }
 
       router.push('/closet')
@@ -580,6 +594,17 @@ export default function NovaPecaPage() {
       <TrialExpiredModal
         isOpen={showTrialExpired}
         onClose={() => setShowTrialExpired(false)}
+      />
+
+      <PieceLimitModal
+        isOpen={showPieceLimitModal}
+        onClose={() => setShowPieceLimitModal(false)}
+      />
+
+      <StudioCreditsModal
+        isOpen={showStudioCreditsModal}
+        onClose={() => setShowStudioCreditsModal(false)}
+        isPro={userPlan === 'pro'}
       />
     </div>
   )

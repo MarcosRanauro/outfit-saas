@@ -309,9 +309,7 @@ export default function PerfilPage() {
       }
 
       alert(
-        res.status === 400 && data.error
-          ? data.error
-          : 'Não foi possível iniciar o pagamento agora. Tente novamente em instantes.'
+        data.details || data.error || 'Não foi possível iniciar o pagamento agora. Tente novamente em instantes.'
       )
     } catch {
       alert('Não foi possível iniciar o pagamento agora. Tente novamente em instantes.')

@@ -45,6 +45,7 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/sobre') ||
     request.nextUrl.pathname.startsWith('/offline') ||
     request.nextUrl.pathname.startsWith('/api/stripe/webhook') ||
+    request.nextUrl.pathname.startsWith('/api/webhooks/stripe') ||
     request.nextUrl.pathname.startsWith('/api/cron') // protegida por CRON_SECRET
 
   const isPublicRoute =

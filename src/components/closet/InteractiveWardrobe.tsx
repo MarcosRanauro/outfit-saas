@@ -598,7 +598,7 @@ export default function InteractiveWardrobe({
         <div className="cfp-grid">
           {focusedPieces.length === 0 ? (
             <p style={{ gridColumn: '1 / -1', color: 'var(--ec-text-muted)', fontSize: 13 }}>
-              Nenhuma peça cadastrada neste compartimento. Toque em "+" para cadastrar novas peças.
+              Nenhuma peça cadastrada neste compartimento. Toque em &quot;+&quot; para cadastrar novas peças.
             </p>
           ) : (
             focusedPieces.map(p => {

@@ -269,6 +269,8 @@ export type Database = {
           usage_pieces_analyzed: number | null
           usage_reset_at: string | null
           usage_studio_generations: number | null
+          usage_model_generations?: number | null
+          extra_ghost_credits?: number | null
           usage_wishlist_generations: number | null
           weight: number | null
           welcome_email_sent_at: string | null
@@ -293,6 +295,8 @@ export type Database = {
           usage_pieces_analyzed?: number | null
           usage_reset_at?: string | null
           usage_studio_generations?: number | null
+          usage_model_generations?: number | null
+          extra_ghost_credits?: number | null
           usage_wishlist_generations?: number | null
           weight?: number | null
           welcome_email_sent_at?: string | null
@@ -317,6 +321,8 @@ export type Database = {
           usage_pieces_analyzed?: number | null
           usage_reset_at?: string | null
           usage_studio_generations?: number | null
+          usage_model_generations?: number | null
+          extra_ghost_credits?: number | null
           usage_wishlist_generations?: number | null
           weight?: number | null
           welcome_email_sent_at?: string | null

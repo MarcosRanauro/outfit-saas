@@ -8,6 +8,7 @@ import { sortPiecePhotos, type DisplayPhoto } from '@/lib/piece-photos'
 import type { Piece } from '@/types/app'
 import StudioScannerOverlay from '@/components/studio/StudioScannerOverlay'
 import TrialExpiredModal from '@/components/ui/TrialExpiredModal'
+import StudioCreditsModal from '@/components/closet/StudioCreditsModal'
 import '../nova-peca/nova-peca.css'
 import './piece-detail.css'
 
@@ -72,6 +73,18 @@ export default function PieceDetailPage() {
   const [ghostLoading, setGhostLoading] = useState(false)
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [showTrialExpired, setShowTrialExpired] = useState(false)
+  const [showStudioCreditsModal, setShowStudioCreditsModal] = useState(false)
+  const [userPlan, setUserPlan] = useState<'free' | 'pro'>('free')
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        supabase.from('profiles').select('plan').eq('id', user.id).single().then(({ data }) => {
+          if (data?.plan === 'pro') setUserPlan('pro')
+        })
+      }
+    })
+  }, [supabase])
   const [anchorPieceId, setAnchorPieceId] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null
     try {
@@ -148,8 +161,16 @@ export default function PieceDetailPage() {
       setShowTrialExpired(true)
       return true
     }
+    if (data.code === 'GHOST_CREDITS_EXHAUSTED') {
+      setShowStudioCreditsModal(true)
+      return true
+    }
     if (data.code === 'RATE_LIMITED') {
       alert('Limite do plano atingido. Faça upgrade para continuar.')
+      return true
+    }
+    if (data.code === 'TRIAL_PIECES_LIMIT_REACHED') {
+      alert(String(data.error || 'Limite atingido.'))
       return true
     }
     return false
@@ -651,6 +672,12 @@ export default function PieceDetailPage() {
       <TrialExpiredModal
         isOpen={showTrialExpired}
         onClose={() => setShowTrialExpired(false)}
+      />
+
+      <StudioCreditsModal
+        isOpen={showStudioCreditsModal}
+        onClose={() => setShowStudioCreditsModal(false)}
+        isPro={userPlan === 'pro'}
       />
     </div>
   )

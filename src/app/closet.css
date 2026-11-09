@@ -2139,3 +2139,106 @@ html.mode-dark .onboarding-btn { color: #080808; }
   color: var(--ec-text-muted);
   margin-top: 6px;
 }
+
+/* ─── CLOSET BALANCE STRIP (Saldo de Peças e Fotos de Estúdio) ─── */
+.closet-balance-strip {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 32px;
+  background: var(--ec-bg-secondary);
+  border-bottom: 0.5px solid var(--ec-border);
+  font-family: var(--font-inter), 'Inter', sans-serif;
+  font-size: 12px;
+  flex-wrap: wrap;
+}
+
+html.mode-dark .closet-balance-strip {
+  background: rgba(18, 24, 26, 0.6);
+}
+
+.closet-balance-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  color: var(--ec-text-secondary);
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.closet-balance-item:hover {
+  background: var(--ec-accent-faint);
+  color: var(--ec-text-primary);
+}
+
+.balance-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.balance-dot.piece-dot {
+  background: var(--ec-accent, #B48C3C);
+}
+
+.balance-dot.studio-dot {
+  background: #50C878;
+}
+
+.closet-balance-item.empty .balance-dot.studio-dot {
+  background: #E05656;
+}
+
+.balance-label {
+  font-weight: 500;
+  color: var(--ec-text-muted);
+}
+
+.balance-val {
+  font-weight: 600;
+  color: var(--ec-text-primary);
+}
+
+.balance-extra-tag {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--ec-accent-faint);
+  color: var(--ec-accent);
+  border: 0.5px solid var(--ec-accent-border);
+  font-weight: 600;
+}
+
+.balance-tag-action {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ec-accent);
+  margin-left: 2px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.closet-balance-divider {
+  width: 1px;
+  height: 14px;
+  background: var(--ec-border);
+}
+
+@media (max-width: 768px) {
+  .closet-balance-strip {
+    padding: 8px 14px;
+    gap: 8px;
+    justify-content: space-between;
+  }
+  .closet-balance-item {
+    padding: 2px 4px;
+    font-size: 11px;
+  }
+}
