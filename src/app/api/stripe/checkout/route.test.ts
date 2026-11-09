@@ -53,6 +53,10 @@ describe('POST /api/stripe/checkout', () => {
     delete process.env.STRIPE_PRICE_ADDON_25
     delete process.env.STRIPE_PRICE_ADDON_50
     delete process.env.STRIPE_PRICE_ADDON_100
+    delete process.env.NEXT_PUBLIC_STRIPE_PRICE_ADDON_10
+    delete process.env.NEXT_PUBLIC_STRIPE_PRICE_ADDON_25
+    delete process.env.NEXT_PUBLIC_STRIPE_PRICE_ADDON_50
+    delete process.env.NEXT_PUBLIC_STRIPE_PRICE_ADDON_100
 
     getUserMock.mockResolvedValue({
       data: { user: { id: 'user_123', email: 'test@example.com' } },
@@ -117,6 +121,22 @@ describe('POST /api/stripe/checkout', () => {
     )
 
     consoleSpy.mockRestore()
+  })
+
+  it('cria checkout com sucesso quando o priceId de pacote add-on está configurado com prefixo NEXT_PUBLIC_', async () => {
+    process.env.NEXT_PUBLIC_STRIPE_PRICE_ADDON_25 = 'price_addon_25_public_test'
+
+    const res = await POST(createRequest({ package_id: 'addon_25' }))
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.url).toBe('https://checkout.stripe.com/pay/cs_test_123')
+
+    expect(sessionCreateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: 'payment',
+        line_items: [{ price: 'price_addon_25_public_test', quantity: 1 }],
+      })
+    )
   })
 
   it('cria checkout com sucesso para assinatura Pro quando STRIPE_PRICE_ID está configurado', async () => {

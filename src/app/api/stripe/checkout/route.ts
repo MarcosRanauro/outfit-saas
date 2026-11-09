@@ -12,12 +12,26 @@ const ADDON_PRICE_ENV_KEYS: Record<string, string[]> = {
 }
 
 function resolveAddonPriceId(packageId: string): string | undefined {
-  const dynamicKey = `STRIPE_PRICE_${packageId.toUpperCase()}`
-  if (process.env[dynamicKey]) return process.env[dynamicKey]
+  const upper = packageId.toUpperCase()
+  const candidateKeys = [
+    `STRIPE_PRICE_${upper}`,
+    `NEXT_PUBLIC_STRIPE_PRICE_${upper}`,
+    `STRIPE_PRICE_ID_${upper}`,
+    `NEXT_PUBLIC_STRIPE_PRICE_ID_${upper}`,
+    `STRIPE_${upper}_PRICE_ID`,
+    `NEXT_PUBLIC_STRIPE_${upper}_PRICE_ID`,
+    `STRIPE_PRICE_${upper.replace('ADDON_', '')}`,
+    `NEXT_PUBLIC_STRIPE_PRICE_${upper.replace('ADDON_', '')}`,
+  ]
+
+  for (const key of candidateKeys) {
+    if (process.env[key]) return process.env[key]
+  }
 
   const keys = ADDON_PRICE_ENV_KEYS[packageId] || []
   for (const key of keys) {
     if (process.env[key]) return process.env[key]
+    if (process.env[`NEXT_PUBLIC_${key}`]) return process.env[`NEXT_PUBLIC_${key}`]
   }
   return undefined
 }
@@ -77,7 +91,7 @@ export async function POST(request: Request) {
       if (receivedPriceId) {
         priceId = process.env[receivedPriceId] || receivedPriceId
       } else {
-        priceId = process.env.STRIPE_PRICE_ID
+        priceId = process.env.STRIPE_PRICE_ID || process.env.NEXT_PUBLIC_STRIPE_PRICE_ID
       }
     }
 
