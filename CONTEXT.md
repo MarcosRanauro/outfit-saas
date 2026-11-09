@@ -11,7 +11,7 @@
 **Versão:** 1.9.0
 **Última atualização:** 2026-11-08
 **Domínio:** miaoutfitai.com.br
-**Próxima ação recomendada:** Virtual Try-On pausado (ver `lib/feature-flags.ts`); e-mails transacionais operacionais; novas visualizações nórdicas ativas e refinadas para mobile.
+**Próxima ação recomendada:** Avaliar backlog de decisões em [`DECISOES.md`](./DECISOES.md): (1) Retomada do Provador Virtual (Try-On); (2) UI de Histórico de Outfits Usados (`outfit_history`); (3) Landing Page com visuais reais do Armário/Arara v1.9.0.
 
 ---
 

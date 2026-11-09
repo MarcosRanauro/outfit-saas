@@ -174,3 +174,66 @@ Formato baseado em [Architecture Decision Records (ADR)](https://adr.github.io/)
 - Eliminação definitiva da rolagem horizontal indesejada no documento no Android e iOS.
 - Layout 100% responsivo para telas desde 360px (smartphones compactos) até grandes monitores desktop.
 - 0 quebras no suite de testes automatizados (71/71 testes passando).
+
+---
+
+# Próximas Decisões Arquiteturais e de Produto a Serem Tomadas (Backlog de Decisões)
+
+> Este capítulo reúne as decisões em aberto, estruturadas com contexto, opções viáveis e trade-offs para direcionar os próximos passos do projeto.
+
+---
+
+## 1. Ativação e Monetização do Provador Virtual (Virtual Try-On FASHN.ai v1.6)
+
+- **Contexto:** A infraestrutura de backend (`/api/tryon` e `/api/tryon/status`) está implementada, mas travada por feature flag (`TRYON_ENABLED = false` em `src/lib/feature-flags.ts`). O modelo `tryon-v1.6` da FASHN.ai gera custo direto por chamada de API.
+- **Decisão Necessária:** Como disponibilizar a interface do provador e quais as regras de consumo de créditos entre planos Free (Trial) e Pro.
+- **Opções em Avaliação:**
+  - **Opção A (Exclusivo Pro com cota):** Liberar acesso somente para assinantes Pro com franquia de 10 gerações/mês (custo controlado de ~$0.50 a $1.00/mês por usuário ativo).
+  - **Opção B (Conversão no Trial):** Conceder 1 ou 2 gerações de demonstração durante o período de 15 dias de Trial gratuito para acelerar a conversão para o plano Pro.
+  - **Opção C (Créditos Avulsos):** Implementar compra de pacotes de créditos extras via Stripe Checkout para usuários que esgotarem sua cota mensal.
+- **Impacto / Ações Técnicas:** Rodar a migration `0001_tryon_predictions.sql` no Supabase de produção, regenerar os tipos (`database.ts`), construir a UI com seleção de fotos de corpo e look, e alterar `TRYON_ENABLED = true`.
+
+---
+
+## 2. Experiência e Interface do Histórico de Outfits Usados (`outfit_history`)
+
+- **Contexto:** A tabela `outfit_history` existe no banco PostgreSQL desde o MVP, mas atualmente não possui nenhuma interface gráfica para o usuário final.
+- **Decisão Necessária:** Qual o formato ideal de exibição e interação com o histórico de looks usados.
+- **Opções em Avaliação:**
+  - **Opção A (Calendário Mensal Visual):** Criar uma visualização de calendário em `/lookbook/calendario` exibindo os dias do mês com as miniaturas das roupas vestidas em cada data.
+  - **Opção B (Linha do Tempo / Feed de Histórico):** Criar uma lista cronológica reversa simples com fotos, data de uso e botão rápido "Vestir novamente".
+  - **Opção C (Integração Direta com a Mia AI):** Fazer a Mia perguntar no chat "O que você vestiu hoje?" e registrar automaticamente no histórico via processamento de linguagem natural.
+- **Impacto / Ações Técnicas:** Criação da interface de registro diário (ação rápida nos cards de outfit) e da visualização de calendário ou feed.
+
+---
+
+## 3. Renovação Visual da Landing Page com Elementos do Produto Real
+
+- **Contexto:** A landing page (`/`) foi projetada na versão v1.2.1 utilizando ilustrações conceituais em aquarela. O produto hoje (v1.9.0) possui uma identidade nórdica de luxo muito mais atraente no Armário Interativo e na Arara de Outfits.
+- **Decisão Necessária:** Redesenhar as seções da landing page para exibir capturas e demonstrações reais do app.
+- **Opções em Avaliação:**
+  - **Opção A (Hero Interativo / Vídeo Demo):** Manter o estilo minimalista mas incluir no Hero uma prévia visual dinâmica do Armário Interativo com as roupas deslizando nos cabides.
+  - **Opção B (Seção Vitrine de Features):** Manter a ilustração aquarela atual no Hero e introduzir logo abaixo uma seção com screenshots em alta definição do Armário, da Arara e da Análise Mia AI.
+- **Impacto / Ações Técnicas:** Captura de telas limpas (sem dados pessoais) e atualização dos componentes em `src/app/(public)/page.tsx`.
+
+---
+
+## 4. Política de Segurança de Conteúdo (CSP) Bloqueante
+
+- **Contexto:** A política CSP está operando no modo de relatório (`Content-Security-Policy-Report-Only`), monitorando fontes permitidas (Supabase, Stripe, Sentry, Google Analytics e fontes do Google).
+- **Decisão Necessária:** Momento de transição para o modo bloqueante estrito (`Content-Security-Policy`).
+- **Opções em Avaliação:**
+  - **Opção A (Ativação Imediata):** Mudar o header para bloqueante já que nenhum erro foi registrado nas últimas sessões de deploy.
+  - **Opção B (Transição Pós-Sentry):** Aguardar o preenchimento da variável `NEXT_PUBLIC_SENTRY_DSN` na Vercel para monitorar relatórios por mais 7 dias antes de bloquear.
+- **Impacto / Ações Técnicas:** Alteração de chave em `next.config.ts`.
+
+---
+
+## 5. Decomposição Modular do Monolito [`closet/page.tsx`](file:///home/marcos-ranauro/Projetos/outfit-saas/src/app/(dashboard)/closet/page.tsx)
+
+- **Contexto:** A página principal do closet ultrapassou 800 linhas, concentrando estados de busca, filtros, wishlist, onboarding e modais de inserção de peça.
+- **Decisão Necessária:** Como e quando executar a refatoração do arquivo.
+- **Opções em Avaliação:**
+  - **Opção A (Refatoração Incremental Pré-TryOn):** Extrair imediatamente subcomponentes isolados (`ClosetContextBar`, `ClosetFilterBar`, `ClosetModalsWrap`) para facilitar a manutenção e testes.
+  - **Opção B (Manutenção Atual):** Manter o arquivo unificado até que as próximas features funcionais (Try-On ou Histórico) sejam finalizadas, evitando retrabalho em branches paralelas.
+- **Impacto / Ações Técnicas:** Criação de componentes em `src/components/closet/` e isolamento de estados locais.
