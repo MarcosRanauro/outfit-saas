@@ -3,6 +3,25 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { ADDON_PACKAGES } from '@/config/plan-limits'
 
+// Mapeamento dos pacotes extras para as variáveis de ambiente do Stripe
+const ADDON_PRICE_ENV_KEYS: Record<string, string[]> = {
+  addon_10: ['STRIPE_PRICE_ADDON_10', 'STRIPE_PRICE_ID_ADDON_10', 'STRIPE_PRICE_10', 'STRIPE_ADDON_10_PRICE_ID'],
+  addon_25: ['STRIPE_PRICE_ADDON_25', 'STRIPE_PRICE_ID_ADDON_25', 'STRIPE_PRICE_25', 'STRIPE_ADDON_25_PRICE_ID'],
+  addon_50: ['STRIPE_PRICE_ADDON_50', 'STRIPE_PRICE_ID_ADDON_50', 'STRIPE_PRICE_50', 'STRIPE_ADDON_50_PRICE_ID'],
+  addon_100: ['STRIPE_PRICE_ADDON_100', 'STRIPE_PRICE_ID_ADDON_100', 'STRIPE_PRICE_100', 'STRIPE_ADDON_100_PRICE_ID'],
+}
+
+function resolveAddonPriceId(packageId: string): string | undefined {
+  const dynamicKey = `STRIPE_PRICE_${packageId.toUpperCase()}`
+  if (process.env[dynamicKey]) return process.env[dynamicKey]
+
+  const keys = ADDON_PRICE_ENV_KEYS[packageId] || []
+  for (const key of keys) {
+    if (process.env[key]) return process.env[key]
+  }
+  return undefined
+}
+
 export async function POST(request: Request) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2026-04-22.dahlia',
@@ -20,7 +39,8 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json().catch(() => ({}))
-    const { package_id } = body || {}
+    const { package_id, priceId: bodyPriceId, price_id: bodyPrice_id } = body || {}
+    const receivedPriceId = bodyPriceId || bodyPrice_id
 
     const { data: profile } = await supabase
       .from('profiles')
@@ -32,6 +52,42 @@ export async function POST(request: Request) {
     if (!package_id && profile?.plan === 'pro') {
       return NextResponse.json(
         { error: 'Você já é Pro!' },
+        { status: 400 }
+      )
+    }
+
+    // 1) Identificar o pacote ou plano e mapear priceId
+    let priceId: string | undefined
+    let addonPkg = null
+
+    if (package_id) {
+      addonPkg = ADDON_PACKAGES.find(p => p.id === package_id)
+      if (!addonPkg) {
+        return NextResponse.json({ error: 'Pacote de créditos inválido' }, { status: 400 })
+      }
+
+      // Verifica se o priceId recebido é uma chave de env ou valor, ou mapeia pelo package_id
+      if (receivedPriceId) {
+        priceId = process.env[receivedPriceId] || receivedPriceId
+      } else {
+        priceId = resolveAddonPriceId(addonPkg.id)
+      }
+    } else {
+      // Assinatura Pro padrão
+      if (receivedPriceId) {
+        priceId = process.env[receivedPriceId] || receivedPriceId
+      } else {
+        priceId = process.env.STRIPE_PRICE_ID
+      }
+    }
+
+    // 3) Logs no console para facilitar o debug local
+    console.log('[stripe/checkout] priceId recebido:', priceId, 'ID do usuário:', user.id)
+
+    // 2) Se o preço for undefined, retornar erro 400 com mensagem clara
+    if (!priceId) {
+      return NextResponse.json(
+        { error: 'Variável de preço do Stripe não configurada' },
         { status: 400 }
       )
     }
@@ -54,36 +110,24 @@ export async function POST(request: Request) {
     }
 
     // Fluxo 1: Compra de Pacote Avulso de Fotos de Estúdio
-    if (package_id) {
-      const pkg = ADDON_PACKAGES.find(p => p.id === package_id)
-      if (!pkg) {
-        return NextResponse.json({ error: 'Pacote de créditos inválido' }, { status: 400 })
-      }
-
+    if (addonPkg) {
       const session = await stripe.checkout.sessions.create({
         customer: customerId,
         payment_method_types: ['card'],
         line_items: [
           {
-            price_data: {
-              currency: 'brl',
-              product_data: {
-                name: `Pacote Manequim Fantasma (${pkg.label})`,
-                description: `${pkg.photos} fotos de estúdio com fundo branco (créditos avulsos sem validade)`,
-              },
-              unit_amount: Math.round(pkg.price * 100),
-            },
+            price: priceId,
             quantity: 1,
           },
         ],
         mode: 'payment',
-        success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/closet?addon=success&photos=${pkg.photos}`,
+        success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/closet?addon=success&photos=${addonPkg.photos}`,
         cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/closet?addon=cancelled`,
         locale: 'pt-BR',
         metadata: {
           supabase_user_id: user.id,
-          addon_package_id: pkg.id,
-          addon_photos: String(pkg.photos),
+          addon_package_id: addonPkg.id,
+          addon_photos: String(addonPkg.photos),
         },
       })
 
@@ -96,13 +140,13 @@ export async function POST(request: Request) {
       payment_method_types: ['card'],
       line_items: [
         {
-          price: process.env.STRIPE_PRICE_ID!,
+          price: priceId,
           quantity: 1,
         },
       ],
       mode: 'subscription',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/perfil?upgrade=success`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/perfil?upgrade=cancelled`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/perfil?upgrade=success`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/perfil?upgrade=cancelled`,
       locale: 'pt-BR',
       metadata: { supabase_user_id: user.id },
     })
