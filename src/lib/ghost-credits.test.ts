@@ -107,7 +107,7 @@ describe('evaluateGhostCredits', () => {
 describe('deductGhostCredit', () => {
   it('incrementa usage_studio_generations quando consome da cota', async () => {
     const update = vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) })
-    const supabase = { from: () => ({ update }) } as any
+    const supabase = { from: () => ({ update }) } as unknown as Parameters<typeof deductGhostCredit>[3]
 
     const profile = { plan: 'free', usage_studio_generations: 1, extra_ghost_credits: 0 }
     const status = evaluateGhostCredits(profile)
@@ -119,7 +119,7 @@ describe('deductGhostCredit', () => {
 
   it('subtrai de extra_ghost_credits quando a cota mensal/trial está zerada', async () => {
     const update = vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) })
-    const supabase = { from: () => ({ update }) } as any
+    const supabase = { from: () => ({ update }) } as unknown as Parameters<typeof deductGhostCredit>[3]
 
     const profile = { plan: 'pro', usage_studio_generations: 20, extra_ghost_credits: 5, usage_reset_at: new Date().toISOString() }
     const status = evaluateGhostCredits(profile)

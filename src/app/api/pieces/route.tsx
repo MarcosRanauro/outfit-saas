@@ -144,14 +144,17 @@ export async function POST(request: Request) {
 
     // 4) Se foram enviadas fotos adicionais, grava na tabela piece_photos
     if (Array.isArray(photos) && photos.length > 0) {
-      const photoRows = photos.map((p: any, i: number) => ({
-        piece_id: piece.id,
-        user_id: user.id,
-        url: typeof p === 'string' ? p : p.url,
-        is_cover: typeof p === 'object' && typeof p.isCover === 'boolean' ? p.isCover : i === 0,
-        is_studio: typeof p === 'object' && typeof p.isStudio === 'boolean' ? p.isStudio : false,
-        sort_order: i,
-      }))
+      const photoRows = photos.map((p: unknown, i: number) => {
+        const item = typeof p === 'object' && p !== null ? (p as Record<string, unknown>) : null
+        return {
+          piece_id: piece.id,
+          user_id: user.id,
+          url: typeof p === 'string' ? p : (typeof item?.url === 'string' ? item.url : ''),
+          is_cover: typeof item?.isCover === 'boolean' ? item.isCover : i === 0,
+          is_studio: typeof item?.isStudio === 'boolean' ? item.isStudio : false,
+          sort_order: i,
+        }
+      })
 
       const { error: photosError } = await supabase.from('piece_photos').insert(photoRows)
       if (photosError) {

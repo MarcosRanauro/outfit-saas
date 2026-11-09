@@ -29,12 +29,12 @@ export default function PieceLimitModal({
       })
       const data = await res.json()
       if (data.url) {
-        window.location.href = data.url
+        window.location.assign(data.url)
         return
       }
-      window.location.href = '/perfil'
+      window.location.assign('/perfil')
     } catch {
-      window.location.href = '/perfil'
+      window.location.assign('/perfil')
     } finally {
       setLoading(false)
     }
