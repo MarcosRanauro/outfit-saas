@@ -291,7 +291,7 @@ export default function LandingPage() {
                   <Image
                     src={block.image}
                     alt={block.alt}
-                    width={1880}
+                    width={1864}
                     height={953}
                     className="feature-preview-img"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 540px"
