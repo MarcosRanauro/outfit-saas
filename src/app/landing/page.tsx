@@ -140,6 +140,17 @@ export default function LandingPage() {
   return (
     <div className="lp" data-theme={theme}>
 
+      {/* TOP ANNOUNCEMENT BANNER */}
+      <div className="ec-top-banner">
+        <span className="ec-top-banner-dot">✦</span>
+        <span>
+          <strong>15 dias grátis</strong> com até 20 peças no closet e 3 fotos de estúdio com Manequim Fantasma.
+        </span>
+        <Link href="/cadastro" className="ec-top-banner-link">
+          Experimente agora →
+        </Link>
+      </div>
+
       {/* NAV */}
       <nav className="ec-nav">
         <div className="ec-nav-logo">
@@ -158,7 +169,7 @@ export default function LandingPage() {
         </div>
         <div className="ec-nav-links">
           <a href="#funcionalidades">Funcionalidades</a>
-          <a href="#planos">Planos</a>
+          <a href="#planos">Planos & Preços</a>
           <Link href="/sobre">Sobre</Link>
         </div>
         <div className="ec-nav-right">
@@ -177,7 +188,7 @@ export default function LandingPage() {
             </button>
           </div>
           <Link href="/login" className="ec-nav-login">Entrar</Link>
-          <Link href="/cadastro" className="ec-nav-cta">Começar grátis</Link>
+          <Link href="/cadastro" className="ec-nav-cta">Testar 15 dias grátis</Link>
         </div>
       </nav>
 

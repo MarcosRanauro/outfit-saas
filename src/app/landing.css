@@ -55,6 +55,58 @@ html.mode-dark .display {
   }
 }
 
+/* ─── EC TOP BANNER ───────────────────────────── */
+
+.ec-top-banner {
+  background: var(--ec-bg-secondary);
+  border-bottom: 0.5px solid var(--ec-border);
+  padding: 8px var(--ec-container-px);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ec-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  line-height: 1.4;
+  position: relative;
+  z-index: 101;
+}
+
+.ec-top-banner-dot {
+  color: var(--ec-accent);
+  font-size: 11px;
+}
+
+.ec-top-banner strong {
+  color: var(--ec-text-primary);
+  font-weight: 600;
+}
+
+.ec-top-banner-link {
+  color: var(--ec-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 600;
+  margin-left: 4px;
+  transition: opacity 150ms ease;
+}
+
+.ec-top-banner-link:hover {
+  opacity: 0.8;
+}
+
+@media (max-width: 640px) {
+  .ec-top-banner {
+    font-size: 11px;
+    padding: 6px 14px;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+}
+
 /* ─── EC NAV ──────────────────────────────────── */
 
 .ec-nav {
@@ -1366,6 +1418,11 @@ html.mode-dark .display {
 }
 
 /* ─── DARK EDITION ─── */
+
+html.mode-dark .ec-top-banner {
+  background: #0d0d0d;
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
 
 html.mode-dark .ec-section-label {
   color: var(--ec-accent);

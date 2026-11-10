@@ -1,268 +1,187 @@
 'use client'
 
 import Link from 'next/link'
+import ModeToggle from '@/components/ui/ModeToggle'
+import '../legal.css'
 
 export default function PrivacidadePage() {
+  const sections = [
+    {
+      num: '01',
+      title: 'Quem Somos e Compromisso com a LGPD',
+      content:
+        'O Mia Outfit AI é um serviço operado por Marcos Ranauro, pessoa física responsável pelo tratamento dos seus dados pessoais em estrita conformidade com a Lei Geral de Proteção de Dados Pessoais (LGPD — Lei nº 13.709/2018). Nosso compromisso é tratar seus dados com total transparência, lealdade e segurança. Para qualquer questão sobre privacidade: suporte@miaoutfitai.com.br.',
+    },
+    {
+      num: '02',
+      title: 'Dados Pessoais que Coletamos',
+      items: [
+        'Dados de cadastro e acesso: nome, endereço de e-mail e foto de perfil (quando fornecida via login direto ou autenticação Google).',
+        'Dados de personalização estilística: altura, peso aproximado e estilo pessoal preferido (utilizados para calibrar caimento e proporções nas sugestões de looks).',
+        'Acervo fotográfico e closet: fotografias das suas peças de vestuário, descrições, categorias, cores e notas cadastradas.',
+        'Histórico e lookbook: combinações de roupas salvas, ocasiões marcadas e itens de interesse na Wishlist.',
+        'Localização aproximada (não persistente): cidade ou coordenadas coletadas pontualmente via geolocalização do navegador para consultar a previsão meteorológica do momento (não mantemos histórico de rastreamento geográfico).',
+        'Dados financeiros: transações intermediadas via Stripe. O Mia Outfit AI nunca tem acesso aos dados completos do seu cartão de crédito.',
+      ],
+    },
+    {
+      num: '03',
+      title: 'Como Usamos seus Dados',
+      items: [
+        'Gerar combinações personalizadas e inteligentes de looks com base no seu closet e no clima em tempo real.',
+        'Processar fotos com inteligência artificial para remover fundos e aplicar o efeito de Manequim Fantasma (Ghost Mannequin).',
+        'Personalizar os conselhos de estilo da Mia de acordo com suas ocasiões e biotipo.',
+        'Processar suas assinaturas e créditos avulsos através de integração segura com gateways de pagamento.',
+        'Garantir suporte técnico e comunicações essenciais sobre sua conta ou atualizações do serviço.',
+        'Compromisso estrito: NÃO vendemos seus dados para terceiros e NÃO os utilizamos para publicidade direcionada.',
+      ],
+    },
+    {
+      num: '04',
+      title: 'Processamento Seguro de Pagamentos via Stripe',
+      content:
+        'Todas as transações financeiras do Mia Outfit AI — tanto a assinatura do Plano Pro quanto a compra de pacotes avulsos de fotos — são processadas pela Stripe, Inc., líder mundial em pagamentos com certificação máxima de segurança PCI-DSS Nível 1.',
+      items: [
+        'Isolamento de dados de cartão: número do cartão de crédito, código CVV/CVC e datas de expiração são digitados diretamente em campos seguros da Stripe e nunca passam nem ficam armazenados em nossos servidores.',
+        'Sincronização segura: nosso servidor recebe apenas tokens seguros e confirmações de transação via webhooks criptografados (HMAC SHA-256) para conceder o plano Pro ou os créditos avulsos adquiridos.',
+        'Gerenciamento simplificado: você pode gerenciar, alterar forma de pagamento ou cancelar assinaturas a qualquer momento através do Portal de Clientes oficial da Stripe.',
+      ],
+    },
+    {
+      num: '05',
+      title: 'Processamento de Imagens e Dados via IA (Sem Treino Público)',
+      content:
+        'A Mia Outfit AI utiliza provedores de ponta em inteligência artificial para entregar análises estilísticas e fotos de estúdio de alta fidelidade. Mantemos políticas rigorosas de proteção e privacidade com todos eles:',
+      items: [
+        'Anthropic (Claude): responsável pela análise visual das peças, categorização, chat e curadoria de looks.',
+        'Photoroom & Remove.bg: responsáveis pelo recorte de fotos, remoção de fundos complexos e geração do efeito estúdio Manequim Fantasma.',
+        'OpenAI: utilizada pontualmente para validação e moderação de conteúdo impróprio ou não permitido.',
+        'Garantia de Não Treinamento Público: por contrato e diretrizes de API empresarial (Enterprise/Business API), nenhuma foto de roupa, imagem enviada, mensagem no chat ou dado pessoal é utilizado pelas fornecedoras de IA (Anthropic, Photoroom, OpenAI) para treinamento público, aperfeiçoamento de seus modelos de linguagem ou formação de bases abertas de dados.',
+        'O processamento é estritamente efêmero e confidencial, limitado ao tempo necessário para processar e devolver o resultado visual à sua conta.',
+      ],
+    },
+    {
+      num: '06',
+      title: 'Compartilhamento de Dados com Parceiros Técnicos',
+      content:
+        'Seus dados são transmitidos unicamente para os fornecedores de infraestrutura imprescindíveis à operação do aplicativo:',
+      items: [
+        'Supabase: armazenamento de dados de perfil e fotos no bucket de storage, em servidores seguros localizados na região de São Paulo, Brasil.',
+        'Vercel: plataforma de hospedagem da aplicação web e execução de funções serverless.',
+        'Stripe: operadora de pagamentos e checkout seguro.',
+        'Anthropic & Photoroom: provedoras de IA para análise e fotos de estúdio.',
+        'Open-Meteo: API pública para consulta meteorológica (requisição técnica sem transmissão de dados pessoais do usuário).',
+      ],
+    },
+    {
+      num: '07',
+      title: 'Retenção e Exclusão Definitiva de Dados',
+      items: [
+        'Enquanto sua conta estiver ativa, manteremos seus dados para que seu closet e histórico permaneçam disponíveis.',
+        'Fotos de peças individuais podem ser excluídas a qualquer momento na tela de edição da peça.',
+        'Exclusão completa de conta: você pode apagar sua conta a qualquer momento em Perfil → Apagar minha conta. A ação é irreversível: removemos imediatamente suas peças, fotos, looks salvos, perfil e cancelamos qualquer assinatura ativa no Stripe.',
+        'Backups de segurança técnicos são rotacionados e descartados automaticamente em até 30 dias.',
+      ],
+    },
+    {
+      num: '08',
+      title: 'Seus Direitos como Titular de Dados (LGPD)',
+      content: 'A LGPD garante a você pleno controle sobre seus dados pessoais, incluindo os direitos de:',
+      items: [
+        'Confirmação e Acesso: saber se tratamos seus dados e solicitar uma cópia dos registros mantidos.',
+        'Correção: atualizar informações incompletas, inexatas ou desatualizadas diretamente pelo seu perfil.',
+        'Exclusão e Revogação: eliminar seus dados cadastrais e revogar seu consentimento quando desejar.',
+        'Portabilidade: solicitar a exportação das suas informações em formato acessível.',
+        'Canal direto: para exercer qualquer um dos seus direitos, envie um e-mail para suporte@miaoutfitai.com.br. Respondemos a todas as solicitações no prazo legal.',
+      ],
+    },
+    {
+      num: '09',
+      title: 'Segurança da Informação',
+      items: [
+        'Todas as comunicações entre o seu navegador ou aplicativo e nossos servidores utilizam criptografia robusta HTTPS com certificados TLS modernos.',
+        'O banco de dados PostgreSQL é protegido com políticas de Row Level Security (RLS), garantindo que cada usuário acesse única e exclusivamente os seus próprios registros.',
+        'Credenciais sensíveis de parceiros e chaves de API nunca são expostas no código de frontend.',
+      ],
+    },
+    {
+      num: '10',
+      title: 'Cookies e Tecnologias de Sessão',
+      content:
+        'Utilizamos apenas cookies essenciais para manter você autenticado com segurança e salvar sua preferência de visualização (Édition Claire ou Dark Edition). Não empregamos cookies de terceiros para rastreamento invasivo ou venda de anúncios.',
+    },
+  ]
+
   return (
-    <main style={{
-      background: '#080808',
-      minHeight: '100vh',
-      padding: '40px 20px 80px'
-    }}>
-      <div style={{ maxWidth: '720px', margin: '0 auto' }}>
+    <main className="legal-page">
+      <div className="legal-container">
 
-        {/* Header */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          marginBottom: '40px',
-          paddingBottom: '20px',
-          borderBottom: '0.5px solid rgba(180,140,60,0.15)'
-        }}>
-          <Link href="/" style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            textDecoration: 'none'
-          }}>
-            <div style={{
-              width: '28px', height: '28px',
-              border: '1px solid rgba(180,140,60,0.4)',
-              borderRadius: '6px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '12px', color: 'rgba(180,140,60,0.9)'
-            }}>✦</div>
-            <span style={{
-              fontFamily: 'Georgia, serif',
-              fontSize: '16px',
-              color: '#f0f0f0',
-              letterSpacing: '1px'
-            }}>Mia <span style={{color:'rgba(180,140,60,0.9)'}}>Outfit AI</span></span>
+        {/* Header com Navegação e Toggle de Modo */}
+        <header className="legal-header">
+          <Link href="/" className="legal-brand" aria-label="Ir para a página inicial">
+            <div className="legal-brand-icon">✦</div>
+            <div className="legal-brand-text">
+              Mia <span>Outfit AI</span>
+            </div>
           </Link>
-        </div>
+          <ModeToggle />
+        </header>
 
-        <div style={{
-          display: 'inline-flex',
-          background: 'rgba(180,140,60,0.08)',
-          border: '0.5px solid rgba(180,140,60,0.15)',
-          borderRadius: '20px',
-          padding: '4px 12px',
-          fontSize: '11px',
-          letterSpacing: '2px',
-          textTransform: 'uppercase' as const,
-          color: 'rgba(180,140,60,0.6)',
-          marginBottom: '16px'
-        }}>✦ Documento legal</div>
+        <div className="legal-badge">✦ Transparência & Privacidade</div>
 
-        <h1 style={{
-          fontFamily: 'Georgia, serif',
-          fontSize: 'clamp(28px, 5vw, 40px)',
-          fontWeight: 300,
-          color: '#f0f0f0',
-          marginBottom: '8px',
-          lineHeight: 1.2
-        }}>
-          Política de <em style={{color: 'rgba(180,140,60,0.9)'}}>Privacidade</em>
+        <h1 className="legal-title">
+          Política de <em>Privacidade</em>
         </h1>
-        <p style={{
-          fontSize: '13px',
-          color: 'rgba(255,255,255,0.2)',
-          marginBottom: '40px'
-        }}>Última atualização: maio de 2026 · Versão 1.0</p>
+        <p className="legal-updated">
+          Última atualização: Novembro de 2026 · Versão 1.9.1
+        </p>
 
-        <div style={{
-          background: 'rgba(180,140,60,0.06)',
-          border: '0.5px solid rgba(180,140,60,0.15)',
-          borderRadius: '10px',
-          padding: '16px 20px',
-          marginBottom: '40px'
-        }}>
-          <p style={{color: 'rgba(180,140,60,0.8)', fontSize: '14px', margin: 0}}>
-            Sua privacidade é importante para nós. Esta política explica como coletamos, usamos e protegemos seus dados pessoais.
+        <div className="legal-intro-box">
+          <p className="legal-intro-text">
+            Sua confiança e a privacidade do seu estilo são prioridades fundamentais para nós. Esta política descreve de forma clara e objetiva como coletamos, tratamos, protegemos seus dados e garantimos a máxima segurança em pagamentos e inteligência artificial.
           </p>
         </div>
 
-        {[
-          {
-            num: '01', title: 'Quem somos',
-            content: 'O Mia Outfit AI é operado por Marcos Ranauro, pessoa física, responsável pelo tratamento dos seus dados pessoais conforme a LGPD (Lei nº 13.709/2018). Contato: suporte@miaoutfitai.com.br'
-          },
-          {
-            num: '02', title: 'Dados que coletamos',
-            items: [
-              'Nome e email (fornecidos no cadastro)',
-              'Foto de perfil (opcional)',
-              'Dados de login via Google quando aplicável',
-              'Altura e peso para personalizar sugestões',
-              'Estilo pessoal preferido',
-              'Fotos e descrições das peças de roupa',
-              'Outfits salvos e histórico de uso',
-              'Localização aproximada para clima (não armazenada)',
-              'Dados de pagamento processados pelo Stripe (não armazenamos dados de cartão)'
-            ]
-          },
-          {
-            num: '03', title: 'Como usamos seus dados',
-            items: [
-              'Gerar sugestões personalizadas de looks via IA',
-              'Personalizar a experiência com base no seu estilo e biotipo',
-              'Processar e gerenciar sua assinatura',
-              'Enviar emails transacionais (confirmação, recuperação de senha)',
-              'Melhorar o serviço e corrigir problemas técnicos',
-              'Não usamos seus dados para publicidade. Não vendemos seus dados.'
-            ]
-          },
-          {
-            num: '04', title: 'Com quem compartilhamos',
-            content: 'Seus dados são compartilhados apenas com:',
-            items: [
-              'Supabase — banco de dados e autenticação (servidores no Brasil)',
-              'Anthropic — processamento de IA para sugestões de looks',
-              'Stripe — processamento de pagamentos',
-              'Vercel — hospedagem do aplicativo',
-              'Open-Meteo — dados de clima (sem identificação do usuário)'
-            ]
-          },
-          {
-            num: '05', title: 'Por quanto tempo guardamos',
-            items: [
-              'Dados da conta: enquanto sua conta estiver ativa',
-              'Fotos de peças: até você excluir ou encerrar a conta',
-              'Logs técnicos: até 90 dias',
-              'Dados fiscais: conforme exigido pela legislação brasileira',
-              'Ao apagar a conta em Perfil, seus dados e fotos são removidos imediatamente; cópias técnicas de segurança podem levar até 30 dias para expirar'
-            ]
-          },
-          {
-            num: '06', title: 'Seus direitos (LGPD)',
-            content: 'Como titular dos dados, você tem direito a:',
-            items: [
-              'Acesso: solicitar cópia dos seus dados pessoais',
-              'Correção: atualizar dados incompletos ou incorretos',
-              'Exclusão: apague sua conta e todos os seus dados direto em Perfil → Apagar minha conta',
-              'Portabilidade: receber seus dados em formato estruturado',
-              'Revogação: revogar o consentimento a qualquer momento',
-              'Para exercer esses direitos: suporte@miaoutfitai.com.br (respondemos em até 15 dias úteis)'
-            ]
-          },
-          {
-            num: '07', title: 'Segurança dos dados',
-            items: [
-              'Todas as comunicações são criptografadas via HTTPS/TLS',
-              'Banco de dados com Row Level Security — cada usuário acessa só seus dados',
-              'Senhas gerenciadas com criptografia bcrypt',
-              'Dados de cartão nunca passam pelos nossos servidores (processados pelo Stripe)'
-            ]
-          },
-          {
-            num: '08', title: 'Cookies',
-            content: 'Utilizamos apenas cookies estritamente necessários para autenticação e funcionamento do serviço. Não utilizamos cookies de rastreamento ou publicidade.'
-          },
-          {
-            num: '09', title: 'Menores de idade',
-            content: 'O serviço não é direcionado a menores de 13 anos. Entre em contato se tiver conhecimento de uso por menores.'
-          },
-          {
-            num: '10', title: 'Alterações nesta política',
-            content: 'Esta política pode ser atualizada periodicamente. Alterações significativas serão comunicadas por email com pelo menos 15 dias de antecedência.'
-          }
-        ].map((section) => (
-          <div key={section.num} style={{ marginBottom: '40px' }}>
-            <h2 style={{
-              fontFamily: 'Georgia, serif',
-              fontSize: '20px',
-              fontWeight: 400,
-              color: '#f0f0f0',
-              marginBottom: '14px',
-              paddingBottom: '10px',
-              borderBottom: '0.5px solid rgba(180,140,60,0.1)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px'
-            }}>
-              <span style={{
-                fontSize: '11px',
-                letterSpacing: '2px',
-                color: 'rgba(180,140,60,0.6)',
-                fontFamily: 'sans-serif',
-                fontWeight: 400
-              }}>{section.num}</span>
+        {sections.map((section) => (
+          <section key={section.num} className="legal-section">
+            <h2 className="legal-section-title">
+              <span className="legal-section-num">{section.num}</span>
               {section.title}
             </h2>
             {section.content && (
-              <p style={{ color: 'rgba(255,255,255,0.45)', marginBottom: '10px' }}>
-                {section.content}
-              </p>
+              <p className="legal-section-content">{section.content}</p>
             )}
             {section.items && (
-              <ul style={{ listStyle: 'none', padding: 0 }}>
+              <ul className="legal-list">
                 {section.items.map((item, i) => (
-                  <li key={i} style={{
-                    color: 'rgba(255,255,255,0.45)',
-                    padding: '6px 0 6px 18px',
-                    position: 'relative' as const,
-                    borderBottom: '0.5px solid rgba(255,255,255,0.03)'
-                  }}>
-                    <span style={{
-                      position: 'absolute' as const,
-                      left: 0,
-                      color: 'rgba(180,140,60,0.6)',
-                      fontSize: '16px',
-                      lineHeight: '1.5'
-                    }}>·</span>
+                  <li key={i} className="legal-list-item">
+                    <span className="legal-bullet">·</span>
                     {item}
                   </li>
                 ))}
               </ul>
             )}
-          </div>
+          </section>
         ))}
 
-        {/* Contact */}
-        <div style={{
-          background: '#111',
-          border: '0.5px solid rgba(180,140,60,0.15)',
-          borderRadius: '12px',
-          padding: '20px 24px',
-          marginTop: '40px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px'
-        }}>
-          <div style={{
-            width: '44px', height: '44px',
-            border: '1px solid rgba(180,140,60,0.2)',
-            borderRadius: '10px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '18px', flexShrink: 0
-          }}>✉</div>
+        {/* Card de Contato / Encarregado */}
+        <div className="legal-contact-box">
+          <div className="legal-contact-icon">🛡️</div>
           <div>
-            <p style={{ fontSize: '11px', letterSpacing: '1px', textTransform: 'uppercase' as const, color: 'rgba(255,255,255,0.2)', marginBottom: '4px' }}>
-              Dúvidas sobre Privacidade e LGPD
-            </p>
-            <a href="mailto:suporte@miaoutfitai.com.br" style={{ color: 'rgba(180,140,60,0.9)', fontSize: '14px' }}>
+            <p className="legal-contact-label">Encarregado de Proteção de Dados (DPO)</p>
+            <a href="mailto:suporte@miaoutfitai.com.br" className="legal-contact-link">
               suporte@miaoutfitai.com.br
             </a>
           </div>
         </div>
 
-        {/* Footer links */}
-        <div style={{
-          marginTop: '40px',
-          paddingTop: '20px',
-          borderTop: '0.5px solid rgba(255,255,255,0.06)',
-          display: 'flex',
-          gap: '20px',
-          fontSize: '12px'
-        }}>
-          <a href="/termos" style={{ color: 'rgba(180,140,60,0.6)', textDecoration: 'none' }}>
-            Termos de Uso →
-          </a>
-          <a href="/login" style={{ color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
-            Voltar ao app
-          </a>
-        </div>
+        {/* Links de Rodapé */}
+        <footer className="legal-footer-links">
+          <Link href="/termos">Termos de Uso →</Link>
+          <Link href="/login" className="back-link">Voltar ao App</Link>
+          <Link href="/" className="back-link">Página Inicial</Link>
+        </footer>
+
       </div>
     </main>
   )
