@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { PRECO_PRO_COMPACTO } from '@/lib/pricing'
 import { ADDON_PACKAGES } from '@/config/plan-limits'
 import '../landing.css'
@@ -16,6 +17,8 @@ const featureBlocks = [
     label: 'O SEU GUARDA-ROUPA',
     title: 'Cadastre suas peças. A Mia analisa tudo.',
     desc: 'Foto, cor, categoria — a Mia entende cada peça com visão computacional e monta combinações a partir das roupas que você já tem.',
+    image: '/images/landing/01-guarda-roupa-preview.png',
+    alt: 'Modal de análise de peça com IA e visão computacional',
     reverse: false,
   },
   {
@@ -23,6 +26,8 @@ const featureBlocks = [
     label: 'LOOKS DO DIA',
     title: 'O look certo para o clima de hoje.',
     desc: 'Geolocalização em tempo real. A Mia considera temperatura, período do dia e ocasião antes de sugerir qualquer combinação.',
+    image: '/images/landing/02-looks-dia-preview.png',
+    alt: 'Arara de outfits e combinação de look do dia',
     reverse: true,
   },
   {
@@ -30,6 +35,8 @@ const featureBlocks = [
     label: 'SUA STYLIST PESSOAL',
     title: 'Converse. Ela entende de moda.',
     desc: 'Peça um look para uma festa, uma viagem, uma reunião. A Mia responde com sugestões reais do seu closet — não de uma loja.',
+    image: '/images/landing/03-stylist-preview.png',
+    alt: 'Chat de consultoria de estilo com a IA Mia',
     reverse: false,
   },
 ]
@@ -274,8 +281,16 @@ export default function LandingPage() {
               className={`feature-block scroll-animate${block.reverse ? ' feature-block-reverse' : ''}`}
             >
               <div className="feature-image-wrap">
-                <div className="feature-image-placeholder">
-                  <span>Preview em breve</span>
+                <div className="feature-image-card">
+                  <Image
+                    src={block.image}
+                    alt={block.alt}
+                    width={1880}
+                    height={953}
+                    className="feature-preview-img"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 540px"
+                    priority={i === 0}
+                  />
                 </div>
               </div>
               <div className="feature-text">
