@@ -48,40 +48,46 @@ const testimonials = [
 ]
 
 export default function LandingPage() {
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    if (typeof window === 'undefined') return 'light'
-    return (localStorage.getItem('mia_theme') as 'light' | 'dark') || 'light'
-  })
+  const [theme, setTheme] = useState<'light' | 'dark'>('light')
   const [mode, setMode] = useState<'claire' | 'dark'>('claire')
   const [activeTestimonial, setActiveTestimonial] = useState(0)
   const testimonialTrackRef = useRef<HTMLDivElement>(null)
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
-  const [isInstalled, setIsInstalled] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false
-    return window.matchMedia('(display-mode: standalone)').matches
-  })
+  const [isInstalled, setIsInstalled] = useState<boolean>(false)
   const [showIOSInstructions, setShowIOSInstructions] = useState(false)
 
   useEffect(() => {
-    localStorage.setItem('mia_theme', theme)
-    document.documentElement.setAttribute('data-theme', theme)
-  }, [theme])
+    const savedMode = localStorage.getItem('mia-mode') as 'claire' | 'dark' | null
+    const savedTheme = localStorage.getItem('mia_theme') as 'light' | 'dark' | null
 
-  useEffect(() => {
-    const saved = localStorage.getItem('mia-mode') as 'claire' | 'dark' | null
-    if (saved) setMode(saved)
-  }, [])
+    if (savedMode) {
+      setMode(savedMode)
+      const matchingTheme = savedMode === 'dark' ? 'dark' : 'light'
+      setTheme(matchingTheme)
+      document.documentElement.setAttribute('data-theme', matchingTheme)
+      document.documentElement.classList.toggle('mode-dark', savedMode === 'dark')
+    } else if (savedTheme) {
+      setTheme(savedTheme)
+      setMode(savedTheme === 'dark' ? 'dark' : 'claire')
+      document.documentElement.setAttribute('data-theme', savedTheme)
+      document.documentElement.classList.toggle('mode-dark', savedTheme === 'dark')
+    }
 
-  useEffect(() => {
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+    if (isStandalone) setIsInstalled(true)
+
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
     if (isIOS && !isStandalone) setShowIOSInstructions(true)
   }, [])
 
   const handleModeChange = (newMode: 'claire' | 'dark') => {
+    const newTheme = newMode === 'dark' ? 'dark' : 'light'
     setMode(newMode)
+    setTheme(newTheme)
     localStorage.setItem('mia-mode', newMode)
+    localStorage.setItem('mia_theme', newTheme)
     document.documentElement.classList.toggle('mode-dark', newMode === 'dark')
+    document.documentElement.setAttribute('data-theme', newTheme)
   }
 
   useEffect(() => {
@@ -145,7 +151,7 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="lp" data-theme={theme}>
+    <div className="lp" data-theme={theme} suppressHydrationWarning>
 
       {/* TOP ANNOUNCEMENT BANNER */}
       <div className="ec-top-banner">
