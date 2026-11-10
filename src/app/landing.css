@@ -5,13 +5,13 @@
 :root {
   --ec-bg-primary:    #FAF8F5;
   --ec-bg-secondary:  #F2EDE6;
-  --ec-accent:        #C17F5A;
-  --ec-accent-light:  #C4A882;
-  --ec-text-primary:  #1A1A1A;
-  --ec-text-secondary:#6B6B6B;
-  --ec-text-muted:    #9A8E84;
-  --ec-border:        #E8E2D9;
-  --ec-border-light:  #EAE4DC;
+  --ec-accent:        #A85B30;
+  --ec-accent-light:  #8F633E;
+  --ec-text-primary:  #111111;
+  --ec-text-secondary:#38332E;
+  --ec-text-muted:    #5E564E;
+  --ec-border:        #E2DBD0;
+  --ec-border-light:  #ECE6DC;
   --ec-white:         #FFFFFF;
   --ec-bg-tertiary:   #EDEAE4;
 
@@ -270,7 +270,7 @@ html.mode-dark .display {
 .ec-hero-content h1 {
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-size: 56px;
-  font-weight: 300;
+  font-weight: 400;
   color: var(--ec-text-primary);
   line-height: 1.05;
   margin-bottom: 16px;
@@ -280,7 +280,7 @@ html.mode-dark .display {
 .ec-hero-content h1 em {
   font-style: italic;
   color: var(--ec-accent-light);
-  font-weight: 300;
+  font-weight: 400;
 }
 
 .ec-hero-content .sub {
@@ -762,7 +762,7 @@ html.mode-dark .display {
 
 .curation-title em {
   font-style: italic;
-  font-weight: 300;
+  font-weight: 400;
   color: var(--ec-accent-light);
 }
 
@@ -1247,7 +1247,7 @@ html.mode-dark .display {
 .ec-cta-final h2 {
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-size: 52px;
-  font-weight: 300;
+  font-weight: 400;
   font-style: italic;
   color: var(--ec-text-primary);
   line-height: 1.1;

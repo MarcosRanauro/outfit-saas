@@ -5,16 +5,16 @@
   --ec-bg-primary:    #FAF8F5;
   --ec-bg-secondary:  #F2EDE6;
   --ec-bg-tertiary:   #EDEAE4;
-  --ec-accent:        #C17F5A;
-  --ec-accent-light:  #C4A882;
-  --ec-accent-faint:  rgba(193, 127, 90, 0.08);
-  --ec-accent-subtle: rgba(193, 127, 90, 0.15);
-  --ec-accent-border: rgba(193, 127, 90, 0.25);
-  --ec-text-primary:  #1A1A1A;
-  --ec-text-secondary:#6B6B6B;
-  --ec-text-muted:    #9A8E84;
-  --ec-border:        #E8E2D9;
-  --ec-border-light:  #EAE4DC;
+  --ec-accent:        #A85B30;
+  --ec-accent-light:  #8F633E;
+  --ec-accent-faint:  rgba(168, 91, 48, 0.08);
+  --ec-accent-subtle: rgba(168, 91, 48, 0.15);
+  --ec-accent-border: rgba(168, 91, 48, 0.25);
+  --ec-text-primary:  #111111;
+  --ec-text-secondary:#38332E;
+  --ec-text-muted:    #5E564E;
+  --ec-border:        #E2DBD0;
+  --ec-border-light:  #ECE6DC;
   --ec-white:         #FFFFFF;
 }
 
