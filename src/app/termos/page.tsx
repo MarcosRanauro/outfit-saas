@@ -1,253 +1,171 @@
 'use client'
 
 import Link from 'next/link'
+import ModeToggle from '@/components/ui/ModeToggle'
 import { PRECO_PRO_MENSAL } from '@/lib/pricing'
+import '../legal.css'
 
 export default function TermosPage() {
+  const sections = [
+    {
+      num: '01',
+      title: 'O que é o Mia Outfit AI',
+      content:
+        'O Mia Outfit AI é um aplicativo e plataforma web de consultoria de moda pessoal com inteligência artificial, acessível em www.miaoutfitai.com.br. O serviço permite que usuários cadastrem peças de roupa do seu próprio guarda-roupa, gerem fotos com fundo profissional e manequim fantasma, e recebam sugestões personalizadas de looks geradas por IA com base em clima, ocasião e estilo pessoal. O serviço é operado por Marcos Ranauro, com domicílio no Brasil.',
+    },
+    {
+      num: '02',
+      title: 'Cadastro e Acesso à Conta',
+      items: [
+        'Para utilizar o Mia Outfit AI, você deve criar uma conta com e-mail válido ou via autenticação Google.',
+        'Você é inteiramente responsável por manter a confidencialidade de sua senha e pelos acessos à sua conta.',
+        'É expressamente proibido criar contas falsas, duplicadas ou se passar por terceiros sem autorização.',
+        'O serviço é destinado a usuários com idade igual ou superior a 13 anos.',
+      ],
+    },
+    {
+      num: '03',
+      title: 'Planos, Trial de 15 Dias e Pacotes Extras',
+      content:
+        'O modelo de monetização do Mia Outfit AI é composto por período de teste gratuito, assinatura mensal e compra de pacotes avulsos:',
+      items: [
+        'Período de Teste Gratuito (Trial de 15 dias): todo novo usuário cadastrado recebe automaticamente 15 dias de teste com acesso completo, sem necessidade de cartão de crédito. O trial permite cadastrar até 20 peças no closet, inclui 3 fotos de estúdio (Manequim Fantasma) e libera o chat com a Mia e a geração de looks. Após o término dos 15 dias, novas inclusões no closet e fotos de estúdio ficam bloqueadas até a assinatura do Pro ou aquisição de pacotes avulsos.',
+        `Assinatura do Plano Pro (${PRECO_PRO_MENSAL}): garante closet inteligente ilimitado (sem limite de peças), chat com a Mia ilimitado, geração ilimitada de looks para qualquer ocasião e uma cota de 20 fotos de estúdio (Manequim Fantasma) por ciclo de faturamento.`,
+        'Regra da Cota Mensal do Pro: a franquia de 20 fotos de estúdio inclusa no Plano Pro renova a cada 30 dias e NÃO é cumulativa (fotos não utilizadas não acumulam para o mês seguinte).',
+        'Pacotes Extras Avulsos (Manequim Fantasma): tanto usuários em teste quanto assinantes Pro podem adquirir pacotes adicionais de fotos de estúdio a qualquer momento (+10 fotos por R$ 9,90, +25 fotos por R$ 24,90, +50 fotos por R$ 49,90 e +100 fotos por R$ 89,90).',
+        'Regra de Não Expiração dos Créditos Extras: os créditos de fotos adquiridos em pacotes avulsos NUNCA expiram e acumulam indefinidamente no saldo da conta do usuário.',
+        'Processamento Seguro: todas as cobranças de assinaturas e compras avulsas são processadas com total segurança pela Stripe.',
+      ],
+    },
+    {
+      num: '04',
+      title: 'Cancelamento e Reembolso',
+      content:
+        'Você tem total autonomia para gerenciar e cancelar sua assinatura Pro a qualquer momento diretamente pela página de Perfil no botão "Gerenciar assinatura" (portal Stripe).',
+      items: [
+        'Ao cancelar o Plano Pro, seu acesso aos benefícios ilimitados permanece ativo até o término do ciclo mensal já pago.',
+        'Não realizamos reembolsos proporcionais por períodos parciais não utilizados de assinaturas ativas.',
+        'Créditos de fotos avulsas não são reembolsáveis após a utilização parcial do pacote.',
+        'Em caso de comprovada duplicidade ou cobrança indevida, nossa equipe fornecerá suporte imediato através de suporte@miaoutfitai.com.br dentro do prazo de 7 dias.',
+      ],
+    },
+    {
+      num: '05',
+      title: 'Uso Aceitável e Regras de Conduta',
+      content: 'Ao utilizar o Mia Outfit AI, você concorda em agir com boa-fé e em NÃO:',
+      items: [
+        'Utilizar a plataforma para atividades ilícitas, fraudulentas ou que violem direitos de terceiros.',
+        'Enviar fotos ofensivas, pornográficas, violentas ou que desrespeitem direitos autorais ou de imagem.',
+        'Tentar burlar os limites do plano Trial ou manipular os sistemas de rate limiting e APIs de inteligência artificial.',
+        'Executar engenharia reversa, clonar a interface ou tentar extrair código-fonte e algoritmos.',
+        'Empregar scrapers, spiders ou ferramentas automatizadas para sobrecarregar a infraestrutura do serviço.',
+      ],
+    },
+    {
+      num: '06',
+      title: 'Inteligência Artificial e Isenção de Responsabilidade',
+      items: [
+        'As sugestões de looks e análises de imagem da Mia têm finalidade estilística, criativa e informativa.',
+        'Não garantimos adequação absoluta de trajes a códigos de vestimenta específicos e não nos responsabilizamos por decisões de compra ou descarte de vestuário tomadas com base nas sugestões.',
+        'A visão computacional depende da nitidez e iluminação das fotos enviadas e pode apresentar imprecisões pontuais na detecção de cores ou tecidos.',
+      ],
+    },
+    {
+      num: '07',
+      title: 'Propriedade Intelectual',
+      content:
+        'A marca Mia Outfit AI, seu design de interface (Édition Claire e Dark Edition), layout de armário tátil, logotipos e códigos são de propriedade exclusiva do operador. As fotos das suas peças de roupas continuam sendo de sua propriedade — nós as utilizamos unicamente para fornecer as análises e consultorias contratadas.',
+    },
+    {
+      num: '08',
+      title: 'Encerramento de Conta e Exclusão',
+      content:
+        'Você pode excluir sua conta e todos os dados associados a qualquer momento pela tela de Perfil ("Apagar minha conta"). Reservamo-nos o direito de suspender ou encerrar contas que violem gravemente estes Termos, sem direito a compensação.',
+    },
+    {
+      num: '09',
+      title: 'Alterações destes Termos',
+      content:
+        'Estes Termos de Uso podem ser revisados periodicamente para refletir evoluções do produto ou exigências legais. Modificações substanciais serão comunicadas aos usuários cadastrados via e-mail ou aviso no aplicativo.',
+    },
+    {
+      num: '10',
+      title: 'Legislação Aplicável e Foro',
+      content:
+        'Estes termos são regidos e interpretados de acordo com as leis da República Federativa do Brasil, em especial o Marco Civil da Internet e a legislação de proteção ao consumidor. Fica eleito o foro da comarca do domicílio do operador para dirimir eventuais controvérsias.',
+    },
+  ]
+
   return (
-    <main style={{
-      background: '#080808',
-      minHeight: '100vh',
-      padding: '40px 20px 80px'
-    }}>
-      <div style={{ maxWidth: '720px', margin: '0 auto' }}>
+    <main className="legal-page">
+      <div className="legal-container">
 
-        {/* Header */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          marginBottom: '40px',
-          paddingBottom: '20px',
-          borderBottom: '0.5px solid rgba(180,140,60,0.15)'
-        }}>
-          <Link href="/" style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            textDecoration: 'none'
-          }}>
-            <div style={{
-              width: '28px', height: '28px',
-              border: '1px solid rgba(180,140,60,0.4)',
-              borderRadius: '6px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '12px', color: 'rgba(180,140,60,0.9)'
-            }}>✦</div>
-            <span style={{
-              fontFamily: 'Georgia, serif',
-              fontSize: '16px',
-              color: '#f0f0f0',
-              letterSpacing: '1px'
-            }}>Mia <span style={{color:'rgba(180,140,60,0.9)'}}>Outfit AI</span></span>
+        {/* Header com Navegação e Toggle de Modo */}
+        <header className="legal-header">
+          <Link href="/" className="legal-brand" aria-label="Ir para a página inicial">
+            <div className="legal-brand-icon">✦</div>
+            <div className="legal-brand-text">
+              Mia <span>Outfit AI</span>
+            </div>
           </Link>
-        </div>
+          <ModeToggle />
+        </header>
 
-        <div style={{
-          display: 'inline-flex',
-          background: 'rgba(180,140,60,0.08)',
-          border: '0.5px solid rgba(180,140,60,0.15)',
-          borderRadius: '20px',
-          padding: '4px 12px',
-          fontSize: '11px',
-          letterSpacing: '2px',
-          textTransform: 'uppercase' as const,
-          color: 'rgba(180,140,60,0.6)',
-          marginBottom: '16px'
-        }}>✦ Documento legal</div>
+        <div className="legal-badge">✦ Documento Legal</div>
 
-        <h1 style={{
-          fontFamily: 'Georgia, serif',
-          fontSize: 'clamp(28px, 5vw, 40px)',
-          fontWeight: 300,
-          color: '#f0f0f0',
-          marginBottom: '8px',
-          lineHeight: 1.2
-        }}>
-          Termos de <em style={{color: 'rgba(180,140,60,0.9)'}}>Uso</em>
+        <h1 className="legal-title">
+          Termos de <em>Uso</em>
         </h1>
-        <p style={{
-          fontSize: '13px',
-          color: 'rgba(255,255,255,0.2)',
-          marginBottom: '40px'
-        }}>Última atualização: maio de 2026 · Versão 1.0</p>
+        <p className="legal-updated">
+          Última atualização: Novembro de 2026 · Versão 1.9.1
+        </p>
 
-        <div style={{
-          background: 'rgba(180,140,60,0.06)',
-          border: '0.5px solid rgba(180,140,60,0.15)',
-          borderRadius: '10px',
-          padding: '16px 20px',
-          marginBottom: '40px'
-        }}>
-          <p style={{color: 'rgba(180,140,60,0.8)', fontSize: '14px', margin: 0}}>
-            Ao criar uma conta ou utilizar o Mia Outfit AI, você concorda com estes Termos de Uso.
+        <div className="legal-intro-box">
+          <p className="legal-intro-text">
+            Bem-vindo ao <strong>Mia Outfit AI</strong>. Ao criar uma conta, usufruir do período de teste gratuito ou contratar nossos serviços e pacotes, você expressa sua concordância integral com estes Termos de Uso.
           </p>
         </div>
 
-        {[
-          {
-            num: '01', title: 'O que é o Mia Outfit AI',
-            content: `O Mia Outfit AI é um aplicativo de consultoria de moda com inteligência artificial, acessível em www.miaoutfitai.com.br. O serviço permite que usuários cadastrem suas peças de roupa e recebam sugestões personalizadas de looks geradas por IA, com base no clima, ocasião e estilo pessoal. O serviço é operado por Marcos Ranauro, pessoa física, com domicílio no Brasil.`
-          },
-          {
-            num: '02', title: 'Cadastro e conta',
-            items: [
-              'Para usar o Mia Outfit AI você deve criar uma conta com email válido ou login via Google.',
-              'Você é responsável por manter a segurança da sua senha e pelo acesso à sua conta.',
-              'É proibido criar contas falsas, duplicadas ou em nome de terceiros sem autorização.',
-              'Você deve ter pelo menos 13 anos de idade para usar o serviço.'
-            ]
-          },
-          {
-            num: '03', title: 'Planos e pagamento',
-            content: 'O Mia Outfit AI oferece dois planos:',
-            items: [
-              'Plano Free (gratuito): acesso limitado às funcionalidades, incluindo 20 mensagens com a Mia, 5 gerações de outfits e 3 análises de peças por mês.',
-              `Plano Pro (${PRECO_PRO_MENSAL}): acesso ilimitado a todas as funcionalidades do aplicativo.`,
-              'Os pagamentos são processados de forma segura pela Stripe. A assinatura é renovada automaticamente a cada 30 dias.'
-            ]
-          },
-          {
-            num: '04', title: 'Cancelamento e reembolso',
-            content: 'Você pode cancelar sua assinatura a qualquer momento pelo botão "Gerenciar assinatura" na página de Perfil.',
-            items: [
-              'Após o cancelamento, o acesso ao Plano Pro permanece ativo até o fim do período já pago.',
-              'Não realizamos reembolsos proporcionais por períodos não utilizados.',
-              'Em caso de cobrança indevida comprovada, entre em contato em suporte@miaoutfitai.com.br em até 7 dias.'
-            ]
-          },
-          {
-            num: '05', title: 'Uso aceitável',
-            content: 'Ao usar o Mia Outfit AI, você concorda em não:',
-            items: [
-              'Usar o serviço para fins ilegais ou que violem direitos de terceiros.',
-              'Tentar burlar os limites do plano Free ou manipular o sistema de IA.',
-              'Fazer engenharia reversa, copiar ou redistribuir o serviço.',
-              'Enviar conteúdo ofensivo, ilegal ou que viole direitos autorais.',
-              'Usar bots ou automações para acessar o serviço em escala.'
-            ]
-          },
-          {
-            num: '06', title: 'Inteligência artificial e limitações',
-            items: [
-              'As sugestões de looks geradas pela Mia têm caráter informativo e estético.',
-              'Não garantimos que as sugestões serão adequadas para todas as ocasiões ou pessoas.',
-              'Não nos responsabilizamos por decisões de compra baseadas nas sugestões da IA.',
-              'A IA pode apresentar limitações ou imprecisões nas análises de fotos de peças.'
-            ]
-          },
-          {
-            num: '07', title: 'Propriedade intelectual',
-            content: 'O Mia Outfit AI, incluindo sua marca, interface, código e a personalidade da Mia, são de propriedade exclusiva do operador do serviço. As fotos de peças enviadas por você permanecem de sua propriedade — utilizamos apenas para gerar suas sugestões de looks.'
-          },
-          {
-            num: '08', title: 'Encerramento de conta',
-            content: 'Você pode solicitar o encerramento da sua conta a qualquer momento por email em suporte@miaoutfitai.com.br. Nos reservamos o direito de suspender contas que violem estes Termos, sem reembolso.'
-          },
-          {
-            num: '09', title: 'Alterações nos termos',
-            content: 'Podemos atualizar estes Termos de Uso periodicamente. Alterações significativas serão comunicadas por email. O uso continuado implica na aceitação dos novos termos.'
-          },
-          {
-            num: '10', title: 'Lei aplicável',
-            content: 'Estes termos são regidos pelas leis brasileiras. Eventuais disputas serão resolvidas no foro da comarca do domicílio do operador, no Brasil.'
-          }
-        ].map((section) => (
-          <div key={section.num} style={{ marginBottom: '40px' }}>
-            <h2 style={{
-              fontFamily: 'Georgia, serif',
-              fontSize: '20px',
-              fontWeight: 400,
-              color: '#f0f0f0',
-              marginBottom: '14px',
-              paddingBottom: '10px',
-              borderBottom: '0.5px solid rgba(180,140,60,0.1)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px'
-            }}>
-              <span style={{
-                fontSize: '11px',
-                letterSpacing: '2px',
-                color: 'rgba(180,140,60,0.6)',
-                fontFamily: 'sans-serif',
-                fontWeight: 400
-              }}>{section.num}</span>
+        {sections.map((section) => (
+          <section key={section.num} className="legal-section">
+            <h2 className="legal-section-title">
+              <span className="legal-section-num">{section.num}</span>
               {section.title}
             </h2>
             {section.content && (
-              <p style={{ color: 'rgba(255,255,255,0.45)', marginBottom: '10px' }}>
-                {section.content}
-              </p>
+              <p className="legal-section-content">{section.content}</p>
             )}
             {section.items && (
-              <ul style={{ listStyle: 'none', padding: 0 }}>
+              <ul className="legal-list">
                 {section.items.map((item, i) => (
-                  <li key={i} style={{
-                    color: 'rgba(255,255,255,0.45)',
-                    padding: '6px 0 6px 18px',
-                    position: 'relative' as const,
-                    borderBottom: '0.5px solid rgba(255,255,255,0.03)'
-                  }}>
-                    <span style={{
-                      position: 'absolute' as const,
-                      left: 0,
-                      color: 'rgba(180,140,60,0.6)',
-                      fontSize: '16px',
-                      lineHeight: '1.5'
-                    }}>·</span>
+                  <li key={i} className="legal-list-item">
+                    <span className="legal-bullet">·</span>
                     {item}
                   </li>
                 ))}
               </ul>
             )}
-          </div>
+          </section>
         ))}
 
-        {/* Contact */}
-        <div style={{
-          background: '#111',
-          border: '0.5px solid rgba(180,140,60,0.15)',
-          borderRadius: '12px',
-          padding: '20px 24px',
-          marginTop: '40px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px'
-        }}>
-          <div style={{
-            width: '44px', height: '44px',
-            border: '1px solid rgba(180,140,60,0.2)',
-            borderRadius: '10px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '18px', flexShrink: 0
-          }}>✉</div>
+        {/* Card de Contato */}
+        <div className="legal-contact-box">
+          <div className="legal-contact-icon">✉</div>
           <div>
-            <p style={{ fontSize: '11px', letterSpacing: '1px', textTransform: 'uppercase' as const, color: 'rgba(255,255,255,0.2)', marginBottom: '4px' }}>
-              Dúvidas sobre os Termos de Uso
-            </p>
-            <a href="mailto:suporte@miaoutfitai.com.br" style={{ color: 'rgba(180,140,60,0.9)', fontSize: '14px' }}>
+            <p className="legal-contact-label">Dúvidas sobre os Termos de Uso?</p>
+            <a href="mailto:suporte@miaoutfitai.com.br" className="legal-contact-link">
               suporte@miaoutfitai.com.br
             </a>
           </div>
         </div>
 
-        {/* Footer links */}
-        <div style={{
-          marginTop: '40px',
-          paddingTop: '20px',
-          borderTop: '0.5px solid rgba(255,255,255,0.06)',
-          display: 'flex',
-          gap: '20px',
-          fontSize: '12px'
-        }}>
-          <a href="/privacidade" style={{ color: 'rgba(180,140,60,0.6)', textDecoration: 'none' }}>
-            Política de Privacidade →
-          </a>
-          <a href="/login" style={{ color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>
-            Voltar ao app
-          </a>
-        </div>
+        {/* Links de Rodapé */}
+        <footer className="legal-footer-links">
+          <Link href="/privacidade">Política de Privacidade →</Link>
+          <Link href="/login" className="back-link">Voltar ao App</Link>
+          <Link href="/" className="back-link">Página Inicial</Link>
+        </footer>
+
       </div>
     </main>
   )

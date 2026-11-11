@@ -4,13 +4,13 @@
 .sobre-page {
   --ec-bg-primary:     #FAF8F5;
   --ec-bg-secondary:   #F2EDE6;
-  --ec-accent:         #C17F5A;
-  --ec-accent-light:   #C4A882;
-  --ec-text-primary:   #1A1A1A;
-  --ec-text-secondary: #6B6B6B;
-  --ec-text-muted:     #9A8E84;
-  --ec-border:         #E8E2D9;
-  --ec-border-light:   #EAE4DC;
+  --ec-accent:         #A85B30;
+  --ec-accent-light:   #8F633E;
+  --ec-text-primary:   #111111;
+  --ec-text-secondary: #38332E;
+  --ec-text-muted:     #5E564E;
+  --ec-border:         #E2DBD0;
+  --ec-border-light:   #ECE6DC;
   --ec-white:          #FFFFFF;
   background: var(--ec-bg-primary);
   font-family: 'Inter', sans-serif;
