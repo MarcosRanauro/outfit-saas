@@ -185,7 +185,7 @@ html.mode-dark .display {
 
 @media (max-width: 767px) {
   .ec-nav {
-    padding: 0 20px;
+    padding: 0 16px;
     height: 56px;
   }
   .ec-nav-links {
@@ -194,13 +194,21 @@ html.mode-dark .display {
   .ec-nav-logo span {
     font-size: 17px !important;
   }
+  .ec-nav-right {
+    gap: 12px;
+  }
   .ec-nav .toggle-option {
     font-size: 10px;
     padding: 4px 8px;
   }
   .ec-nav-cta {
-    font-size: 12px;
-    padding: 6px 14px;
+    display: none !important;
+  }
+  .mode-label-desktop {
+    display: none !important;
+  }
+  .mode-label-mobile {
+    display: inline !important;
   }
 }
 

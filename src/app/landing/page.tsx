@@ -191,13 +191,15 @@ export default function LandingPage() {
               className={`toggle-option${mode === 'claire' ? ' active' : ''}`}
               onClick={() => handleModeChange('claire')}
             >
-              Édition Claire
+              <span className="mode-label-desktop">Édition Claire</span>
+              <span className="mode-label-mobile">Claire</span>
             </button>
             <button
               className={`toggle-option${mode === 'dark' ? ' active' : ''}`}
               onClick={() => handleModeChange('dark')}
             >
-              Dark Edition
+              <span className="mode-label-desktop">Dark Edition</span>
+              <span className="mode-label-mobile">Dark</span>
             </button>
           </div>
           <Link href="/login" className="ec-nav-login">Entrar</Link>
