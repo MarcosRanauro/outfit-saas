@@ -52,12 +52,12 @@ const CATEGORY_GROUPS = {
 
 type GroupKey = keyof typeof CATEGORY_GROUPS
 
-const WEATHER_SCENARIOS = [
-  '⛅ São Paulo · 21°C · Nublado Suave',
-  '☀️ Rio de Janeiro · 28°C · Ensolarado & Quente',
-  '🌧️ Curitiba · 15°C · Chuva & Vento Fresco',
-  '🍂 Belo Horizonte · 23°C · Clima Seco Agradável',
-]
+interface WeatherData {
+  temp: number
+  desc: string
+  icon: string
+  city: string
+}
 
 const CABIDEIRO_CATS = ['Camiseta / Blusa', 'Camisa', 'Moletom', 'Casaco / Jaqueta', 'Vestido', 'Macacão']
 const GAVETEIRO_CATS = ['Calça', 'Short / Bermuda', 'Saia']
@@ -118,7 +118,8 @@ export default function ClosetPage() {
   const [search, setSearch] = useState('')
   const [activeGroup, setActiveGroup] = useState<GroupKey>('Todos')
   const [activeCategoryChip, setActiveCategoryChip] = useState<CategoryChipKey>('all')
-  const [weatherIndex, setWeatherIndex] = useState(0)
+  const [weather, setWeather] = useState<WeatherData | null>(null)
+  const [weatherLoading, setWeatherLoading] = useState(false)
 
   // Filtros drawer
   const [filterOpen, setFilterOpen] = useState(false)
@@ -206,6 +207,62 @@ export default function ClosetPage() {
     setLoading(false)
   }
 
+  async function fetchWeather(force = false) {
+    if (!force && typeof window !== 'undefined') {
+      try {
+        const cached = sessionStorage.getItem('mia_closet_weather')
+        if (cached) {
+          const parsed = JSON.parse(cached)
+          if (Date.now() - parsed.timestamp < 30 * 60 * 1000 && parsed.data) {
+            setWeather(parsed.data)
+            return
+          }
+        }
+      } catch {}
+    }
+
+    setWeatherLoading(true)
+
+    let coords: { lat: number; lon: number } | null = null
+    try {
+      if (typeof window !== 'undefined' && 'geolocation' in navigator) {
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 6000, maximumAge: 300000 })
+        })
+        coords = {
+          lat: position.coords.latitude,
+          lon: position.coords.longitude,
+        }
+      }
+    } catch {
+      // Sem permissão de geolocalização ou timeout, continua para fallback no endpoint
+    }
+
+    try {
+      const url = coords ? `/api/weather?lat=${coords.lat}&lon=${coords.lon}` : '/api/weather'
+      const res = await fetch(url)
+      if (res.ok) {
+        const data = await res.json()
+        if (data && typeof data.temp === 'number') {
+          const weatherInfo: WeatherData = {
+            temp: data.temp,
+            desc: data.desc || 'Clima agradável',
+            icon: data.icon || '⛅',
+            city: data.city || 'Minha Cidade',
+          }
+          setWeather(weatherInfo)
+          try {
+            sessionStorage.setItem('mia_closet_weather', JSON.stringify({ data: weatherInfo, timestamp: Date.now() }))
+          } catch {}
+        }
+      }
+    } catch (err) {
+      console.warn('[closet] Erro ao buscar clima em tempo real:', err)
+    } finally {
+      setWeatherLoading(false)
+    }
+  }
+
   useEffect(() => {
     const saved = localStorage.getItem('mia-closet-cols')
     if (saved) {
@@ -221,6 +278,7 @@ export default function ClosetPage() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData()
+    fetchWeather()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -481,12 +539,24 @@ export default function ClosetPage() {
           <button
             type="button"
             className="weather-pill"
-            onClick={() => setWeatherIndex(prev => (prev + 1) % WEATHER_SCENARIOS.length)}
-            title="Clique para alternar o clima simulado"
+            onClick={() => fetchWeather(true)}
+            title="Clique para atualizar o clima em tempo real"
+            aria-label="Atualizar clima em tempo real"
+            disabled={weatherLoading}
           >
             <span className="weather-dot"></span>
-            <span id="weather-text">{WEATHER_SCENARIOS[weatherIndex]}</span>
-            <RefreshCw size={12} style={{ marginLeft: 2 }} />
+            <span id="weather-text">
+              {weather
+                ? `${weather.icon} ${weather.city} · ${weather.temp}°C · ${weather.desc}`
+                : weatherLoading
+                ? 'Obtendo clima ao vivo...'
+                : '⛅ Carregando clima...'}
+            </span>
+            <RefreshCw
+              size={12}
+              className={weatherLoading ? 'weather-spin' : ''}
+              style={{ marginLeft: 2 }}
+            />
           </button>
         </div>
 
